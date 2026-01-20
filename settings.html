@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#28a745">
+<meta charset="UTF-8">
+<title>الإعدادات</title>
+<style>
+body{
+    font-family:Arial;
+    direction:rtl;
+    background:#f4f6f8;
+    margin:0;
+}
+header{
+    background:#fd7e14;
+    color:white;
+    padding:18px;
+    text-align:center;
+    font-size:28px;
+    font-weight:bold;
+}
+
+/* الحاوية */
+.container{
+    padding:20px;
+}
+
+/* Tabs */
+.tab-buttons{
+    display:flex;
+    gap:10px;
+    margin-bottom:20px;
+}
+.tab-buttons button{
+    padding:12px 20px;
+    font-size:18px;
+    border:none;
+    border-radius:8px;
+    cursor:pointer;
+    background:#ddd;
+    transition:0.3s;
+}
+.tab-buttons button.active{
+    background:#fd7e14;
+    color:white;
+}
+
+/* المحتوى */
+.tab-content{
+    background:white;
+    padding:20px;
+    border-radius:12px;
+    box-shadow:0 0 10px rgba(0,0,0,.1);
+    display:none;
+}
+
+/* الحقول */
+input, select{
+    padding:12px;
+    font-size:18px;
+    margin:10px 0;
+    width:100%;
+    border-radius:8px;
+    border:1px solid #bbb;
+}
+
+/* أزرار الحفظ */
+.save-btn{
+    background:#28a745;
+    color:white;
+    font-size:20px;
+    padding:12px 20px;
+    border:none;
+    border-radius:8px;
+    cursor:pointer;
+    margin-top:10px;
+}
+</style>
+</head>
+<body>
+<header>⚙️ الإعدادات</header>
+
+<div class="container">
+
+<!-- أزرار التبويب -->
+<div class="tab-buttons">
+    <button class="active" onclick="showTab('company')">معلومات الشركة</button>
+    <button onclick="showTab('user')">المستخدمين</button>
+    <button onclick="showTab('display')">الواجهة</button>
+    <button onclick="showTab('sales')">البيع والشراء</button>
+    <button onclick="showTab('backup')">النسخ الاحتياطي</button>
+    <button onclick="showTab('alerts')">الإشعارات</button>
+</div>
+
+<!-- تبويب معلومات الشركة -->
+<div class="tab-content" id="company" style="display:block;">
+    <h3>معلومات الشركة</h3>
+    <input type="text" id="companyName" placeholder="اسم الشركة">
+    <input type="text" id="companyPhone" placeholder="الهاتف">
+    <input type="text" id="companyEmail" placeholder="البريد الإلكتروني">
+    <input type="text" id="companyAddress" placeholder="العنوان">
+    <input type="number" id="companyVAT" placeholder="ضريبة القيمة المضافة %">
+    <button class="save-btn" onclick="saveCompany()">حفظ</button>
+</div>
+
+<!-- تبويب المستخدمين -->
+<div class="tab-content" id="user">
+    <h3>إعدادات المستخدمين</h3>
+    <input type="text" id="username" placeholder="اسم المستخدم">
+    <input type="password" id="password" placeholder="كلمة المرور">
+    <select id="role">
+        <option value="admin">مسؤول</option>
+        <option value="sales">موظف مبيعات</option>
+    </select>
+    <button class="save-btn" onclick="saveUser()">حفظ المستخدم</button>
+</div>
+
+<!-- تبويب الواجهة -->
+<div class="tab-content" id="display">
+    <h3>إعدادات العرض</h3>
+    <select id="theme">
+        <option value="light">فاتح</option>
+        <option value="dark">داكن</option>
+    </select>
+    <input type="number" id="fontSize" placeholder="حجم الخط (px)">
+    <button class="save-btn" onclick="saveDisplay()">حفظ العرض</button>
+</div>
+
+<!-- تبويب البيع والشراء -->
+<div class="tab-content" id="sales">
+    <h3>إعدادات البيع والشراء</h3>
+    <label>
+        <input type="checkbox" id="autoDeduct"> خصم الكمية تلقائياً من المخزون
+    </label>
+    <input type="text" id="currency" placeholder="العملة ($, د.ج, €)">
+    <input type="number" id="minQty" placeholder="الحد الأدنى للكمية">
+    <input type="number" id="maxQty" placeholder="الحد الأقصى للكمية">
+    <button class="save-btn" onclick="saveSales()">حفظ البيع والشراء</button>
+</div>
+
+<!-- تبويب النسخ الاحتياطي -->
+<div class="tab-content" id="backup">
+    <h3>النسخ الاحتياطي والاستعادة</h3>
+    <button class="save-btn" onclick="exportData()">تصدير البيانات</button>
+    <input type="file" id="importFile">
+    <button class="save-btn" onclick="importData()">استيراد البيانات</button>
+</div>
+
+<!-- تبويب الإشعارات -->
+<div class="tab-content" id="alerts">
+    <h3>الإشعارات والتنبيهات</h3>
+    <label>
+        <input type="checkbox" id="lowStockAlert"> تنبيه نفاد المخزون
+    </label>
+    <br>
+    <label>
+        <input type="checkbox" id="expiryAlert"> تنبيه قرب انتهاء الصلاحية
+    </label>
+    <br>
+    <label>
+        <input type="checkbox" id="salesAlert"> تنبيه المبيعات اليومية/الأسبوعية
+    </label>
+    <button class="save-btn" onclick="saveAlerts()">حفظ الإشعارات</button>
+</div>
+
+</div>
+
+<script>
+function addUser(username, password, role){
+    const settings = JSON.parse(localStorage.getItem("settings")) || {};
+    const users = settings.users || [];
+    if(users.find(u => u.username === username)){
+        alert("اسم المستخدم موجود مسبقًا!");
+        return;
+    }
+    users.push({username, password, role});
+    settings.users = users;
+    localStorage.setItem("settings", JSON.stringify(settings));
+    alert(`تم إنشاء المستخدم ${username} بنجاح`);
+}
+</script>
+
+</body>
+</html>

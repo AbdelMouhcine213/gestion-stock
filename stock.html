@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#28a745">
+<meta charset="UTF-8">
+<title>المخزون</title>
+<style>
+body{
+    font-family:Arial;
+    direction:rtl;
+    background:#f4f6f8;
+    margin:0;
+}
+header{
+    background:#28a745;
+    color:white;
+    padding:15px;
+    text-align:center;
+    font-size:26px;
+    font-weight:bold;
+}
+.top{
+    display:flex;
+    gap:20px;
+    padding:20px;
+    flex-wrap:wrap;
+}
+.alert{
+    width:220px;
+    padding:15px;
+    border-radius:10px;
+    color:white;
+    font-size:18px;
+    text-align:center;
+}
+.orange{ background:#fd7e14; }
+.yellow{ background:#ffc107; color:black; }
+.blue{ background:#007bff; }
+.green{ background:#28a745; }
+
+#searchStock{
+    width:95%;
+    margin:10px auto;
+    display:block;
+    padding:10px;
+    font-size:16px;
+    border-radius:6px;
+    border:1px solid #ccc;
+}
+
+table{
+    width:95%;
+    margin:auto;
+    border-collapse:collapse;
+    background:white;
+}
+th,td{
+    border:1px solid #ddd;
+    padding:8px;
+    text-align:center;
+}
+th{
+    background:#28a745;
+    color:white;
+}
+td[contenteditable="true"]{
+    background:#f9f9f9;
+}
+.btn{
+    padding:5px 8px;
+    border:none;
+    border-radius:5px;
+    cursor:pointer;
+    color:white;
+}
+.delete{ background:#dc3545; }
+</style>
+</head>
+<body>
+
+<header>المخزون</header>
+
+<div class="top">
+    <div class="alert orange">
+        نفاد الكمية<br><span id="out">0</span>
+    </div>
+    <div class="alert yellow">
+        قرب انتهاء الصلاحية<br><span id="exp">0</span>
+    </div>
+    <div class="alert blue">
+        مجموع الشراء<br><span id="totalBuy">0</span>
+    </div>
+    <div class="alert green">
+        مجموع البيع<br><span id="totalSell">0</span>
+    </div>
+</div>
+
+<input type="text" id="searchStock" placeholder="ابحث باسم المنتج أو تاريخ الشراء أو سعر البيع">
+
+<table>
+<thead>
+<tr>
+<th>تاريخ الشراء</th>
+<th>المنتج</th>
+<th>سعر الشراء</th>
+<th>سعر البيع</th>
+<th>الكمية الأصلية</th>
+<th>الكمية المتبقية</th>
+<th>مجموع الشراء</th>
+<th>مجموع البيع</th>
+<th>نهاية الصلاحية</th>
+<th>حذف</th>
+</tr>
+</thead>
+<tbody id="tbody"></tbody>
+</table>
+
+<script>
+let stock = JSON.parse(localStorage.getItem("stock")) || [];
+const tbody = document.getElementById("tbody");
+
+function render(filter=""){
+    tbody.innerHTML="";
+    let out=0, exp=0;
+    let totalBuy=0, totalSell=0;
+    const today = new Date();
+    const text = filter.toLowerCase();
+
+    stock.forEach((p,i)=>{
+        if(p.qtyLeft<=0) out++;
+        if(new Date(p.expiry)-today < 30*86400000) exp++;
+
+        if(
+           p.date.replaceAll("-","").includes(text.replaceAll("-","").replaceAll("/",""))
+        ){
+            const buySum  = p.buy * p.qtyOriginal;
+            const sellSum = p.sell * p.qtyLeft;
+
+            totalBuy  += buySum;
+            totalSell += sellSum;
+
+            let tr=document.createElement("tr");
+            tr.innerHTML=`
+<td contenteditable="true" onblur="update(${i},'date',this.innerText)">${p.date}</td>
+<td contenteditable="true" onblur="update(${i},'name',this.innerText)">${p.name}</td>
+<td contenteditable="true" onblur="update(${i},'buy',this.innerText)">${p.buy}</td>
+<td contenteditable="true" onblur="update(${i},'sell',this.innerText)">${p.sell}</td>
+<td>${p.qtyOriginal}</td>
+<td contenteditable="true" onblur="update(${i},'qtyLeft',this.innerText)">${p.qtyLeft}</td>
+<td>${buySum}</td>
+<td>${sellSum}</td>
+<td contenteditable="true" onblur="update(${i},'expiry',this.innerText)">${p.expiry}</td>
+<td><button class="btn delete" onclick="del(${i})">❌</button></td>
+            `;
+            tbody.appendChild(tr);
+        }
+    });
+
+    document.getElementById("out").textContent = out;
+    document.getElementById("exp").textContent = exp;
+    document.getElementById("totalBuy").textContent = totalBuy;
+    document.getElementById("totalSell").textContent = totalSell;
+}
+
+function update(i,key,val){
+    if(key==="name" || key==="date" || key==="expiry"){
+        stock[i][key]=val;
+    }else{
+        stock[i][key]=Number(val);
+    }
+    localStorage.setItem("stock",JSON.stringify(stock));
+    render(document.getElementById("searchStock").value);
+}
+
+function del(i){
+    if(confirm("حذف المنتج نهائيًا؟")){
+        stock.splice(i,1);
+        localStorage.setItem("stock",JSON.stringify(stock));
+        render(document.getElementById("searchStock").value);
+    }
+}
+
+document.getElementById("searchStock").addEventListener("input",function(){
+    render(this.value);
+});
+
+render();
+</script>
+
+</body>
+</html>

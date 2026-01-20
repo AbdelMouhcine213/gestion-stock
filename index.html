@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#28a745">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion Commercial Professional</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            direction: rtl;
+            background-color: #f0f2f5;
+        }
+
+        header {
+            background-color: #007bff;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            font-size: 32px;
+            font-weight: bold;
+        }
+
+        .content {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 80vh;
+            gap: 30px; /* مسافة بين الصفوف */
+            padding: 20px;
+        }
+
+        .row {
+            display: flex;
+            justify-content: center;
+            gap: 20px; /* مسافة بين المربعات داخل الصف */
+        }
+
+        .box {
+            width: 200px;
+            height: 150px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 20px;
+            font-weight: bold;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: transform 0.2s;
+            text-align: center;
+            text-decoration: none;
+        }
+
+        .box:hover {
+            transform: scale(1.1);
+        }
+
+        /* ألوان كل مربع */
+        .achats { background-color: #17a2b8; }   /* الشراء - أزرق سماوي */
+        .sales { background-color: #ffc107; }      /* المبيعات - أصفر */
+        .stock { background-color: #28a745; }      /* المخزون - أخضر */
+        .clients { background-color: #6f42c1; }    /* العملاء - بنفسجي */
+        .settings { background-color: #dc3545; }   /* الإعدادات - أحمر */
+        .stats { background-color: #fd7e14; }      /* الإحصائيات - برتقالي */
+
+        footer {
+            background-color: #343a40;
+            color: white;
+            padding: 10px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+<header>
+    Gestion Commercial Professional
+</header>
+</script>
+
+<div class="content">
+    <!-- الصف الأول -->
+    <div class="row">
+            <a href="sales.html" class="box sales">المبيعات</a>
+			 <a href="achats.html" class="box achats">الشراء</a>
+             <a href="stock.html" class="box stock">المخزون</a>
+    </div>
+
+    <!-- الصف الثاني -->
+    <div class="row">
+        <a href="clients.html" class="box clients">العملاء</a>
+        <a href="settings.html" class="box settings">الإعدادات</a>
+        <a href="stats.html" class="box stats">الإحصائيات</a>
+    </div>
+</div>
+
+<footer>
+    جميع الحقوق محفوظة &copy; 2026
+</footer>
+<script>
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("sw.js");
+}
+</script>
+</body>
+</html>

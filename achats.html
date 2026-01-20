@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#28a745">
+<meta charset="UTF-8">
+<title>المشتريات</title>
+<style>
+body{
+    font-family:Arial;
+    direction:rtl;
+    background:#f4f6f8;
+    margin:0;
+}
+header{
+    background:#17a2b8;
+    color:white;
+    padding:15px;
+    text-align:center;
+    font-size:26px;
+    font-weight:bold;
+}
+
+.container{ padding:20px; }
+
+.inputs{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    margin-bottom:15px;
+}
+
+.inputs input{
+    padding:10px;
+    font-size:15px;
+}
+
+.btn{
+    padding:10px 15px;
+    border:none;
+    border-radius:5px;
+    cursor:pointer;
+    color:white;
+}
+.add{ background:#28a745; }
+.save{ background:#007bff; }
+
+table{
+    width:100%;
+    background:white;
+    border-collapse:collapse;
+}
+th,td{
+    border:1px solid #ddd;
+    padding:8px;
+    text-align:center;
+}
+th{
+    background:#17a2b8;
+    color:white;
+}
+.action{
+    background:#dc3545;
+}
+.edit{
+    background:#ffc107;
+    color:black;
+}
+</style>
+</head>
+
+<body>
+
+<header>المشتريات</header>
+
+<div class="container">
+
+<div class="inputs">
+    <input type="date" id="purchaseDate">
+    <input type="text" id="productName" placeholder="اسم المنتج">
+    <input type="number" id="buyPrice" placeholder="سعر الشراء">
+    <input type="number" id="sellPrice" placeholder="سعر البيع">
+    <input type="number" id="quantity" placeholder="الكمية">
+    <input type="date" id="expiryDate">
+    <button class="btn add" onclick="addPurchase()">إضافة</button>
+</div>
+
+<table>
+<thead>
+<tr>
+<th>تاريخ الشراء</th>
+<th>المنتج</th>
+<th>سعر الشراء</th>
+<th>سعر البيع</th>
+<th>الكمية</th>
+<th>المجموع</th>
+<th>نهاية الصلاحية</th>
+<th>تعديل</th>
+<th>حذف</th>
+</tr>
+</thead>
+<tbody id="tbody"></tbody>
+</table>
+
+<br>
+<button class="btn save" onclick="savePurchases()">حفظ المشتريات في المخزون</button>
+
+</div>
+
+<script>
+let purchaseList = [];
+const tbody = document.getElementById("tbody");
+
+function addPurchase(){
+    let purchaseDate = document.getElementById("purchaseDate").value;
+    let productName  = document.getElementById("productName").value;
+    let buyPrice     = Number(document.getElementById("buyPrice").value);
+    let sellPrice    = Number(document.getElementById("sellPrice").value);
+    let quantity     = Number(document.getElementById("quantity").value);
+    let expiryDate   = document.getElementById("expiryDate").value;
+
+    if(!purchaseDate || !productName || !buyPrice || !sellPrice || !quantity || !expiryDate){
+        alert("يرجى ملء جميع الحقول");
+        return;
+    }
+
+    purchaseList.push({
+        purchaseDate,
+        productName,
+        buyPrice,
+        sellPrice,
+        quantity,
+        expiryDate
+    });
+
+    render();
+    clearInputs();
+}
+
+function render(){
+    tbody.innerHTML="";
+    purchaseList.forEach((p,i)=>{
+        let tr=document.createElement("tr");
+        tr.innerHTML=`
+<td>${p.purchaseDate}</td>
+<td>${p.productName}</td>
+<td>${p.buyPrice}</td>
+<td>${p.sellPrice}</td>
+<td>${p.quantity}</td>
+<td>${p.buyPrice * p.quantity}</td>
+<td>${p.expiryDate}</td>
+<td><button class="btn edit" onclick="editPurchase(${i})">✏️</button></td>
+<td><button class="btn action" onclick="deletePurchase(${i})">🗑️</button></td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+function editPurchase(i){
+    let p = purchaseList[i];
+    document.getElementById("purchaseDate").value = p.purchaseDate;
+    document.getElementById("productName").value  = p.productName;
+    document.getElementById("buyPrice").value     = p.buyPrice;
+    document.getElementById("sellPrice").value    = p.sellPrice;
+    document.getElementById("quantity").value     = p.quantity;
+    document.getElementById("expiryDate").value   = p.expiryDate;
+    purchaseList.splice(i,1);
+    render();
+}
+
+function deletePurchase(i){
+    purchaseList.splice(i,1);
+    render();
+}
+
+function clearInputs(){
+    document.querySelectorAll(".inputs input").forEach(i=>i.value="");
+}
+
+/* 🔗 الحفظ الحقيقي في المخزون */
+function savePurchases(){
+
+    if(!purchaseList.length){
+        alert("لا توجد مشتريات");
+        return;
+    }
+
+    let stock = JSON.parse(localStorage.getItem("stock")) || [];
+
+    purchaseList.forEach(p=>{
+        let existing = stock.find(s => s.name === p.productName);
+
+        if(existing){
+            existing.qtyOriginal += p.quantity;
+            existing.qtyLeft     += p.quantity;
+            existing.buy          = p.buyPrice;
+            existing.sell         = p.sellPrice;
+            existing.expiry       = p.expiryDate;
+            existing.date         = p.purchaseDate;
+        }else{
+            stock.push({
+                date: p.purchaseDate,
+                name: p.productName,
+                buy: p.buyPrice,
+                sell: p.sellPrice,
+                qtyOriginal: p.quantity,
+                qtyLeft: p.quantity,
+                expiry: p.expiryDate
+            });
+        }
+    });
+
+    localStorage.setItem("stock", JSON.stringify(stock));
+
+    alert("تم حفظ المشتريات في المخزون بنجاح ✅");
+
+    purchaseList=[];
+    render();
+}
+</script>
+
+</body>
+</html>

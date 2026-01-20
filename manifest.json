@@ -1,0 +1,8 @@
+{
+  "name": "Gestion Commerciale",
+  "short_name": "Store",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#28a745",
+  "theme_color": "#28a745"
+}
