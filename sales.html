@@ -24,6 +24,13 @@ header{
     font-weight:bold;
 }
 
+/* 🔹 مكان المجموع تحت العنوان */
+.top-total{
+    display:flex;
+    justify-content:flex-start; /* الجهة اليسرى */
+    padding:15px 30px 0 30px;
+}
+
 /* التخطيط */
 .container{
     display:flex;
@@ -133,6 +140,11 @@ th{
 
 <header>واجهة المبيعات</header>
 
+<!-- ✅ المجموع تحت العنوان جهة اليسار -->
+<div class="top-total">
+    <div class="total-box" id="total">0</div>
+</div>
+
 <div class="container">
 
 <!-- منطقة العمل -->
@@ -171,9 +183,6 @@ th{
     <br>
     <button class="btn save" onclick="saveSale()">حفظ البيع</button>
 </div>
-
-<!-- المجموع -->
-<div class="total-box" id="total">0</div>
 
 </div>
 
