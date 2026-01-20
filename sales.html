@@ -1,11 +1,10 @@
 <!DOCTYPE html>
 <html lang="ar">
 <head>
+<meta charset="UTF-8">
+<title>واجهة المبيعات</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#28a745">
-<meta charset="UTF-8">
-<title>المبيعات</title>
-
 <style>
 body{
     margin:0;
@@ -24,7 +23,7 @@ header{
     font-weight:bold;
 }
 
-/* 🔹 مكان المجموع تحت العنوان */
+/* 🔹 مكان المجموع تحت العنوان جهة اليسار */
 .top-total{
     display:flex;
     justify-content:flex-start; /* الجهة اليسرى */
@@ -135,12 +134,11 @@ th{
 }
 </style>
 </head>
-
 <body>
 
 <header>واجهة المبيعات</header>
 
-<!-- ✅ المجموع تحت العنوان جهة اليسار -->
+<!-- المجموع تحت العنوان جهة اليسار -->
 <div class="top-total">
     <div class="total-box" id="total">0</div>
 </div>
@@ -206,11 +204,13 @@ productInput.addEventListener("input", function(){
         if(p.name.toLowerCase().startsWith(value) && p.qtyLeft > 0){
             let div = document.createElement("div");
             div.textContent = p.name + " (متبقي: " + p.qtyLeft + ")";
+            
             div.onclick = ()=>{
                 productInput.value = p.name;
                 priceInput.value = p.sell;
                 suggestions.innerHTML="";
             };
+
             suggestions.appendChild(div);
         }
     });
@@ -218,7 +218,7 @@ productInput.addEventListener("input", function(){
 
 /* ➕ إضافة للبيع */
 function addSale(){
-    let name = productInput.value;
+    let name = productInput.value.trim();
     let q = Number(qty.value);
     let product = stock.find(p=>p.name===name);
 
