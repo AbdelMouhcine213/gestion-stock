@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>💰 واجهة المبيعات</title>
+<title>💰 المبيعات</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#28a745">
 
@@ -20,44 +20,29 @@ header{
     padding:20px;
     text-align:center;
     font-size:32px;
-    font-weight:bold;
     box-shadow:0 0 25px #28a745;
 }
-
-/* الحاوية */
 .container{
-    padding:20px;
     max-width:1100px;
     margin:auto;
-    display:flex;
-    flex-direction:column;
-    gap:20px;
-}
-
-/* بطاقة المجموع */
-.total-box{
     padding:20px;
-    font-size:48px;
-    font-weight:bold;
-    text-align:center;
-    background:#00ff88;
-    color:black;
-    border-radius:15px;
-    box-shadow:0 0 20px #00ff88, inset 0 0 10px #00ff88;
-}
-
-/* الإدخالات */
-.flex{
-    display:flex;
-    gap:20px;
-    flex-wrap:wrap;
 }
 .card{
     background:#0f1b2e;
     border-radius:20px;
     padding:20px;
-    box-shadow:0 0 15px rgba(0,255,150,.4), inset 0 0 10px rgba(0,255,150,.2);
-    flex:1;
+    margin-bottom:20px;
+    box-shadow:0 0 15px rgba(0,255,150,.4),
+               inset 0 0 10px rgba(0,255,150,.2);
+}
+.total{
+    font-size:46px;
+    text-align:center;
+    padding:20px;
+    background:#00ff88;
+    color:black;
+    border-radius:15px;
+    box-shadow:0 0 25px #00ff88;
 }
 input{
     width:100%;
@@ -67,26 +52,6 @@ input{
     border:none;
     margin-bottom:10px;
 }
-
-/* البحث */
-.search{position:relative;}
-.suggestions{
-    position:absolute;
-    background:white;
-    width:100%;
-    border-radius:10px;
-    z-index:1000;
-    max-height:200px;
-    overflow-y:auto;
-    color:black;
-}
-.suggestions div{
-    padding:12px;
-    cursor:pointer;
-}
-.suggestions div:hover{background:#eee;}
-
-/* الأزرار */
 .btn{
     padding:14px;
     font-size:20px;
@@ -101,7 +66,6 @@ input{
 .save{ background:#28a745; }
 .delete{ background:#dc3545; border:none; padding:6px 10px; border-radius:6px; cursor:pointer; }
 
-/* الكاميرا */
 video{
     width:100%;
     max-height:260px;
@@ -110,13 +74,29 @@ video{
     box-shadow:0 0 20px #00ffff;
 }
 
-/* الجدول */
+/* بحث */
+.search{position:relative;}
+.suggestions{
+    position:absolute;
+    background:white;
+    width:100%;
+    color:black;
+    border-radius:10px;
+    max-height:200px;
+    overflow:auto;
+    z-index:1000;
+}
+.suggestions div{
+    padding:12px;
+    cursor:pointer;
+}
+.suggestions div:hover{background:#eee;}
+
 table{
     width:100%;
     border-collapse:collapse;
-    margin-top:15px;
     background:#0b1628;
-    font-size:18px;
+    margin-top:15px;
 }
 th,td{
     border:1px solid #333;
@@ -136,28 +116,25 @@ td input{
 
 <div class="container">
 
-<div class="total-box" id="total">0</div>
+<div class="card total" id="total">0</div>
 
-<div class="flex">
+<div class="card">
+<button class="btn scan" onclick="toggleScanner()">📷 قارئ الباركود</button>
+<video id="camera"></video>
 
-    <!-- إدخال المنتج -->
-    <div class="card">
-        <button class="btn scan" onclick="startScanner()">📷 قارئ الباركود</button>
-        <video id="camera"></video>
+<input id="barcode" placeholder="📦 الباركود">
 
-        <input id="barcode" placeholder="📦 الباركود">
-        <div class="search">
-            <input id="productSearch" placeholder="🧾 اسم المنتج">
-            <div id="suggestions" class="suggestions"></div>
-        </div>
-        <input id="price" placeholder="💵 سعر البيع" readonly>
-        <input id="qty" type="number" placeholder="📦 الكمية">
-
-        <button class="btn add" onclick="addSale()">➕ إضافة</button>
-    </div>
+<div class="search">
+<input id="productSearch" placeholder="🧾 اسم المنتج">
+<div id="suggestions" class="suggestions"></div>
 </div>
 
-<!-- الجدول -->
+<input id="price" placeholder="💵 سعر البيع">
+<input id="qty" type="number" placeholder="📦 الكمية">
+
+<button class="btn add" onclick="addSale()">➕ إضافة</button>
+</div>
+
 <div class="card">
 <table>
 <thead>
@@ -172,180 +149,157 @@ td input{
 <tbody id="tbody"></tbody>
 </table>
 
-<button class="btn save" onclick="saveSale()">💾 حفظ البيع</button>
+<button class="btn save" onclick="saveSales()">💾 حفظ البيع</button>
 </div>
 
 </div>
 
-<audio id="beep">
-<source src="data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAIlYAAESsAAACABAAZGF0YRAAAAAA//8AAP//AAD//wAA">
-</audio>
+<audio id="beep" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg"></audio>
 
 <script>
 let stock = JSON.parse(localStorage.getItem("stock")) || [];
 let sales = [];
-const tbody = document.getElementById("tbody");
-const beep = document.getElementById("beep");
+let tbody = document.getElementById("tbody");
+let totalBox = document.getElementById("total");
+let beep = document.getElementById("beep");
+
 let video = document.getElementById("camera");
+let scanning=false, stream=null;
 
 /* ================= قارئ الباركود ================= */
-async function startScanner(){
+async function toggleScanner(){
+    if(scanning){ stopScanner(); return; }
+
     if(!('BarcodeDetector' in window)){
         alert("الهاتف لا يدعم قارئ الباركود");
         return;
     }
-    const detector = new BarcodeDetector({formats:['ean_13','code_128','qr_code']});
-    const stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}});
+
+    stream = await navigator.mediaDevices.getUserMedia({
+        video:{ facingMode:"environment" }
+    });
+
     video.srcObject = stream;
     video.play();
     video.style.display="block";
-    scanLoop(detector);
-}
+    scanning=true;
 
-async function scanLoop(detector){
-    const codes = await detector.detect(video);
-    if(codes.length){
-        stopScanner();
-        beep.play();
-        onBarcode(codes[0].rawValue);
-        return;
+    const detector = new BarcodeDetector({formats:['ean_13','code_128']});
+
+    async function scanLoop(){
+        if(!scanning) return;
+        const codes = await detector.detect(video);
+        if(codes.length){
+            let code = codes[0].rawValue;
+            if(code.length>=12){
+                document.getElementById("barcode").value = code;
+                beep.play();
+
+                let p = stock.find(x=>x.barcode===code);
+                if(p){
+                    productSearch.value = p.name;
+                    price.value = p.sell;
+                }
+                stopScanner();
+                return;
+            }
+        }
+        requestAnimationFrame(scanLoop);
     }
-    requestAnimationFrame(()=>scanLoop(detector));
+    scanLoop();
 }
 
 function stopScanner(){
-    video.srcObject.getTracks().forEach(t=>t.stop());
+    scanning=false;
+    if(stream) stream.getTracks().forEach(t=>t.stop());
     video.style.display="none";
 }
 
-function onBarcode(code){
-    document.getElementById("barcode").value = code;
-    let p = stock.find(x=>x.barcode === code);
-    if(!p){
-        alert("المنتج غير موجود في المخزون");
-        return;
-    }
-    document.getElementById("productSearch").value = p.name;
-    document.getElementById("price").value = p.sell;
-}
+/* ================= بحث بالاسم ================= */
+const productSearch=document.getElementById("productSearch");
+const suggestions=document.getElementById("suggestions");
+const price=document.getElementById("price");
 
-/* ================= إكمال تلقائي باسم المنتج ================= */
-const productInput = document.getElementById("productSearch");
-const suggestions = document.getElementById("suggestions");
-const priceInput = document.getElementById("price");
-
-productInput.addEventListener("input", function(){
-    let value = this.value.trim().toLowerCase();
-    suggestions.innerHTML = "";
-    if(!value) return;
+productSearch.addEventListener("input",()=>{
+    suggestions.innerHTML="";
+    let v=productSearch.value.toLowerCase();
+    if(!v) return;
 
     stock.forEach(p=>{
-        if(p.name.toLowerCase().startsWith(value) && p.qtyLeft > 0){
-            let div = document.createElement("div");
-            div.textContent = p.name + " (متبقي: " + p.qtyLeft + ")";
-            div.onclick = ()=>{
-                productInput.value = p.name;
-                priceInput.value = p.sell;
+        if(p.name.toLowerCase().startsWith(v) && p.qtyLeft>0){
+            let d=document.createElement("div");
+            d.textContent=p.name+" (متبقي "+p.qtyLeft+")";
+            d.onclick=()=>{
+                productSearch.value=p.name;
+                price.value=p.sell;
                 suggestions.innerHTML="";
             };
-            suggestions.appendChild(div);
+            suggestions.appendChild(d);
         }
     });
 });
 
 /* ================= إضافة للبيع ================= */
 function addSale(){
-    let name = productInput.value;
-    let qtyVal = Number(document.getElementById("qty").value);
+    let name=productSearch.value;
+    let q=Number(qty.value);
+    let pr=Number(price.value);
+    let p=stock.find(x=>x.name===name);
 
-    let product = stock.find(p=>p.name===name);
-
-    if(!product || qtyVal<=0){
+    if(!p || q<=0 || q>p.qtyLeft){
         alert("بيانات غير صحيحة");
         return;
     }
-    if(qtyVal > product.qtyLeft){
-        alert("الكمية غير متوفرة");
-        return;
-    }
 
-    sales.push({
-        name,
-        price:product.sell,
-        qty:qtyVal
-    });
-
+    sales.push({name, price:pr, qty:q});
     render();
-    document.querySelectorAll("#barcode, #productSearch, #price, #qty").forEach(i=>i.value="");
+    barcode.value=productSearch.value=price.value=qty.value="";
 }
 
-/* ================= عرض الجدول ================= */
+/* ================= عرض ================= */
 function render(){
     tbody.innerHTML="";
-    let total=0;
+    let t=0;
+
     sales.forEach((s,i)=>{
-        let sum = s.price * s.qty;
-        total += sum;
-
-        let tr = document.createElement("tr");
-        tr.innerHTML = `
+        let sum=s.price*s.qty;
+        t+=sum;
+        tbody.innerHTML+=`
+<tr>
 <td>${s.name}</td>
-<td><input type="number" value="${s.price}" onchange="updatePrice(${i},this.value)"></td>
-<td><input type="number" value="${s.qty}" onchange="updateQty(${i},this.value)"></td>
+<td><input type="number" value="${s.price}" onchange="sales[${i}].price=this.value;render()"></td>
+<td><input type="number" value="${s.qty}" onchange="sales[${i}].qty=this.value;render()"></td>
 <td>${sum}</td>
-<td><button class="delete" onclick="del(${i})">❌</button></td>
-        `;
-        tbody.appendChild(tr);
+<td><button class="delete" onclick="sales.splice(${i},1);render()">❌</button></td>
+</tr>`;
     });
-
-    document.getElementById("total").textContent = total;
+    totalBox.textContent=t;
 }
 
-function updatePrice(i,val){
-    sales[i].price = Number(val);
-    render();
-}
-function updateQty(i,val){
-    let product = stock.find(p=>p.name===sales[i].name);
-    val = Number(val);
-    if(val<=0 || val>product.qtyLeft){
-        alert("كمية غير صحيحة");
-        render();
-        return;
-    }
-    sales[i].qty = val;
-    render();
-}
+/* ================= حفظ ================= */
+function saveSales(){
+    if(!sales.length){alert("لا توجد مبيعات");return;}
 
-function del(i){
-    sales.splice(i,1);
-    render();
-}
-
-/* ================= حفظ البيع ================= */
-function saveSale(){
-    if(!sales.length){ alert("لا توجد مبيعات"); return; }
-
-    let history = JSON.parse(localStorage.getItem("salesHistory")) || [];
+    let history=JSON.parse(localStorage.getItem("salesHistory"))||[];
 
     sales.forEach(s=>{
-        let p = stock.find(x=>x.name===s.name);
-        if(p) p.qtyLeft -= s.qty;
+        let p=stock.find(x=>x.name===s.name);
+        if(p) p.qtyLeft-=s.qty;
         history.push({
             name:s.name,
-            qty:s.qty,
             price:s.price,
+            qty:s.qty,
             date:new Date().toISOString().split("T")[0]
         });
     });
 
-    localStorage.setItem("stock", JSON.stringify(stock));
-    localStorage.setItem("salesHistory", JSON.stringify(history));
-
+    localStorage.setItem("stock",JSON.stringify(stock));
+    localStorage.setItem("salesHistory",JSON.stringify(history));
     alert("✅ تم حفظ البيع");
     sales=[];
     render();
 }
 </script>
+
 </body>
 </html>
