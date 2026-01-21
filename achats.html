@@ -7,13 +7,186 @@
 <title>🛒 المشتريات - Barcode Scanner</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#28a745">
+<style>
+*{box-sizing:border-box;}
+
+body{
+    font-family:'Comic Sans MS', Arial;
+    direction:rtl;
+    background:linear-gradient(160deg,#050b18,#0a1f3f);
+    color:white;
+    margin:0;
+    display:flex;
+    justify-content:center;
+    align-items:flex-start;
+    min-height:100vh;
+    padding:20px;
+    overflow-x:hidden;
+}
+
+/* ===== العنوان ===== */
+header{
+    width:100%;
+    background:linear-gradient(90deg,#28a745,#20c997);
+    padding:20px;
+    text-align:center;
+    font-size:32px;
+    font-weight:bold;
+    box-shadow:0 0 35px rgba(40,167,69,.8), inset 0 0 15px rgba(0,255,150,.3);
+    border-radius:15px;
+    margin-bottom:20px;
+}
+
+/* ===== الحاوية ===== */
 .container{
     max-width:1100px;
     width:100%;
-    margin:auto;
-    padding:20px;
-    box-sizing:border-box;
 }
+
+/* ===== البطاقات ===== */
+.card{
+    background:rgba(15,27,46,.95);
+    border-radius:25px;
+    padding:25px;
+    margin-bottom:20px;
+    border:2px solid rgba(0,255,150,.3);
+    box-shadow:
+        0 0 30px rgba(0,255,150,.4),
+        inset 0 0 25px rgba(0,255,150,.15);
+}
+
+/* ===== شبكة المدخلات ===== */
+.flex{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+    gap:20px;
+}
+
+/* ===== الحقول ===== */
+input{
+    width:100%;
+    padding:14px;
+    font-size:18px;
+    border-radius:14px;
+    border:1px solid #00ff99;
+    background:rgba(8,21,42,.9);
+    color:#00ffcc;
+    outline:none;
+    transition:.3s;
+}
+
+input::placeholder{
+    color:#88bfcf;
+}
+
+input:focus{
+    box-shadow:0 0 15px #00ff99, inset 0 0 10px #00ff99;
+    border-color:#00ff99;
+}
+
+/* ===== الاقتراحات ===== */
+.search{ position:relative; }
+.suggestions{
+    position:absolute;
+    background:#ffffff;
+    color:black;
+    width:100%;
+    border-radius:12px;
+    max-height:200px;
+    overflow-y:auto;
+    z-index:1000;
+    box-shadow:0 0 15px rgba(0,255,150,.5);
+}
+.suggestions div{
+    padding:12px;
+    cursor:pointer;
+}
+.suggestions div:hover{ background:#0fffa0; color:#000; }
+
+/* ===== الأزرار ===== */
+.btn{
+    padding:15px;
+    font-size:18px;
+    border:none;
+    border-radius:16px;
+    cursor:pointer;
+    width:100%;
+    font-weight:bold;
+    transition:.25s;
+    box-shadow:0 0 15px rgba(0,255,150,.4), inset 0 0 10px rgba(0,255,150,.2);
+}
+
+.scan{
+    background:linear-gradient(45deg,#ffc107,#ff9800);
+    color:black;
+}
+.add{
+    background:linear-gradient(45deg,#17a2b8,#0dcaf0);
+    color:white;
+}
+.save{
+    background:linear-gradient(45deg,#28a745,#20c997);
+    color:white;
+}
+
+.btn:hover{
+    transform:scale(1.05);
+    box-shadow:0 0 20px rgba(0,255,150,.6), inset 0 0 15px rgba(0,255,150,.25);
+}
+
+/* ===== الكاميرا ===== */
+video{
+    width:100%;
+    max-height:280px;
+    border-radius:20px;
+    margin:10px 0;
+    display:none;
+    border:3px solid #00ffff;
+    box-shadow:0 0 30px #00ffff, inset 0 0 20px #00ffff;
+}
+
+/* ===== الجدول ===== */
+table{
+    width:100%;
+    border-collapse:collapse;
+    background:#050e1f;
+    border-radius:15px;
+    overflow:hidden;
+    font-size:16px;
+}
+
+th{
+    background:linear-gradient(90deg,#28a745,#20c997);
+    padding:12px;
+    text-align:center;
+}
+
+td{
+    padding:10px;
+    border-bottom:1px solid #123;
+    text-align:center;
+}
+
+tr:hover{
+    background:rgba(0,255,150,.1);
+}
+
+/* ===== حذف ===== */
+.delete{
+    background:#dc3545;
+    color:white;
+    border:none;
+    padding:6px 12px;
+    border-radius:10px;
+    cursor:pointer;
+    box-shadow:0 0 10px rgba(255,0,0,.5);
+}
+
+/* ===== الهاتف ===== */
+@media(max-width:600px){
+    header{ font-size:24px; }
+}
+</style>
 </head>
 <body>
 
@@ -251,6 +424,7 @@ function savePurchases(){
 
 </body>
 </html>
+
 
 
 
