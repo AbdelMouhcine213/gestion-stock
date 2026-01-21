@@ -199,7 +199,7 @@ async function startScanner(){
             const codes = await detector.detect(video);
             if(codes.length>0){
                 const code = codes[0].rawValue;
-                if(code.length>=12){
+                if(code.length>=13){
                     document.getElementById("barcode").value = code;
                     beep.play();
                     let p = stock.find(x=>x.barcode===code);
@@ -339,3 +339,4 @@ function savePurchases(){
 
 </body>
 </html>
+
