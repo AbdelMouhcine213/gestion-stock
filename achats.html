@@ -191,7 +191,7 @@ async function startScanner(){
     video.style.display="block";
     scanning = true;
 
-    const detector = new BarcodeDetector({formats:['ean_13','code_128']});
+    const detector = new BarcodeDetector({formats:['ean_12','code_128']});
 
     async function scanLoop(){
         if(!scanning) return;
@@ -339,4 +339,5 @@ function savePurchases(){
 
 </body>
 </html>
+
 
