@@ -8,30 +8,6 @@
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#28a745">
 
-<style>
-body{
-    font-family:'Comic Sans MS', Arial;
-    direction:rtl;
-    background:#050b18;
-    color:white;
-    margin:0;
-
-    display:flex;
-    justify-content:center;
-    align-items:flex-start;
-
-    min-height:100vh;
-    overflow-x:hidden;
-    overscroll-behavior:contain;
-    touch-action:manipulation;
-}
-header{
-    background:#28a745;
-    padding:20px;
-    text-align:center;
-    font-size:32px;
-    font-weight:bold;
-    box-shadow:0 0 25px #28a745;
 .container{
     max-width:1100px;
     width:100%;
@@ -39,84 +15,6 @@ header{
     padding:20px;
     box-sizing:border-box;
 }
-.card{
-    background:#0f1b2e;
-    border-radius:20px;
-    padding:20px;
-    margin-bottom:20px;
-    box-shadow:0 0 15px rgba(0,255,150,.4), inset 0 0 10px rgba(0,255,150,.2);
-}
-input{
-    width:100%;
-    padding:14px;
-    font-size:20px;
-    border-radius:10px;
-    border:none;
-    margin-bottom:10px;
-}
-.flex{
-    display:flex;
-    gap:20px;
-    flex-wrap:wrap;
-}
-.btn{
-    padding:14px;
-    font-size:20px;
-    border:none;
-    border-radius:12px;
-    cursor:pointer;
-    width:100%;
-    margin-top:10px;
-}
-.scan{ background:#ffc107; color:black; }
-.add{ background:#17a2b8; }
-.save{ background:#28a745; }
-.delete{ background:#dc3545; border:none; padding:6px 10px; border-radius:6px; cursor:pointer; }
-
-video{
-    width:100%;
-    max-height:260px;
-    border-radius:15px;
-    display:none;
-    box-shadow:0 0 20px #00ffff;
-}
-
-table{
-    width:100%;
-    border-collapse:collapse;
-    margin-top:15px;
-    background:#0b1628;
-    font-size:18px;
-}
-th,td{
-    border:1px solid #333;
-    padding:10px;
-    text-align:center;
-}
-th{background:#28a745;}
-td input{
-    width:70px;
-    font-size:16px;
-}
-
-/* الاقتراحات */
-.search{position:relative;}
-.suggestions{
-    position:absolute;
-    background:white;
-    width:100%;
-    border-radius:10px;
-    z-index:1000;
-    max-height:200px;
-    overflow-y:auto;
-    color:black;
-}
-.suggestions div{
-    padding:12px;
-    cursor:pointer;
-}
-.suggestions div:hover{background:#eee;}
-</style>
 </head>
 <body>
 
@@ -125,23 +23,27 @@ td input{
 <div class="container">
 
 <div class="flex">
-    <div class="card">
-        <button class="btn scan" onclick="toggleCamera()">📷 تشغيل/إيقاف قارئ الباركود</button>
-        <video id="camera"></video>
 
-        <input id="barcode" placeholder="📦 الباركود">
-        <div class="search">
-            <input id="productSearch" placeholder="🧾 اسم المنتج">
-            <div id="suggestions" class="suggestions"></div>
-        </div>
-        <input id="buyPrice" placeholder="💰 سعر الشراء">
-        <input id="sellPrice" placeholder="💵 سعر البيع">
-        <input id="qty" type="number" placeholder="📦 الكمية">
-        <input id="purchaseDate" type="date" placeholder="📅 تاريخ الشراء">
-        <input id="expiryDate" type="date" placeholder="📆 تاريخ الانتهاء">
+    <button class="btn scan" onclick="toggleCamera()">📷 قارئ الباركود</button>
+    <video id="camera"></video>
 
-        <button class="btn add" onclick="addPurchase()">➕ إضافة</button>
+    <input id="barcode" placeholder="📦 الباركود">
+
+    <div class="search">
+        <input id="productSearch" placeholder="🧾 اسم المنتج">
+        <div id="suggestions" class="suggestions"></div>
     </div>
+
+    <input id="buyPrice" placeholder="💰 سعر الشراء">
+    <input id="sellPrice" placeholder="💵 سعر البيع">
+    <input id="qty" type="number" placeholder="📦 الكمية">
+
+    <input id="purchaseDate" type="date">
+    <input id="expiryDate" type="date">
+
+    <button class="btn add" onclick="addPurchase()">➕ إضافة للمشتريات</button>
+
+</div>
 </div>
 
 <div class="card">
@@ -350,4 +252,5 @@ function savePurchases(){
 
 </body>
 </html>
+
 
