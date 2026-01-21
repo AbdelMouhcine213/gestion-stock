@@ -1,145 +1,186 @@
 <!DOCTYPE html>
 <html lang="ar">
 <head>
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#28a745">
 <meta charset="UTF-8">
-<title>المخزون</title>
+<title>📦 المخزون</title>
+
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#00f7ff">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <style>
+*{
+    box-sizing:border-box;
+    font-family:"Comic Sans MS", Arial;
+}
+
 body{
-    font-family:Arial;
     direction:rtl;
-    background:#f4f6f8;
     margin:0;
-}
-header{
-    background:#28a745;
+    background:#0b0f1a;
     color:white;
-    padding:15px;
-    text-align:center;
-    font-size:26px;
-    font-weight:bold;
 }
+
+/* ===== العنوان ===== */
+header{
+    background:#111827;
+    padding:22px;
+    text-align:center;
+    font-size:34px;
+    font-weight:bold;
+    box-shadow:0 0 20px #00f7ff;
+}
+
+/* ===== شريط الإحصائيات ===== */
 .top{
     display:flex;
     gap:20px;
-    padding:20px;
+    padding:25px;
     flex-wrap:wrap;
+    justify-content:center;
 }
-.alert{
-    width:220px;
-    padding:15px;
-    border-radius:10px;
-    color:white;
-    font-size:18px;
-    text-align:center;
-}
-.orange{ background:#fd7e14; }
-.yellow{ background:#ffc107; color:black; }
-.blue{ background:#007bff; }
-.green{ background:#28a745; }
 
+.alert{
+    width:260px;
+    padding:20px;
+    border-radius:18px;
+    text-align:center;
+    font-size:20px;
+    box-shadow:
+        0 0 10px #00f7ff,
+        0 0 30px rgba(0,247,255,.6);
+}
+
+.orange{
+    background:#ff7a18;
+}
+
+.yellow{
+    background:#ffd43b;
+    color:black;
+}
+
+/* ===== البحث ===== */
 #searchStock{
     width:95%;
-    margin:10px auto;
+    margin:10px auto 25px auto;
     display:block;
-    padding:10px;
-    font-size:16px;
-    border-radius:6px;
-    border:1px solid #ccc;
+    padding:15px;
+    font-size:20px;
+    border-radius:12px;
+    border:none;
+    outline:none;
+    box-shadow:0 0 12px rgba(0,247,255,.6);
 }
 
+/* ===== الجدول ===== */
 table{
     width:95%;
     margin:auto;
     border-collapse:collapse;
-    background:white;
+    background:#111827;
+    font-size:18px;
+    border-radius:15px;
+    overflow:hidden;
+    box-shadow:0 0 20px rgba(0,247,255,.5);
 }
+
 th,td{
-    border:1px solid #ddd;
-    padding:8px;
+    border:1px solid #1f2933;
+    padding:12px;
     text-align:center;
 }
+
 th{
-    background:#28a745;
-    color:white;
+    background:#00f7ff;
+    color:black;
+    font-size:18px;
 }
+
+td{
+    background:#0b1220;
+}
+
 td[contenteditable="true"]{
-    background:#f9f9f9;
+    background:#111827;
+    outline:1px dashed #00f7ff;
 }
+
+/* ===== زر الحذف ===== */
 .btn{
-    padding:5px 8px;
+    padding:6px 12px;
     border:none;
-    border-radius:5px;
+    border-radius:8px;
     cursor:pointer;
-    color:white;
+    font-size:18px;
 }
-.delete{ background:#dc3545; }
+
+.delete{
+    background:#dc3545;
+    color:white;
+    box-shadow:0 0 10px rgba(220,53,69,.7);
+}
 </style>
 </head>
+
 <body>
 
-<header>المخزون</header>
+<header>📦 إدارة المخزون</header>
 
 <div class="top">
     <div class="alert orange">
-        نفاد الكمية<br><span id="out">0</span>
+        ⚠️ نفاد الكمية<br>
+        <span id="out" style="font-size:34px;font-weight:bold;">0</span>
     </div>
+
     <div class="alert yellow">
-        قرب انتهاء الصلاحية<br><span id="exp">0</span>
-    </div>
-    <div class="alert blue">
-        مجموع الشراء<br><span id="totalBuy">0</span>
-    </div>
-    <div class="alert green">
-        مجموع البيع<br><span id="totalSell">0</span>
+        ⏰ قرب انتهاء الصلاحية<br>
+        <span id="exp" style="font-size:34px;font-weight:bold;">0</span>
     </div>
 </div>
 
-<input type="text" id="searchStock" placeholder="ابحث باسم المنتج أو تاريخ الشراء أو سعر البيع">
+<input type="text" id="searchStock"
+placeholder="🔍 ابحث باسم المنتج أو تاريخ الشراء أو سعر البيع">
 
 <table>
 <thead>
 <tr>
-<th>تاريخ الشراء</th>
-<th>المنتج</th>
-<th>سعر الشراء</th>
-<th>سعر البيع</th>
-<th>الكمية الأصلية</th>
-<th>الكمية المتبقية</th>
-<th>مجموع الشراء</th>
-<th>مجموع البيع</th>
-<th>نهاية الصلاحية</th>
-<th>حذف</th>
+<th>📅 تاريخ الشراء</th>
+<th>📦 المنتج</th>
+<th>💰 سعر الشراء</th>
+<th>💵 سعر البيع</th>
+<th>📊 الكمية الأصلية</th>
+<th>📉 الكمية المتبقية</th>
+<th>💰 مجموع الشراء</th>
+<th>💵 مجموع البيع</th>
+<th>⏰ تاريخ الانتهاء</th>
+<th>🗑️ حذف</th>
 </tr>
 </thead>
 <tbody id="tbody"></tbody>
 </table>
 
 <script>
+// ===== بيانات المخزون =====
 let stock = JSON.parse(localStorage.getItem("stock")) || [];
 const tbody = document.getElementById("tbody");
 
+// ===== العرض =====
 function render(filter=""){
     tbody.innerHTML="";
     let out=0, exp=0;
-    let totalBuy=0, totalSell=0;
     const today = new Date();
-    const text = filter.toLowerCase();
 
     stock.forEach((p,i)=>{
         if(p.qtyLeft<=0) out++;
         if(new Date(p.expiry)-today < 30*86400000) exp++;
 
+        const text = filter.toLowerCase();
         if(
-           p.date.replaceAll("-","").includes(text.replaceAll("-","").replaceAll("/",""))
+            p.name.toLowerCase().includes(text) ||
+            p.date.includes(text) ||
+            p.sell.toString().includes(text)
         ){
-            const buySum  = p.buy * p.qtyOriginal;
-            const sellSum = p.sell * p.qtyLeft;
-
-            totalBuy  += buySum;
-            totalSell += sellSum;
-
             let tr=document.createElement("tr");
             tr.innerHTML=`
 <td contenteditable="true" onblur="update(${i},'date',this.innerText)">${p.date}</td>
@@ -148,8 +189,8 @@ function render(filter=""){
 <td contenteditable="true" onblur="update(${i},'sell',this.innerText)">${p.sell}</td>
 <td>${p.qtyOriginal}</td>
 <td contenteditable="true" onblur="update(${i},'qtyLeft',this.innerText)">${p.qtyLeft}</td>
-<td>${buySum}</td>
-<td>${sellSum}</td>
+<td>${p.qtyOriginal * p.buy}</td>
+<td>${p.qtyLeft * p.sell}</td>
 <td contenteditable="true" onblur="update(${i},'expiry',this.innerText)">${p.expiry}</td>
 <td><button class="btn delete" onclick="del(${i})">❌</button></td>
             `;
@@ -157,12 +198,11 @@ function render(filter=""){
         }
     });
 
-    document.getElementById("out").textContent = out;
-    document.getElementById("exp").textContent = exp;
-    document.getElementById("totalBuy").textContent = totalBuy;
-    document.getElementById("totalSell").textContent = totalSell;
+    document.getElementById("out").textContent=out;
+    document.getElementById("exp").textContent=exp;
 }
 
+// ===== تحديث =====
 function update(i,key,val){
     if(key==="name" || key==="date" || key==="expiry"){
         stock[i][key]=val;
@@ -173,6 +213,7 @@ function update(i,key,val){
     render(document.getElementById("searchStock").value);
 }
 
+// ===== حذف =====
 function del(i){
     if(confirm("حذف المنتج نهائيًا؟")){
         stock.splice(i,1);
@@ -181,10 +222,12 @@ function del(i){
     }
 }
 
+// ===== البحث =====
 document.getElementById("searchStock").addEventListener("input",function(){
     render(this.value);
 });
 
+// أول تحميل
 render();
 </script>
 
