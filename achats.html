@@ -194,50 +194,53 @@ tr:hover{
 
 <div class="container">
 
-<div class="flex">
+    <!-- ===== المدخلات ===== -->
+    <div class="card">
+        <div class="flex">
 
-    <button class="btn scan" onclick="toggleCamera()">📷 قارئ الباركود</button>
-    <video id="camera"></video>
+            <button class="btn scan" onclick="toggleCamera()">📷 قارئ الباركود</button>
+            <video id="camera"></video>
 
-    <input id="barcode" placeholder="📦 الباركود">
+            <input id="barcode" placeholder="📦 الباركود">
 
-    <div class="search">
-        <input id="productSearch" placeholder="🧾 اسم المنتج">
-        <div id="suggestions" class="suggestions"></div>
+            <div class="search">
+                <input id="productSearch" placeholder="🧾 اسم المنتج">
+                <div id="suggestions" class="suggestions"></div>
+            </div>
+
+            <input id="buyPrice" placeholder="💰 سعر الشراء">
+            <input id="sellPrice" placeholder="💵 سعر البيع">
+            <input id="qty" type="number" placeholder="📦 الكمية">
+
+            <input id="purchaseDate" type="date">
+            <input id="expiryDate" type="date">
+
+            <button class="btn add" onclick="addPurchase()">➕ إضافة للمشتريات</button>
+
+        </div>
     </div>
 
-    <input id="buyPrice" placeholder="💰 سعر الشراء">
-    <input id="sellPrice" placeholder="💵 سعر البيع">
-    <input id="qty" type="number" placeholder="📦 الكمية">
+    <!-- ===== الجدول ===== -->
+    <div class="card">
+        <table>
+        <thead>
+        <tr>
+        <th>تاريخ الشراء</th>
+        <th>المنتج</th>
+        <th>سعر الشراء</th>
+        <th>سعر البيع</th>
+        <th>الكمية</th>
+        <th>المجموع</th>
+        <th>نهاية الصلاحية</th>
+        <th>تعديل</th>
+        <th>حذف</th>
+        </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+        </table>
 
-    <input id="purchaseDate" type="date">
-    <input id="expiryDate" type="date">
-
-    <button class="btn add" onclick="addPurchase()">➕ إضافة للمشتريات</button>
-
-</div>
-</div>
-
-<div class="card">
-<table>
-<thead>
-<tr>
-<th>تاريخ الشراء</th>
-<th>المنتج</th>
-<th>سعر الشراء</th>
-<th>سعر البيع</th>
-<th>الكمية</th>
-<th>المجموع</th>
-<th>نهاية الصلاحية</th>
-<th>تعديل</th>
-<th>حذف</th>
-</tr>
-</thead>
-<tbody id="tbody"></tbody>
-</table>
-
-<button class="btn save" onclick="savePurchases()">💾 حفظ المشتريات</button>
-</div>
+        <button class="btn save" onclick="savePurchases()">💾 حفظ المشتريات</button>
+    </div>
 
 </div>
 
@@ -424,7 +427,3 @@ function savePurchases(){
 
 </body>
 </html>
-
-
-
-
