@@ -1,0 +1,79 @@
+*{
+    box-sizing:border-box;
+    font-family:"Comic Sans MS", Arial;
+}
+
+body{
+    margin:0;
+    background:#0b0f1a;
+    color:white;
+    direction:rtl;
+}
+
+/* ===== العنوان ===== */
+header{
+    background:#111827;
+    padding:20px;
+    text-align:center;
+    font-size:32px;
+    font-weight:bold;
+    box-shadow:0 0 20px #00f7ff;
+}
+
+/* ===== الحاوية ===== */
+.container{
+    padding:30px;
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+    gap:25px;
+}
+
+/* ===== كروت نيون ===== */
+.card{
+    background:#111827;
+    border-radius:20px;
+    padding:25px;
+    text-align:center;
+    box-shadow:
+        0 0 10px #00f7ff,
+        0 0 25px rgba(0,247,255,.5);
+    transition:.3s;
+}
+
+.card:hover{
+    transform:scale(1.05);
+    box-shadow:
+        0 0 15px #00f7ff,
+        0 0 40px rgba(0,247,255,.9);
+}
+
+/* ===== الأيقونة ===== */
+.icon{
+    font-size:60px;
+    margin-bottom:15px;
+}
+
+/* ===== العنوان ===== */
+.card h2{
+    margin:10px 0;
+    font-size:26px;
+}
+
+/* ===== القيمة ===== */
+.value{
+    font-size:40px;
+    font-weight:bold;
+    color:#00f7ff;
+}
+
+/* ===== أزرار ===== */
+.btn{
+    padding:15px 25px;
+    font-size:20px;
+    border:none;
+    border-radius:12px;
+    cursor:pointer;
+    background:#00f7ff;
+    color:#000;
+    margin-top:15px;
+}

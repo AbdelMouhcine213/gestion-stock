@@ -2,164 +2,234 @@
 <html lang="ar">
 <head>
 <meta charset="UTF-8">
-<title>المبيعات</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>💰 واجهة المبيعات</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#28a745">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <style>
 body{
     margin:0;
-    font-family:Arial;
+    font-family:'Comic Sans MS', Arial;
     direction:rtl;
-    background:#f4f6f8;
-}
-/* العنوان */
-header{
-    background:#0d6efd;
+    background:#050b18;
     color:white;
+}
+header{
+    background:#28a745;
     padding:20px;
     text-align:center;
     font-size:32px;
     font-weight:bold;
-}
-/* المجموع تحت العنوان الجهة اليسرى */
-.top-total{
-    display:flex;
-    justify-content:flex-start;
-    padding:15px 30px 0 30px;
-}
-.total-box{
-    width:320px;
-    height:200px;
-    background:#28a745;
-    color:white;
-    font-size:52px;
-    font-weight:bold;
-    border-radius:20px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    box-shadow:0 0 15px rgba(0,0,0,.3);
+    box-shadow:0 0 25px #28a745;
 }
 
-/* التخطيط */
+/* الحاوية */
 .container{
+    padding:20px;
+    max-width:1100px;
+    margin:auto;
     display:flex;
-    gap:30px;
-    padding:25px;
     flex-direction:column;
+    gap:20px;
+}
+
+/* بطاقة المجموع */
+.total-box{
+    padding:20px;
+    font-size:48px;
+    font-weight:bold;
+    text-align:center;
+    background:#00ff88;
+    color:black;
+    border-radius:15px;
+    box-shadow:0 0 20px #00ff88, inset 0 0 10px #00ff88;
 }
 
 /* الإدخالات */
-.inputs{
+.flex{
     display:flex;
-    gap:15px;
-    margin-bottom:20px;
+    gap:20px;
+    flex-wrap:wrap;
 }
-.inputs input{
-    padding:18px;
-    font-size:22px;
+.card{
+    background:#0f1b2e;
+    border-radius:20px;
+    padding:20px;
+    box-shadow:0 0 15px rgba(0,255,150,.4), inset 0 0 10px rgba(0,255,150,.2);
+    flex:1;
+}
+input{
+    width:100%;
+    padding:14px;
+    font-size:20px;
     border-radius:10px;
-    border:1px solid #bbb;
-    width:230px;
+    border:none;
+    margin-bottom:10px;
 }
-.inputs input[readonly]{ background:#eee; }
 
 /* البحث */
-.search{
-    position:relative;
-}
+.search{position:relative;}
 .suggestions{
     position:absolute;
     background:white;
-    width:230px;
-    border:1px solid #ccc;
+    width:100%;
     border-radius:10px;
     z-index:1000;
+    max-height:200px;
+    overflow-y:auto;
+    color:black;
 }
 .suggestions div{
-    padding:14px;
-    font-size:20px;
+    padding:12px;
     cursor:pointer;
 }
-.suggestions div:hover{ background:#f1f1f1; }
+.suggestions div:hover{background:#eee;}
 
 /* الأزرار */
 .btn{
-    padding:18px 26px;
-    font-size:22px;
+    padding:14px;
+    font-size:20px;
     border:none;
-    border-radius:10px;
+    border-radius:12px;
     cursor:pointer;
-    color:white;
+    width:100%;
+    margin-top:10px;
 }
+.scan{ background:#ffc107; color:black; }
 .add{ background:#17a2b8; }
 .save{ background:#28a745; }
-.delete{ background:#dc3545; }
+.delete{ background:#dc3545; border:none; padding:6px 10px; border-radius:6px; cursor:pointer; }
+
+/* الكاميرا */
+video{
+    width:100%;
+    max-height:260px;
+    border-radius:15px;
+    display:none;
+    box-shadow:0 0 20px #00ffff;
+}
 
 /* الجدول */
 table{
     width:100%;
-    background:white;
     border-collapse:collapse;
-    font-size:20px;
+    margin-top:15px;
+    background:#0b1628;
+    font-size:18px;
 }
-th, td{
-    padding:14px;
-    border:1px solid #ddd;
+th,td{
+    border:1px solid #333;
+    padding:10px;
     text-align:center;
 }
-th{ background:#0d6efd; color:white; }
-
+th{background:#28a745;}
+td input{
+    width:70px;
+    font-size:16px;
+}
 </style>
 </head>
 
 <body>
-
-<header>واجهة المبيعات</header>
-
-<!-- صندوق المجموع -->
-<div class="top-total">
-    <div class="total-box" id="total">0</div>
-</div>
+<header>💰 واجهة المبيعات</header>
 
 <div class="container">
-    <!-- الإدخال -->
-    <div class="inputs">
+
+<div class="total-box" id="total">0</div>
+
+<div class="flex">
+
+    <!-- إدخال المنتج -->
+    <div class="card">
+        <button class="btn scan" onclick="startScanner()">📷 قارئ الباركود</button>
+        <video id="camera"></video>
+
+        <input id="barcode" placeholder="📦 الباركود">
         <div class="search">
-            <input type="text" id="productSearch" placeholder="اسم المنتج" autocomplete="off">
+            <input id="productSearch" placeholder="🧾 اسم المنتج">
             <div id="suggestions" class="suggestions"></div>
         </div>
-        <input type="number" id="price" placeholder="سعر البيع" readonly>
-        <input type="number" id="qty" placeholder="الكمية">
-        <button class="btn add" onclick="addSale()">إضافة</button>
+        <input id="price" placeholder="💵 سعر البيع" readonly>
+        <input id="qty" type="number" placeholder="📦 الكمية">
+
+        <button class="btn add" onclick="addSale()">➕ إضافة</button>
     </div>
-
-    <!-- الجدول -->
-    <table>
-        <thead>
-        <tr>
-            <th>المنتج</th>
-            <th>السعر</th>
-            <th>الكمية</th>
-            <th>المجموع</th>
-            <th>حذف</th>
-        </tr>
-        </thead>
-        <tbody id="tbody"></tbody>
-    </table>
-
-    <br>
-    <button class="btn save" onclick="saveSale()">حفظ البيع</button>
 </div>
 
+<!-- الجدول -->
+<div class="card">
+<table>
+<thead>
+<tr>
+<th>المنتج</th>
+<th>السعر</th>
+<th>الكمية</th>
+<th>المجموع</th>
+<th>حذف</th>
+</tr>
+</thead>
+<tbody id="tbody"></tbody>
+</table>
+
+<button class="btn save" onclick="saveSale()">💾 حفظ البيع</button>
+</div>
+
+</div>
+
+<audio id="beep">
+<source src="data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAIlYAAESsAAACABAAZGF0YRAAAAAA//8AAP//AAD//wAA">
+</audio>
+
 <script>
-// المخزون من localStorage
 let stock = JSON.parse(localStorage.getItem("stock")) || [];
 let sales = [];
 const tbody = document.getElementById("tbody");
+const beep = document.getElementById("beep");
+let video = document.getElementById("camera");
 
-// 🔍 الاقتراح التلقائي من المخزون
+/* ================= قارئ الباركود ================= */
+async function startScanner(){
+    if(!('BarcodeDetector' in window)){
+        alert("الهاتف لا يدعم قارئ الباركود");
+        return;
+    }
+    const detector = new BarcodeDetector({formats:['ean_13','code_128','qr_code']});
+    const stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}});
+    video.srcObject = stream;
+    video.play();
+    video.style.display="block";
+    scanLoop(detector);
+}
+
+async function scanLoop(detector){
+    const codes = await detector.detect(video);
+    if(codes.length){
+        stopScanner();
+        beep.play();
+        onBarcode(codes[0].rawValue);
+        return;
+    }
+    requestAnimationFrame(()=>scanLoop(detector));
+}
+
+function stopScanner(){
+    video.srcObject.getTracks().forEach(t=>t.stop());
+    video.style.display="none";
+}
+
+function onBarcode(code){
+    document.getElementById("barcode").value = code;
+    let p = stock.find(x=>x.barcode === code);
+    if(!p){
+        alert("المنتج غير موجود في المخزون");
+        return;
+    }
+    document.getElementById("productSearch").value = p.name;
+    document.getElementById("price").value = p.sell;
+}
+
+/* ================= إكمال تلقائي باسم المنتج ================= */
 const productInput = document.getElementById("productSearch");
 const suggestions = document.getElementById("suggestions");
 const priceInput = document.getElementById("price");
@@ -172,7 +242,7 @@ productInput.addEventListener("input", function(){
     stock.forEach(p=>{
         if(p.name.toLowerCase().startsWith(value) && p.qtyLeft > 0){
             let div = document.createElement("div");
-            div.textContent = p.name;
+            div.textContent = p.name + " (متبقي: " + p.qtyLeft + ")";
             div.onclick = ()=>{
                 productInput.value = p.name;
                 priceInput.value = p.sell;
@@ -183,50 +253,47 @@ productInput.addEventListener("input", function(){
     });
 });
 
-// إضافة للبيع
+/* ================= إضافة للبيع ================= */
 function addSale(){
     let name = productInput.value;
-    let q = Number(document.getElementById("qty").value);
+    let qtyVal = Number(document.getElementById("qty").value);
+
     let product = stock.find(p=>p.name===name);
 
-    if(!product || q<=0){
+    if(!product || qtyVal<=0){
         alert("بيانات غير صحيحة");
         return;
     }
-    if(q > product.qtyLeft){
+    if(qtyVal > product.qtyLeft){
         alert("الكمية غير متوفرة");
         return;
     }
 
-    let existing = sales.find(s=>s.name===name);
-    if(existing){
-        existing.qty += q;
-    }else{
-        sales.push({name, price:product.sell, qty:q});
-    }
+    sales.push({
+        name,
+        price:product.sell,
+        qty:qtyVal
+    });
 
     render();
-    productInput.value="";
-    priceInput.value="";
-    document.getElementById("qty").value="";
+    document.querySelectorAll("#barcode, #productSearch, #price, #qty").forEach(i=>i.value="");
 }
 
-// عرض وتحديث الجدول
+/* ================= عرض الجدول ================= */
 function render(){
     tbody.innerHTML="";
     let total=0;
-
     sales.forEach((s,i)=>{
         let sum = s.price * s.qty;
         total += sum;
 
-        let tr=document.createElement("tr");
-        tr.innerHTML=`
+        let tr = document.createElement("tr");
+        tr.innerHTML = `
 <td>${s.name}</td>
 <td><input type="number" value="${s.price}" onchange="updatePrice(${i},this.value)"></td>
 <td><input type="number" value="${s.qty}" onchange="updateQty(${i},this.value)"></td>
 <td>${sum}</td>
-<td><button class="btn delete" onclick="del(${i})">❌</button></td>
+<td><button class="delete" onclick="del(${i})">❌</button></td>
         `;
         tbody.appendChild(tr);
     });
@@ -234,34 +301,48 @@ function render(){
     document.getElementById("total").textContent = total;
 }
 
-// تعديل السعر والكمية
-function updatePrice(i,v){ sales[i].price = Number(v); render(); }
-function updateQty(i,v){
+function updatePrice(i,val){
+    sales[i].price = Number(val);
+    render();
+}
+function updateQty(i,val){
     let product = stock.find(p=>p.name===sales[i].name);
-    v = Number(v);
-    if(v<=0 || v>product.qtyLeft){ alert("كمية غير صحيحة"); render(); return; }
-    sales[i].qty = v; render();
+    val = Number(val);
+    if(val<=0 || val>product.qtyLeft){
+        alert("كمية غير صحيحة");
+        render();
+        return;
+    }
+    sales[i].qty = val;
+    render();
 }
 
-function del(i){ sales.splice(i,1); render(); }
+function del(i){
+    sales.splice(i,1);
+    render();
+}
 
-// الحفظ والربط بالمخزون
+/* ================= حفظ البيع ================= */
 function saveSale(){
     if(!sales.length){ alert("لا توجد مبيعات"); return; }
+
+    let history = JSON.parse(localStorage.getItem("salesHistory")) || [];
 
     sales.forEach(s=>{
         let p = stock.find(x=>x.name===s.name);
         if(p) p.qtyLeft -= s.qty;
+        history.push({
+            name:s.name,
+            qty:s.qty,
+            price:s.price,
+            date:new Date().toISOString().split("T")[0]
+        });
     });
-    localStorage.setItem("stock", JSON.stringify(stock));
 
-    let history = JSON.parse(localStorage.getItem("salesHistory")) || [];
-    sales.forEach(s=>{
-        history.push({name:s.name, price:s.price, qty:s.qty, date:new Date().toISOString().split("T")[0]});
-    });
+    localStorage.setItem("stock", JSON.stringify(stock));
     localStorage.setItem("salesHistory", JSON.stringify(history));
 
-    alert("تم حفظ البيع بنجاح ✅");
+    alert("✅ تم حفظ البيع");
     sales=[];
     render();
 }

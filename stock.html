@@ -2,232 +2,207 @@
 <html lang="ar">
 <head>
 <meta charset="UTF-8">
-<title>📦 المخزون</title>
-
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#00f7ff">
+<title>Stock / المخزون</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-*{
-    box-sizing:border-box;
-    font-family:"Comic Sans MS", Arial;
-}
-
 body{
+    font-family:Comic Sans MS;
     direction:rtl;
-    margin:0;
-    background:#0b0f1a;
+    background:#0b0b0b;
     color:white;
+    margin:0;
 }
-
-/* ===== العنوان ===== */
 header{
-    background:#111827;
-    padding:22px;
+    background:#00ff99;
+    color:black;
+    padding:18px;
     text-align:center;
-    font-size:34px;
-    font-weight:bold;
-    box-shadow:0 0 20px #00f7ff;
+    font-size:30px;
+    box-shadow:0 0 25px #00ff99;
 }
-
-/* ===== شريط الإحصائيات ===== */
 .top{
     display:flex;
-    gap:20px;
-    padding:25px;
-    flex-wrap:wrap;
-    justify-content:center;
+    justify-content:space-between;
+    align-items:center;
+    padding:15px;
 }
-
-.alert{
-    width:260px;
-    padding:20px;
-    border-radius:18px;
-    text-align:center;
-    font-size:20px;
-    box-shadow:
-        0 0 10px #00f7ff,
-        0 0 30px rgba(0,247,255,.6);
+select{
+    padding:8px;
+    font-size:16px;
 }
-
-.orange{
-    background:#ff7a18;
+button{
+    padding:8px 14px;
+    font-size:16px;
+    cursor:pointer;
+    border:none;
+    border-radius:6px;
 }
+.deleteAll{ background:#ff4444;color:white }
 
-.yellow{
-    background:#ffd43b;
-    color:black;
-}
-
-/* ===== البحث ===== */
 #searchStock{
     width:95%;
-    margin:10px auto 25px auto;
+    margin:15px auto;
+    padding:10px;
+    font-size:16px;
+    border-radius:6px;
+    border:1px solid #ccc;
     display:block;
-    padding:15px;
-    font-size:20px;
-    border-radius:12px;
-    border:none;
-    outline:none;
-    box-shadow:0 0 12px rgba(0,247,255,.6);
 }
 
-/* ===== الجدول ===== */
 table{
-    width:95%;
+    width:98%;
     margin:auto;
     border-collapse:collapse;
-    background:#111827;
-    font-size:18px;
-    border-radius:15px;
-    overflow:hidden;
-    box-shadow:0 0 20px rgba(0,247,255,.5);
+    background:#000;
+    font-size:15px;
 }
-
 th,td{
-    border:1px solid #1f2933;
-    padding:12px;
+    border:1px solid #00ff99;
+    padding:8px;
     text-align:center;
 }
+th{ background:#00ff99; color:black; }
+td[contenteditable]{ background:#111; }
 
-th{
-    background:#00f7ff;
-    color:black;
-    font-size:18px;
-}
-
-td{
-    background:#0b1220;
-}
-
-td[contenteditable="true"]{
-    background:#111827;
-    outline:1px dashed #00f7ff;
-}
-
-/* ===== زر الحذف ===== */
-.btn{
-    padding:6px 12px;
-    border:none;
-    border-radius:8px;
-    cursor:pointer;
-    font-size:18px;
-}
-
-.delete{
-    background:#dc3545;
+.btnDel{
+    background:#ff4444;
     color:white;
-    box-shadow:0 0 10px rgba(220,53,69,.7);
 }
 </style>
 </head>
 
 <body>
 
-<header>📦 إدارة المخزون</header>
+<header id="title">📦 المخزون</header>
 
 <div class="top">
-    <div class="alert orange">
-        ⚠️ نفاد الكمية<br>
-        <span id="out" style="font-size:34px;font-weight:bold;">0</span>
-    </div>
-
-    <div class="alert yellow">
-        ⏰ قرب انتهاء الصلاحية<br>
-        <span id="exp" style="font-size:34px;font-weight:bold;">0</span>
-    </div>
+    <button class="deleteAll" onclick="deleteSelected()">🗑 حذف المحدد</button>
+    <select onchange="changeLang(this.value)">
+        <option value="ar">العربية</option>
+        <option value="fr">Français</option>
+        <option value="en">English</option>
+    </select>
 </div>
 
-<input type="text" id="searchStock"
-placeholder="🔍 ابحث باسم المنتج أو تاريخ الشراء أو سعر البيع">
+<!-- شريط البحث المتقدم -->
+<input type="text" id="searchStock" placeholder="ابحث باسم المنتج أو تاريخ الشراء (يوم/شهر/سنة) أو سعر البيع">
 
 <table>
 <thead>
 <tr>
-<th>📅 تاريخ الشراء</th>
-<th>📦 المنتج</th>
-<th>💰 سعر الشراء</th>
-<th>💵 سعر البيع</th>
-<th>📊 الكمية الأصلية</th>
-<th>📉 الكمية المتبقية</th>
-<th>💰 مجموع الشراء</th>
-<th>💵 مجموع البيع</th>
-<th>⏰ تاريخ الانتهاء</th>
-<th>🗑️ حذف</th>
+<th><input type="checkbox" onclick="selectAll(this)"></th>
+<th id="hDate">تاريخ الشراء</th>
+<th id="hName">المنتج</th>
+<th id="hBuy">سعر الشراء</th>
+<th id="hSell">سعر البيع</th>
+<th id="hQtyO">الكمية الأصلية</th>
+<th id="hQtyL">الكمية المتبقية</th>
+<th id="hTotalB">مجموع الشراء</th>
+<th id="hTotalS">مجموع البيع</th>
+<th id="hExp">نهاية الصلاحية</th>
+<th id="hDel">حذف</th>
 </tr>
 </thead>
 <tbody id="tbody"></tbody>
 </table>
 
 <script>
-// ===== بيانات المخزون =====
 let stock = JSON.parse(localStorage.getItem("stock")) || [];
 const tbody = document.getElementById("tbody");
 
-// ===== العرض =====
 function render(filter=""){
     tbody.innerHTML="";
-    let out=0, exp=0;
-    const today = new Date();
+    const text = filter.toLowerCase();
 
     stock.forEach((p,i)=>{
-        if(p.qtyLeft<=0) out++;
-        if(new Date(p.expiry)-today < 30*86400000) exp++;
+        // تحويل التاريخ لصيغة يوم/شهر/سنة
+        let formattedDate = "";
+        if(p.date){
+            const d = new Date(p.date);
+            const day = String(d.getDate()).padStart(2,'0');
+            const month = String(d.getMonth()+1).padStart(2,'0');
+            const year = d.getFullYear();
+            formattedDate = `${day}/${month}/${year}`;
+        }
 
-        const text = filter.toLowerCase();
+        // تحقق من تطابق البحث
         if(
             p.name.toLowerCase().includes(text) ||
-            p.date.includes(text) ||
+            formattedDate.includes(text) ||
             p.sell.toString().includes(text)
         ){
-            let tr=document.createElement("tr");
+            let tr = document.createElement("tr");
             tr.innerHTML=`
-<td contenteditable="true" onblur="update(${i},'date',this.innerText)">${p.date}</td>
-<td contenteditable="true" onblur="update(${i},'name',this.innerText)">${p.name}</td>
-<td contenteditable="true" onblur="update(${i},'buy',this.innerText)">${p.buy}</td>
-<td contenteditable="true" onblur="update(${i},'sell',this.innerText)">${p.sell}</td>
-<td>${p.qtyOriginal}</td>
-<td contenteditable="true" onblur="update(${i},'qtyLeft',this.innerText)">${p.qtyLeft}</td>
-<td>${p.qtyOriginal * p.buy}</td>
-<td>${p.qtyLeft * p.sell}</td>
-<td contenteditable="true" onblur="update(${i},'expiry',this.innerText)">${p.expiry}</td>
-<td><button class="btn delete" onclick="del(${i})">❌</button></td>
+<td><input type="checkbox" class="chk" data-i="${i}"></td>
+<td contenteditable onblur="upd(${i},'date',this.innerText)">${p.date||""}</td>
+<td contenteditable onblur="upd(${i},'name',this.innerText)">${p.name}</td>
+<td contenteditable onblur="upd(${i},'buy',this.innerText)">${p.buy}</td>
+<td contenteditable onblur="upd(${i},'sell',this.innerText)">${p.sell}</td>
+<td contenteditable onblur="upd(${i},'qtyOriginal',this.innerText)">${p.qtyOriginal||0}</td>
+<td contenteditable onblur="upd(${i},'qtyLeft',this.innerText)">${p.qtyLeft||0}</td>
+<td>${(p.qtyOriginal||0)*(p.buy||0)}</td>
+<td>${(p.qtyLeft||0)*(p.sell||0)}</td>
+<td contenteditable onblur="upd(${i},'expiry',this.innerText)">${p.expiry||""}</td>
+<td><button class="btnDel" onclick="del(${i})">❌</button></td>
             `;
             tbody.appendChild(tr);
         }
     });
-
-    document.getElementById("out").textContent=out;
-    document.getElementById("exp").textContent=exp;
 }
 
-// ===== تحديث =====
-function update(i,key,val){
-    if(key==="name" || key==="date" || key==="expiry"){
-        stock[i][key]=val;
-    }else{
-        stock[i][key]=Number(val);
-    }
+function upd(i,k,v){
+    // قبول التاريخ بصيغة نصية أو رقمية
+    stock[i][k]=isNaN(v)?v:Number(v);
     localStorage.setItem("stock",JSON.stringify(stock));
     render(document.getElementById("searchStock").value);
 }
 
-// ===== حذف =====
 function del(i){
-    if(confirm("حذف المنتج نهائيًا؟")){
+    if(confirm("حذف المنتج؟")){
         stock.splice(i,1);
         localStorage.setItem("stock",JSON.stringify(stock));
         render(document.getElementById("searchStock").value);
     }
 }
 
-// ===== البحث =====
-document.getElementById("searchStock").addEventListener("input",function(){
+function selectAll(cb){
+    document.querySelectorAll(".chk").forEach(c=>c.checked=cb.checked);
+}
+
+function deleteSelected(){
+    let ids=[...document.querySelectorAll(".chk")]
+        .filter(c=>c.checked)
+        .map(c=>Number(c.dataset.i))
+        .sort((a,b)=>b-a);
+
+    if(!ids.length){ alert("لم يتم تحديد شيء"); return; }
+
+    if(confirm("حذف العناصر المحددة؟")){
+        ids.forEach(i=>stock.splice(i,1));
+        localStorage.setItem("stock",JSON.stringify(stock));
+        render(document.getElementById("searchStock").value);
+    }
+}
+
+// شريط البحث
+document.getElementById("searchStock").addEventListener("input", function(){
     render(this.value);
 });
 
-// أول تحميل
+// اللغات
+function changeLang(l){
+    const t={
+        ar:["📦 المخزون","تاريخ الشراء","المنتج","سعر الشراء","سعر البيع","الكمية الأصلية","الكمية المتبقية","مجموع الشراء","مجموع البيع","نهاية الصلاحية","حذف"],
+        fr:["📦 Stock","Date achat","Produit","Prix achat","Prix vente","Qté initiale","Qté restante","Total achat","Total vente","Expiration","Supprimer"],
+        en:["📦 Stock","Purchase date","Product","Buy price","Sell price","Original qty","Remaining qty","Buy total","Sell total","Expiry","Delete"]
+    }[l];
+
+    document.getElementById("title").innerText=t[0];
+    ["hDate","hName","hBuy","hSell","hQtyO","hQtyL","hTotalB","hTotalS","hExp","hDel"]
+    .forEach((id,i)=>document.getElementById(id).innerText=t[i+1]);
+}
+
 render();
 </script>
 
