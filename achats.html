@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+َ<!DOCTYPE html>
 <html lang="ar">
 <head>
 <meta charset="UTF-8">
@@ -55,7 +55,7 @@ button{
 video{
     width:100%;
     border-radius:15px;
-    margin-bottom:10px;
+    background:black;
 }
 .frame{
     border:3px solid #00ffff;
@@ -68,12 +68,9 @@ video{
     gap:10px;
     flex-wrap:wrap;
 }
-.flex input{
-    flex:1;
-}
+.flex input{flex:1;}
 </style>
 
-<!-- مكتبة ZXing الرسمية -->
 <script src="https://unpkg.com/@zxing/library@latest"></script>
 </head>
 
@@ -88,10 +85,10 @@ video{
 <button class="switch" onclick="switchCamera()">🔄 تبديل الكاميرا</button>
 
 <div class="frame">
-    <video id="video"></video>
+    <video id="video" playsinline></video>
 </div>
 
-<input id="barcode" placeholder="📦 الباركود (يُقرأ تلقائيًا)">
+<input id="barcode" placeholder="📦 الباركود (تلقائي)">
 <input id="name" placeholder="🧾 اسم المنتج">
 
 <div class="flex">
@@ -119,28 +116,35 @@ video{
 <script>
 let stock = JSON.parse(localStorage.getItem("stock")) || [];
 let codeReader = new ZXing.BrowserMultiFormatReader();
-let currentDeviceId = null;
 let video = document.getElementById("video");
 let beep = document.getElementById("beep");
+let devices = [];
+let camIndex = 0;
 
 /* ================= تشغيل القارئ ================= */
 async function startScanner(){
-    const devices = await ZXing.BrowserCodeReader.listVideoInputDevices();
-    if(!devices.length){
-        alert("لا توجد كاميرا");
-        return;
+    try{
+        devices = await ZXing.BrowserCodeReader.listVideoInputDevices();
+        if(!devices.length){
+            alert("❌ لا توجد كاميرا");
+            return;
+        }
+        camIndex = devices.length - 1; // الخلفية غالبًا
+        scan();
+    }catch(e){
+        alert("❌ لم يتم السماح بالكاميرا");
     }
-    currentDeviceId = devices[devices.length - 1].deviceId;
-    scan();
 }
 
 function scan(){
+    codeReader.reset();
     codeReader.decodeFromVideoDevice(
-        currentDeviceId,
+        devices[camIndex].deviceId,
         video,
         (result, err) => {
             if(result){
                 barcode.value = result.text;
+                beep.currentTime = 0;
                 beep.play();
                 codeReader.reset();
             }
@@ -149,43 +153,35 @@ function scan(){
 }
 
 /* ================= تبديل الكاميرا ================= */
-async function switchCamera(){
-    const devices = await ZXing.BrowserCodeReader.listVideoInputDevices();
+function switchCamera(){
     if(devices.length < 2){
         alert("لا توجد كاميرا ثانية");
         return;
     }
-    currentDeviceId =
-        currentDeviceId === devices[0].deviceId
-        ? devices[1].deviceId
-        : devices[0].deviceId;
-
-    codeReader.reset();
+    camIndex = camIndex === 0 ? 1 : 0;
     scan();
 }
 
-/* ================= حفظ المنتج ================= */
+/* ================= حفظ ================= */
 function save(){
     if(!barcode.value || !name.value || !qty.value){
         alert("❌ بيانات ناقصة");
         return;
     }
 
-    let item = {
+    stock.push({
         barcode: barcode.value,
         name: name.value,
-        buy: +buy.value || 0,
-        sell: +sell.value || 0,
-        qtyOriginal: +qty.value,
-        qtyLeft: qtyLeft.value ? +qtyLeft.value : +qty.value,
-        buyDate: buyDate.value,
-        expDate: expDate.value
-    };
+        buy:+buy.value||0,
+        sell:+sell.value||0,
+        qtyOriginal:+qty.value,
+        qtyLeft:qtyLeft.value?+qtyLeft.value:+qty.value,
+        buyDate:buyDate.value,
+        expDate:expDate.value
+    });
 
-    stock.push(item);
     localStorage.setItem("stock", JSON.stringify(stock));
-
-    alert("✅ تم حفظ المنتج في المخزون");
+    alert("✅ تم الحفظ");
 
     document.querySelectorAll("input").forEach(i=>i.value="");
 }
