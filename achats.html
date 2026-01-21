@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🛒 المشتريات</title>
+<title>🛒 المشتريات - Barcode Scanner</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#28a745">
 
@@ -106,21 +106,16 @@ td input{
 }
 .suggestions div:hover{background:#eee;}
 </style>
-
-<!-- مكتبة html5-qrcode -->
-<script src="https://unpkg.com/html5-qrcode"></script>
 </head>
-
 <body>
+
 <header>🛒 واجهة المشتريات</header>
 
 <div class="container">
 
 <div class="flex">
-
     <div class="card">
-        <button class="btn scan" onclick="startScanner()">📷 قارئ الباركود</button>
-        <button class="btn scan" onclick="toggleCamera()">🔄 تبديل الكاميرا</button>
+        <button class="btn scan" onclick="toggleCamera()">📷 تشغيل/إيقاف قارئ الباركود</button>
         <video id="camera"></video>
 
         <input id="barcode" placeholder="📦 الباركود">
@@ -166,56 +161,72 @@ td input{
 <script>
 let stock = JSON.parse(localStorage.getItem("stock")) || [];
 let purchaseList = [];
-let currentCamera = 0; // 0 = الخلفية، 1 = الأمامية
-let html5QrcodeScanner;
-
 const tbody = document.getElementById("tbody");
 const productInput = document.getElementById("productSearch");
 const suggestions = document.getElementById("suggestions");
 const beep = document.getElementById("beep");
+let video = document.getElementById("camera");
+let stream = null;
+let scanning = false;
+
+/* ================= تشغيل/إيقاف الكاميرا ================= */
+async function toggleCamera(){
+    if(scanning){
+        stopScanner();
+    } else {
+        startScanner();
+    }
+}
 
 /* ================= قارئ الباركود ================= */
 async function startScanner(){
-    if(!('Html5Qrcode' in window)){
-        alert("الهاتف لا يدعم الباركود");
+    if(!('BarcodeDetector' in window)){
+        alert("الهاتف لا يدعم قارئ الباركود");
         return;
     }
 
-    let cameras = await Html5Qrcode.getCameras();
-    if(!cameras || cameras.length==0){ alert("لم يتم العثور على كاميرا"); return; }
+    stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+    video.srcObject = stream;
+    video.play();
+    video.style.display="block";
+    scanning = true;
 
-    const cameraId = cameras[currentCamera].id;
-    html5QrcodeScanner = new Html5Qrcode("camera");
-    document.getElementById("camera").style.display="block";
+    const detector = new BarcodeDetector({formats:['ean_13','code_128']});
 
-    html5QrcodeScanner.start(
-        cameraId,
-        { fps: 20, qrbox: 250 },
-        (decodedText)=>{
-            if(decodedText.length>=12){ 
-                document.getElementById("barcode").value = decodedText;
-                beep.play();
-                let p = stock.find(x=>x.barcode===decodedText);
-                if(p){
-                    productInput.value = p.name;
-                    document.getElementById("sellPrice").value = p.sell;
+    async function scanLoop(){
+        if(!scanning) return;
+        try{
+            const codes = await detector.detect(video);
+            if(codes.length>0){
+                const code = codes[0].rawValue;
+                if(code.length>=12){
+                    document.getElementById("barcode").value = code;
+                    beep.play();
+                    let p = stock.find(x=>x.barcode===code);
+                    if(p){
+                        productInput.value = p.name;
+                        document.getElementById("sellPrice").value = p.sell;
+                    }
+                    stopScanner();
+                    return;
                 }
-                html5QrcodeScanner.stop();
-                document.getElementById("camera").style.display="none";
             }
-        },
-        (errorMessage)=>{}
-    );
+        } catch(e){}
+        requestAnimationFrame(scanLoop);
+    }
+
+    scanLoop();
 }
 
-/* تبديل الكاميرا */
-async function toggleCamera(){
-    currentCamera = 1-currentCamera;
-    if(html5QrcodeScanner) html5QrcodeScanner.stop();
-    startScanner();
+function stopScanner(){
+    scanning = false;
+    if(stream){
+        stream.getTracks().forEach(t=>t.stop());
+    }
+    video.style.display="none";
 }
 
-/* ================= الإكمال التلقائي ================= */
+/* ================= إكمال تلقائي ================= */
 productInput.addEventListener("input", function(){
     let value = this.value.trim().toLowerCase();
     suggestions.innerHTML = "";
@@ -249,10 +260,7 @@ function addPurchase(){
         alert("يرجى ملء جميع الحقول"); return;
     }
 
-    purchaseList.push({
-        purchaseDate, productName, buyPrice, sellPrice, qty, expiryDate, barcode
-    });
-
+    purchaseList.push({ purchaseDate, productName, buyPrice, sellPrice, qty, expiryDate, barcode });
     render();
     document.querySelectorAll("#barcode,#productSearch,#buyPrice,#sellPrice,#qty,#purchaseDate,#expiryDate").forEach(i=>i.value="");
 }
@@ -328,5 +336,6 @@ function savePurchases(){
     render();
 }
 </script>
+
 </body>
 </html>
