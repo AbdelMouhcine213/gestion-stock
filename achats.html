@@ -4,143 +4,40 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>📦 المشتريات</title>
-<link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#28a745">
+<link rel="manifest" href="manifest.json">
 
 <style>
-body{
-    margin:0;
-    font-family:'Comic Sans MS', Arial;
-    direction:rtl;
-    background:#050b18;
-    color:white;
-}
-header{
-    background:#28a745;
-    padding:20px;
-    text-align:center;
-    font-size:32px;
-    font-weight:bold;
-    box-shadow:0 0 25px #28a745;
-}
-
-/* الحاوية */
-.container{
-    padding:20px;
-    max-width:1100px;
-    margin:auto;
-    display:flex;
-    flex-direction:column;
-    gap:20px;
-}
-
-/* بطاقة المجموع */
-.total-box{
-    padding:20px;
-    font-size:36px;
-    font-weight:bold;
-    text-align:center;
-    background:#00ff88;
-    color:black;
-    border-radius:15px;
-    box-shadow:0 0 20px #00ff88, inset 0 0 10px #00ff88;
-}
-
-/* الإدخالات */
-.flex{
-    display:flex;
-    gap:20px;
-    flex-wrap:wrap;
-}
-.card{
-    background:#0f1b2e;
-    border-radius:20px;
-    padding:20px;
-    box-shadow:0 0 15px rgba(0,255,150,.4), inset 0 0 10px rgba(0,255,150,.2);
-    flex:1;
-}
-input{
-    width:100%;
-    padding:14px;
-    font-size:20px;
-    border-radius:10px;
-    border:none;
-    margin-bottom:10px;
-}
-
-/* البحث */
-.search{position:relative;}
-.suggestions{
-    position:absolute;
-    background:white;
-    width:100%;
-    border-radius:10px;
-    z-index:1000;
-    max-height:200px;
-    overflow-y:auto;
-    color:black;
-}
-.suggestions div{
-    padding:12px;
-    cursor:pointer;
-}
-.suggestions div:hover{background:#eee;}
-
-/* الأزرار */
-.btn{
-    padding:14px;
-    font-size:20px;
-    border:none;
-    border-radius:12px;
-    cursor:pointer;
-    width:100%;
-    margin-top:10px;
-}
-.scan{ background:#ffc107; color:black; }
-.add{ background:#17a2b8; }
-.save{ background:#28a745; }
-.delete{ background:#dc3545; border:none; padding:6px 10px; border-radius:6px; cursor:pointer; }
-
-/* الكاميرا */
-video{
-    width:100%;
-    max-height:260px;
-    border-radius:15px;
-    display:none;
-    box-shadow:0 0 20px #00ffff;
-}
-
-/* الجدول */
-table{
-    width:100%;
-    border-collapse:collapse;
-    margin-top:15px;
-    background:#0b1628;
-    font-size:18px;
-}
-th,td{
-    border:1px solid #333;
-    padding:10px;
-    text-align:center;
-}
+body{margin:0;font-family:'Comic Sans MS', Arial;direction:rtl;background:#050b18;color:white;}
+header{background:#28a745;padding:20px;text-align:center;font-size:32px;font-weight:bold;box-shadow:0 0 25px #28a745;}
+.container{padding:20px;max-width:1100px;margin:auto;display:flex;flex-direction:column;gap:20px;}
+.card{background:#0f1b2e;border-radius:20px;padding:20px;box-shadow:0 0 15px rgba(0,255,150,.4), inset 0 0 10px rgba(0,255,150,.2);}
+.flex{display:flex;gap:20px;flex-wrap:wrap;}
+input{width:100%;padding:14px;font-size:20px;border-radius:10px;border:none;margin-bottom:10px;}
+.btn{padding:14px;font-size:20px;border:none;border-radius:12px;cursor:pointer;width:100%;margin-top:10px;}
+.scan{background:#ffc107;color:black;}
+.add{background:#17a2b8;}
+.save{background:#28a745;}
+.delete{background:#dc3545;border:none;padding:6px 10px;border-radius:6px;cursor:pointer;}
+video{width:100%;max-height:260px;border-radius:15px;display:none;box-shadow:0 0 20px #00ffff;}
+table{width:100%;border-collapse:collapse;margin-top:15px;background:#0b1628;font-size:18px;}
+th,td{border:1px solid #333;padding:10px;text-align:center;}
 th{background:#28a745;}
-td input{
-    width:70px;
-    font-size:16px;
-}
+td input{width:70px;font-size:16px;}
+.search{position:relative;}
+.suggestions{position:absolute;background:white;width:100%;border-radius:10px;z-index:1000;max-height:200px;overflow-y:auto;color:black;}
+.suggestions div{padding:12px;cursor:pointer;}
+.suggestions div:hover{background:#eee;}
 </style>
 </head>
-
 <body>
+
 <header>📦 واجهة المشتريات</header>
 
 <div class="container">
-
 <div class="flex">
-
-    <!-- إدخال المنتج -->
     <div class="card">
-        <button class="btn scan" onclick="startScanner()">📷 قارئ الباركود</button>
+        <button class="btn scan" onclick="toggleScanner()">📷 فتح/إغلاق الباركود</button>
         <button class="btn scan" onclick="toggleCamera()">🔄 تبديل الكاميرا</button>
         <video id="camera"></video>
 
@@ -157,7 +54,6 @@ td input{
     </div>
 </div>
 
-<!-- الجدول -->
 <div class="card">
 <table>
 <thead>
@@ -174,7 +70,6 @@ td input{
 </table>
 <button class="btn save" onclick="savePurchases()">💾 حفظ المشتريات</button>
 </div>
-
 </div>
 
 <audio id="beep">
@@ -182,7 +77,6 @@ td input{
 </audio>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
-
 <script>
 let stock = JSON.parse(localStorage.getItem("stock")) || [];
 let purchases = [];
@@ -193,22 +87,24 @@ let video = document.getElementById("camera");
 let scanning = false;
 let useFrontCamera = false;
 
-/* قارئ الباركود */
+/* ===================== قارئ الباركود ===================== */
+function toggleScanner(){
+    if(scanning){
+        stopScanner();
+    } else {
+        startScanner();
+    }
+}
+
 function startScanner(){
-    if(scanning) return;
     scanning = true;
     video.style.display="block";
-    const constraints = {video: {facingMode: useFrontCamera ? "user" : "environment"}};
-
     Quagga.init({
-        inputStream: {type: "LiveStream", target: video, constraints: constraints},
-        decoder: {readers: ["code_128_reader","ean_reader","ean_13_reader","upc_reader","code_39_reader","code_93_reader"]},
-        locate: true
-    }, function(err){
-        if(err){ console.error(err); scanning=false; return; }
-        Quagga.start();
-    });
-    Quagga.onDetected(onQuaggaDetected);
+        inputStream: { type:"LiveStream", target:video, constraints:{facingMode:useFrontCamera?"user":"environment"} },
+        decoder: { readers:["code_128_reader","ean_reader","ean_13_reader","upc_reader","code_39_reader","code_93_reader"] },
+        locate:true
+    }, function(err){ if(err){ console.error(err); scanning=false; return; } Quagga.start(); });
+    Quagga.onDetected(onDetected);
 }
 
 function stopScanner(){
@@ -222,12 +118,12 @@ function toggleCamera(){
     if(scanning){ stopScanner(); startScanner(); }
 }
 
-function onQuaggaDetected(result){
+function onDetected(result){
     if(result && result.codeResult && result.codeResult.code){
         let code = result.codeResult.code;
         beep.play();
-        stopScanner();
         document.getElementById("barcode").value = code;
+
         let p = stock.find(x=>x.barcode === code);
         if(p){
             document.getElementById("productSearch").value = p.name;
@@ -236,10 +132,11 @@ function onQuaggaDetected(result){
             document.getElementById("productSearch").value = "";
             document.getElementById("price").value = "";
         }
+        stopScanner();
     }
 }
 
-/* البحث التلقائي باسم المنتج */
+/* ================= إكمال تلقائي باسم المنتج ================= */
 const productInput = document.getElementById("productSearch");
 const suggestions = document.getElementById("suggestions");
 const priceInput = document.getElementById("price");
@@ -262,7 +159,7 @@ productInput.addEventListener("input", function(){
     });
 });
 
-/* إضافة إلى المشتريات */
+/* ================= إضافة المشتريات ================= */
 function addPurchase(){
     let barcode = document.getElementById("barcode").value;
     let name = document.getElementById("productSearch").value;
@@ -270,12 +167,9 @@ function addPurchase(){
     let qty = Number(document.getElementById("qty").value);
     let date = document.getElementById("date").value;
 
-    if(!name || qty<=0 || price<=0 || !date){
-        alert("الرجاء ملء جميع الحقول");
-        return;
-    }
+    if(!name || qty<=0 || price<=0 || !date){ alert("الرجاء ملء جميع الحقول"); return; }
 
-    purchases.push({barcode,name, buy:price, qty, date});
+    purchases.push({barcode,name,buy:price,qty,date});
     render();
     document.querySelectorAll("#barcode,#productSearch,#price,#qty,#date").forEach(i=>i.value="");
 }
@@ -298,12 +192,9 @@ function render(){
 }
 
 /* حذف عنصر */
-function del(i){
-    purchases.splice(i,1);
-    render();
-}
+function del(i){ purchases.splice(i,1); render(); }
 
-/* حفظ المشتريات وإضافتها للمخزون */
+/* ================= حفظ المشتريات وإضافتها للمخزون ================= */
 function savePurchases(){
     if(!purchases.length){ alert("لا توجد مشتريات"); return; }
 
