@@ -1,27 +1,30 @@
-َ<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ar">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🛒 المشتريات</title>
+<title>🛒 المشتريات - Barcode Scanner</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#28a745">
 
 <style>
 body{
-    margin:0;
     font-family:'Comic Sans MS', Arial;
     direction:rtl;
     background:#050b18;
     color:white;
+    margin:0;
 }
 header{
-    background:#17a2b8;
+    background:#28a745;
     padding:20px;
     text-align:center;
-    font-size:28px;
-    box-shadow:0 0 20px #17a2b8;
+    font-size:32px;
+    font-weight:bold;
+    box-shadow:0 0 25px #28a745;
 }
 .container{
-    max-width:1000px;
+    max-width:1100px;
     margin:auto;
     padding:20px;
 }
@@ -29,161 +32,308 @@ header{
     background:#0f1b2e;
     border-radius:20px;
     padding:20px;
-    box-shadow:0 0 15px rgba(0,255,255,.4);
+    margin-bottom:20px;
+    box-shadow:0 0 15px rgba(0,255,150,.4), inset 0 0 10px rgba(0,255,150,.2);
 }
 input{
     width:100%;
     padding:14px;
-    font-size:18px;
+    font-size:20px;
     border-radius:10px;
     border:none;
     margin-bottom:10px;
 }
-button{
-    width:100%;
+.flex{
+    display:flex;
+    gap:20px;
+    flex-wrap:wrap;
+}
+.btn{
     padding:14px;
-    font-size:18px;
+    font-size:20px;
     border:none;
     border-radius:12px;
     cursor:pointer;
-    margin-bottom:10px;
+    width:100%;
+    margin-top:10px;
 }
-.scan{background:#ffc107;color:black;}
-.switch{background:#6f42c1;color:white;}
-.save{background:#28a745;color:white;}
+.scan{ background:#ffc107; color:black; }
+.add{ background:#17a2b8; }
+.save{ background:#28a745; }
+.delete{ background:#dc3545; border:none; padding:6px 10px; border-radius:6px; cursor:pointer; }
 
 video{
     width:100%;
+    max-height:260px;
     border-radius:15px;
-    background:black;
+    display:none;
+    box-shadow:0 0 20px #00ffff;
 }
-.frame{
-    border:3px solid #00ffff;
-    border-radius:15px;
-    padding:5px;
-    box-shadow:0 0 15px #00ffff;
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:15px;
+    background:#0b1628;
+    font-size:18px;
 }
-.flex{
-    display:flex;
-    gap:10px;
-    flex-wrap:wrap;
+th,td{
+    border:1px solid #333;
+    padding:10px;
+    text-align:center;
 }
-.flex input{flex:1;}
+th{background:#28a745;}
+td input{
+    width:70px;
+    font-size:16px;
+}
+
+/* الاقتراحات */
+.search{position:relative;}
+.suggestions{
+    position:absolute;
+    background:white;
+    width:100%;
+    border-radius:10px;
+    z-index:1000;
+    max-height:200px;
+    overflow-y:auto;
+    color:black;
+}
+.suggestions div{
+    padding:12px;
+    cursor:pointer;
+}
+.suggestions div:hover{background:#eee;}
 </style>
-
-<script src="https://unpkg.com/@zxing/library@latest"></script>
 </head>
-
 <body>
 
 <header>🛒 واجهة المشتريات</header>
 
 <div class="container">
+
+<div class="flex">
+    <div class="card">
+        <button class="btn scan" onclick="toggleCamera()">📷 تشغيل/إيقاف قارئ الباركود</button>
+        <video id="camera"></video>
+
+        <input id="barcode" placeholder="📦 الباركود">
+        <div class="search">
+            <input id="productSearch" placeholder="🧾 اسم المنتج">
+            <div id="suggestions" class="suggestions"></div>
+        </div>
+        <input id="buyPrice" placeholder="💰 سعر الشراء">
+        <input id="sellPrice" placeholder="💵 سعر البيع">
+        <input id="qty" type="number" placeholder="📦 الكمية">
+        <input id="purchaseDate" type="date" placeholder="📅 تاريخ الشراء">
+        <input id="expiryDate" type="date" placeholder="📆 تاريخ الانتهاء">
+
+        <button class="btn add" onclick="addPurchase()">➕ إضافة</button>
+    </div>
+</div>
+
 <div class="card">
+<table>
+<thead>
+<tr>
+<th>تاريخ الشراء</th>
+<th>المنتج</th>
+<th>سعر الشراء</th>
+<th>سعر البيع</th>
+<th>الكمية</th>
+<th>المجموع</th>
+<th>نهاية الصلاحية</th>
+<th>تعديل</th>
+<th>حذف</th>
+</tr>
+</thead>
+<tbody id="tbody"></tbody>
+</table>
 
-<button class="scan" onclick="startScanner()">📷 تشغيل قارئ الباركود</button>
-<button class="switch" onclick="switchCamera()">🔄 تبديل الكاميرا</button>
-
-<div class="frame">
-    <video id="video" playsinline></video>
+<button class="btn save" onclick="savePurchases()">💾 حفظ المشتريات</button>
 </div>
 
-<input id="barcode" placeholder="📦 الباركود (تلقائي)">
-<input id="name" placeholder="🧾 اسم المنتج">
-
-<div class="flex">
-    <input id="buy" type="number" placeholder="💰 سعر الشراء">
-    <input id="sell" type="number" placeholder="💵 سعر البيع">
-</div>
-
-<div class="flex">
-    <input id="qty" type="number" placeholder="📦 الكمية الأصلية">
-    <input id="qtyLeft" type="number" placeholder="📦 الكمية المتبقية">
-</div>
-
-<div class="flex">
-    <input id="buyDate" type="date">
-    <input id="expDate" type="date">
-</div>
-
-<button class="save" onclick="save()">💾 حفظ في المخزون</button>
-
-</div>
 </div>
 
 <audio id="beep" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg"></audio>
 
 <script>
 let stock = JSON.parse(localStorage.getItem("stock")) || [];
-let codeReader = new ZXing.BrowserMultiFormatReader();
-let video = document.getElementById("video");
-let beep = document.getElementById("beep");
-let devices = [];
-let camIndex = 0;
+let purchaseList = [];
+const tbody = document.getElementById("tbody");
+const productInput = document.getElementById("productSearch");
+const suggestions = document.getElementById("suggestions");
+const beep = document.getElementById("beep");
+let video = document.getElementById("camera");
+let stream = null;
+let scanning = false;
 
-/* ================= تشغيل القارئ ================= */
+/* ================= تشغيل/إيقاف الكاميرا ================= */
+async function toggleCamera(){
+    if(scanning){
+        stopScanner();
+    } else {
+        startScanner();
+    }
+}
+
+/* ================= قارئ الباركود ================= */
 async function startScanner(){
-    try{
-        devices = await ZXing.BrowserCodeReader.listVideoInputDevices();
-        if(!devices.length){
-            alert("❌ لا توجد كاميرا");
-            return;
-        }
-        camIndex = devices.length - 1; // الخلفية غالبًا
-        scan();
-    }catch(e){
-        alert("❌ لم يتم السماح بالكاميرا");
+    if(!('BarcodeDetector' in window)){
+        alert("الهاتف لا يدعم قارئ الباركود");
+        return;
     }
-}
 
-function scan(){
-    codeReader.reset();
-    codeReader.decodeFromVideoDevice(
-        devices[camIndex].deviceId,
-        video,
-        (result, err) => {
-            if(result){
-                barcode.value = result.text;
-                beep.currentTime = 0;
-                beep.play();
-                codeReader.reset();
+    stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+    video.srcObject = stream;
+    video.play();
+    video.style.display="block";
+    scanning = true;
+
+    const detector = new BarcodeDetector({formats:['ean_13','code_128']});
+
+    async function scanLoop(){
+        if(!scanning) return;
+        try{
+            const codes = await detector.detect(video);
+            if(codes.length>0){
+                const code = codes[0].rawValue;
+                if(code.length>=12){
+                    document.getElementById("barcode").value = code;
+                    beep.play();
+                    let p = stock.find(x=>x.barcode===code);
+                    if(p){
+                        productInput.value = p.name;
+                        document.getElementById("sellPrice").value = p.sell;
+                    }
+                    stopScanner();
+                    return;
+                }
             }
+        } catch(e){}
+        requestAnimationFrame(scanLoop);
+    }
+
+    scanLoop();
+}
+
+function stopScanner(){
+    scanning = false;
+    if(stream){
+        stream.getTracks().forEach(t=>t.stop());
+    }
+    video.style.display="none";
+}
+
+/* ================= إكمال تلقائي ================= */
+productInput.addEventListener("input", function(){
+    let value = this.value.trim().toLowerCase();
+    suggestions.innerHTML = "";
+    if(!value) return;
+
+    stock.forEach(p=>{
+        if(p.name.toLowerCase().startsWith(value) && p.qtyLeft>0){
+            let div=document.createElement("div");
+            div.textContent=p.name+" (متبقي: "+p.qtyLeft+")";
+            div.onclick=()=>{
+                productInput.value=p.name;
+                document.getElementById("sellPrice").value=p.sell;
+                suggestions.innerHTML="";
+            };
+            suggestions.appendChild(div);
         }
-    );
-}
+    });
+});
 
-/* ================= تبديل الكاميرا ================= */
-function switchCamera(){
-    if(devices.length < 2){
-        alert("لا توجد كاميرا ثانية");
-        return;
-    }
-    camIndex = camIndex === 0 ? 1 : 0;
-    scan();
-}
+/* ================= إضافة مشتريات ================= */
+function addPurchase(){
+    const purchaseDate = document.getElementById("purchaseDate").value;
+    const productName = productInput.value;
+    const buyPrice = Number(document.getElementById("buyPrice").value);
+    const sellPrice = Number(document.getElementById("sellPrice").value);
+    const qty = Number(document.getElementById("qty").value);
+    const expiryDate = document.getElementById("expiryDate").value;
+    const barcode = document.getElementById("barcode").value;
 
-/* ================= حفظ ================= */
-function save(){
-    if(!barcode.value || !name.value || !qty.value){
-        alert("❌ بيانات ناقصة");
-        return;
+    if(!purchaseDate||!productName||!buyPrice||!sellPrice||!qty||!expiryDate){
+        alert("يرجى ملء جميع الحقول"); return;
     }
 
-    stock.push({
-        barcode: barcode.value,
-        name: name.value,
-        buy:+buy.value||0,
-        sell:+sell.value||0,
-        qtyOriginal:+qty.value,
-        qtyLeft:qtyLeft.value?+qtyLeft.value:+qty.value,
-        buyDate:buyDate.value,
-        expDate:expDate.value
+    purchaseList.push({ purchaseDate, productName, buyPrice, sellPrice, qty, expiryDate, barcode });
+    render();
+    document.querySelectorAll("#barcode,#productSearch,#buyPrice,#sellPrice,#qty,#purchaseDate,#expiryDate").forEach(i=>i.value="");
+}
+
+function render(){
+    tbody.innerHTML="";
+    purchaseList.forEach((p,i)=>{
+        let tr=document.createElement("tr");
+        tr.innerHTML=`
+<td>${p.purchaseDate}</td>
+<td>${p.productName}</td>
+<td>${p.buyPrice}</td>
+<td>${p.sellPrice}</td>
+<td>${p.qty}</td>
+<td>${p.buyPrice*p.qty}</td>
+<td>${p.expiryDate}</td>
+<td><button class="btn add" onclick="editPurchase(${i})">✏️</button></td>
+<td><button class="btn delete" onclick="deletePurchase(${i})">🗑️</button></td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+function editPurchase(i){
+    let p = purchaseList[i];
+    document.getElementById("purchaseDate").value=p.purchaseDate;
+    productInput.value=p.productName;
+    document.getElementById("buyPrice").value=p.buyPrice;
+    document.getElementById("sellPrice").value=p.sellPrice;
+    document.getElementById("qty").value=p.qty;
+    document.getElementById("expiryDate").value=p.expiryDate;
+    document.getElementById("barcode").value=p.barcode;
+    purchaseList.splice(i,1);
+    render();
+}
+
+function deletePurchase(i){
+    purchaseList.splice(i,1);
+    render();
+}
+
+/* ================= حفظ المشتريات ================= */
+function savePurchases(){
+    if(!purchaseList.length){ alert("لا توجد مشتريات"); return; }
+
+    purchaseList.forEach(p=>{
+        let existing = stock.find(s=>s.name===p.productName);
+        if(existing){
+            existing.qtyOriginal += p.qty;
+            existing.qtyLeft += p.qty;
+            existing.buy = p.buyPrice;
+            existing.sell = p.sellPrice;
+            existing.expiry = p.expiryDate;
+            existing.date = p.purchaseDate;
+            if(p.barcode) existing.barcode = p.barcode;
+        } else {
+            stock.push({
+                date:p.purchaseDate,
+                name:p.productName,
+                buy:p.buyPrice,
+                sell:p.sellPrice,
+                qtyOriginal:p.qty,
+                qtyLeft:p.qty,
+                expiry:p.expiryDate,
+                barcode:p.barcode
+            });
+        }
     });
 
     localStorage.setItem("stock", JSON.stringify(stock));
-    alert("✅ تم الحفظ");
-
-    document.querySelectorAll("input").forEach(i=>i.value="");
+    alert("✅ تم حفظ المشتريات في المخزون");
+    purchaseList=[];
+    render();
 }
 </script>
 
