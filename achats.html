@@ -1,223 +1,311 @@
 <!DOCTYPE html>
 <html lang="ar">
 <head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🛒 المشتريات</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#28a745">
-<meta charset="UTF-8">
-<title>المشتريات</title>
+
 <style>
 body{
-    font-family:Arial;
-    direction:rtl;
-    background:#f4f6f8;
     margin:0;
+    font-family:'Comic Sans MS', Arial;
+    direction:rtl;
+    background:#050b18;
+    color:white;
 }
 header{
-    background:#17a2b8;
-    color:white;
-    padding:15px;
+    background:#28a745;
+    padding:20px;
     text-align:center;
-    font-size:26px;
+    font-size:32px;
     font-weight:bold;
+    box-shadow:0 0 25px #28a745;
 }
-
-.container{ padding:20px; }
-
-.inputs{
+.container{
+    padding:20px;
+    max-width:1100px;
+    margin:auto;
     display:flex;
+    flex-direction:column;
+    gap:20px;
+}
+.flex{
+    display:flex;
+    gap:20px;
     flex-wrap:wrap;
-    gap:10px;
-    margin-bottom:15px;
 }
-
-.inputs input{
-    padding:10px;
-    font-size:15px;
+.card{
+    background:#0f1b2e;
+    border-radius:20px;
+    padding:20px;
+    box-shadow:0 0 15px rgba(0,255,150,.4), inset 0 0 10px rgba(0,255,150,.2);
+    flex:1;
 }
-
-.btn{
-    padding:10px 15px;
+input{
+    width:100%;
+    padding:14px;
+    font-size:20px;
+    border-radius:10px;
     border:none;
-    border-radius:5px;
-    cursor:pointer;
-    color:white;
+    margin-bottom:10px;
 }
-.add{ background:#28a745; }
-.save{ background:#007bff; }
-
+.search{position:relative;}
+.suggestions{
+    position:absolute;
+    background:white;
+    width:100%;
+    border-radius:10px;
+    z-index:1000;
+    max-height:200px;
+    overflow-y:auto;
+    color:black;
+}
+.suggestions div{
+    padding:12px;
+    cursor:pointer;
+}
+.suggestions div:hover{background:#eee;}
+.btn{
+    padding:14px;
+    font-size:20px;
+    border:none;
+    border-radius:12px;
+    cursor:pointer;
+    width:100%;
+    margin-top:10px;
+}
+.scan{ background:#ffc107; color:black; }
+.add{ background:#17a2b8; }
+.save{ background:#28a745; }
+.delete{ background:#dc3545; border:none; padding:6px 10px; border-radius:6px; cursor:pointer; }
+video{
+    width:100%;
+    max-height:260px;
+    border-radius:15px;
+    display:none;
+    box-shadow:0 0 20px #00ffff;
+}
 table{
     width:100%;
-    background:white;
     border-collapse:collapse;
+    margin-top:15px;
+    background:#0b1628;
+    font-size:18px;
 }
 th,td{
-    border:1px solid #ddd;
-    padding:8px;
+    border:1px solid #333;
+    padding:10px;
     text-align:center;
 }
-th{
-    background:#17a2b8;
-    color:white;
-}
-.action{
-    background:#dc3545;
-}
-.edit{
-    background:#ffc107;
-    color:black;
+th{background:#28a745;}
+td input{
+    width:70px;
+    font-size:16px;
 }
 </style>
 </head>
 
 <body>
-
-<header>المشتريات</header>
+<header>🛒 واجهة المشتريات</header>
 
 <div class="container">
 
-<div class="inputs">
-    <input type="date" id="purchaseDate">
-    <input type="text" id="productName" placeholder="اسم المنتج">
-    <input type="number" id="buyPrice" placeholder="سعر الشراء">
-    <input type="number" id="sellPrice" placeholder="سعر البيع">
-    <input type="number" id="quantity" placeholder="الكمية">
-    <input type="date" id="expiryDate">
-    <button class="btn add" onclick="addPurchase()">إضافة</button>
+<div class="flex">
+
+    <!-- إدخال المنتج -->
+    <div class="card">
+        <button class="btn scan" onclick="startScanner()">📷 قارئ الباركود</button>
+        <video id="camera"></video>
+
+        <input id="barcode" placeholder="📦 الباركود">
+        <div class="search">
+            <input id="productSearch" placeholder="🧾 اسم المنتج">
+            <div id="suggestions" class="suggestions"></div>
+        </div>
+        <input id="buyPrice" placeholder="💵 سعر الشراء">
+        <input id="sellPrice" placeholder="💰 سعر البيع">
+        <input id="qty" type="number" placeholder="📦 الكمية">
+        <input id="purchaseDate" type="date" placeholder="📅 تاريخ الشراء">
+        <input id="expiryDate" type="date" placeholder="📆 نهاية الصلاحية">
+
+        <button class="btn add" onclick="addPurchase()">➕ إضافة</button>
+    </div>
 </div>
 
+<!-- الجدول -->
+<div class="card">
 <table>
 <thead>
 <tr>
-<th>تاريخ الشراء</th>
+<th>الباركود</th>
 <th>المنتج</th>
 <th>سعر الشراء</th>
 <th>سعر البيع</th>
 <th>الكمية</th>
-<th>المجموع</th>
-<th>نهاية الصلاحية</th>
-<th>تعديل</th>
+<th>تاريخ الشراء</th>
+<th>تاريخ الانتهاء</th>
 <th>حذف</th>
 </tr>
 </thead>
 <tbody id="tbody"></tbody>
 </table>
 
-<br>
-<button class="btn save" onclick="savePurchases()">حفظ المشتريات في المخزون</button>
+<button class="btn save" onclick="savePurchases()">💾 حفظ المشتريات في المخزون</button>
+</div>
 
 </div>
 
+<audio id="beep">
+<source src="data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAIlYAAESsAAACABAAZGF0YRAAAAAA//8AAP//AAD//wAA">
+</audio>
+
 <script>
-let purchaseList = [];
+let stock = JSON.parse(localStorage.getItem("stock")) || [];
+let purchases = [];
 const tbody = document.getElementById("tbody");
+const beep = document.getElementById("beep");
+let video = document.getElementById("camera");
 
+/* ================= قارئ الباركود ================= */
+async function startScanner(){
+    if(!('BarcodeDetector' in window)){
+        alert("الهاتف لا يدعم قارئ الباركود");
+        return;
+    }
+    const detector = new BarcodeDetector({formats:['ean_13','code_128','qr_code']});
+    const stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}});
+    video.srcObject = stream;
+    video.play();
+    video.style.display="block";
+    scanLoop(detector);
+}
+
+async function scanLoop(detector){
+    const codes = await detector.detect(video);
+    if(codes.length){
+        stopScanner();
+        beep.play();
+        onBarcode(codes[0].rawValue);
+        return;
+    }
+    requestAnimationFrame(()=>scanLoop(detector));
+}
+
+function stopScanner(){
+    video.srcObject.getTracks().forEach(t=>t.stop());
+    video.style.display="none";
+}
+
+function onBarcode(code){
+    document.getElementById("barcode").value = code;
+    let p = stock.find(x=>x.barcode === code);
+    if(p){
+        document.getElementById("productSearch").value = p.name;
+        document.getElementById("sellPrice").value = p.sell;
+    }
+}
+
+/* ================= إكمال تلقائي باسم المنتج ================= */
+const productInput = document.getElementById("productSearch");
+const suggestions = document.getElementById("suggestions");
+const sellPriceInput = document.getElementById("sellPrice");
+
+productInput.addEventListener("input", function(){
+    let value = this.value.trim().toLowerCase();
+    suggestions.innerHTML = "";
+    if(!value) return;
+
+    stock.forEach(p=>{
+        if(p.name.toLowerCase().startsWith(value)){
+            let div = document.createElement("div");
+            div.textContent = p.name + " (متبقي: " + p.qtyLeft + ")";
+            div.onclick = ()=>{
+                productInput.value = p.name;
+                sellPriceInput.value = p.sell;
+                suggestions.innerHTML="";
+            };
+            suggestions.appendChild(div);
+        }
+    });
+});
+
+/* ================= إضافة المشتريات ================= */
 function addPurchase(){
+    let barcode = document.getElementById("barcode").value;
+    let name = productInput.value;
+    let buyPrice = Number(document.getElementById("buyPrice").value);
+    let sellPrice = Number(document.getElementById("sellPrice").value);
+    let qty = Number(document.getElementById("qty").value);
     let purchaseDate = document.getElementById("purchaseDate").value;
-    let productName  = document.getElementById("productName").value;
-    let buyPrice     = Number(document.getElementById("buyPrice").value);
-    let sellPrice    = Number(document.getElementById("sellPrice").value);
-    let quantity     = Number(document.getElementById("quantity").value);
-    let expiryDate   = document.getElementById("expiryDate").value;
+    let expiryDate = document.getElementById("expiryDate").value;
 
-    if(!purchaseDate || !productName || !buyPrice || !sellPrice || !quantity || !expiryDate){
+    if(!name || !buyPrice || !sellPrice || !qty || !purchaseDate || !expiryDate){
         alert("يرجى ملء جميع الحقول");
         return;
     }
 
-    purchaseList.push({
-        purchaseDate,
-        productName,
-        buyPrice,
-        sellPrice,
-        quantity,
-        expiryDate
-    });
-
+    purchases.push({barcode,name,buyPrice,sellPrice,qty,purchaseDate,expiryDate});
     render();
-    clearInputs();
+    document.querySelectorAll("#barcode,#productSearch,#buyPrice,#sellPrice,#qty,#purchaseDate,#expiryDate").forEach(i=>i.value="");
 }
 
+/* ================= عرض الجدول ================= */
 function render(){
     tbody.innerHTML="";
-    purchaseList.forEach((p,i)=>{
-        let tr=document.createElement("tr");
+    purchases.forEach((p,i)=>{
+        let tr = document.createElement("tr");
         tr.innerHTML=`
-<td>${p.purchaseDate}</td>
-<td>${p.productName}</td>
+<td>${p.barcode}</td>
+<td>${p.name}</td>
 <td>${p.buyPrice}</td>
 <td>${p.sellPrice}</td>
-<td>${p.quantity}</td>
-<td>${p.buyPrice * p.quantity}</td>
+<td>${p.qty}</td>
+<td>${p.purchaseDate}</td>
 <td>${p.expiryDate}</td>
-<td><button class="btn edit" onclick="editPurchase(${i})">✏️</button></td>
-<td><button class="btn action" onclick="deletePurchase(${i})">🗑️</button></td>
+<td><button class="delete" onclick="del(${i})">❌</button></td>
         `;
         tbody.appendChild(tr);
     });
 }
 
-function editPurchase(i){
-    let p = purchaseList[i];
-    document.getElementById("purchaseDate").value = p.purchaseDate;
-    document.getElementById("productName").value  = p.productName;
-    document.getElementById("buyPrice").value     = p.buyPrice;
-    document.getElementById("sellPrice").value    = p.sellPrice;
-    document.getElementById("quantity").value     = p.quantity;
-    document.getElementById("expiryDate").value   = p.expiryDate;
-    purchaseList.splice(i,1);
+function del(i){
+    purchases.splice(i,1);
     render();
 }
 
-function deletePurchase(i){
-    purchaseList.splice(i,1);
-    render();
-}
-
-function clearInputs(){
-    document.querySelectorAll(".inputs input").forEach(i=>i.value="");
-}
-
-/* 🔗 الحفظ الحقيقي في المخزون */
+/* ================= حفظ المشتريات في المخزون ================= */
 function savePurchases(){
-
-    if(!purchaseList.length){
-        alert("لا توجد مشتريات");
-        return;
-    }
-
-    let stock = JSON.parse(localStorage.getItem("stock")) || [];
-
-    purchaseList.forEach(p=>{
-        let existing = stock.find(s => s.name === p.productName);
-
+    if(!purchases.length){alert("لا توجد مشتريات"); return;}
+    purchases.forEach(p=>{
+        let existing = stock.find(s=>s.name===p.name);
         if(existing){
-            existing.qtyOriginal += p.quantity;
-            existing.qtyLeft     += p.quantity;
-            existing.buy          = p.buyPrice;
-            existing.sell         = p.sellPrice;
-            existing.expiry       = p.expiryDate;
-            existing.date         = p.purchaseDate;
-        }else{
+            existing.qtyOriginal += p.qty;
+            existing.qtyLeft += p.qty;
+            existing.buy = p.buyPrice;
+            existing.sell = p.sellPrice;
+            existing.date = p.purchaseDate;
+            existing.expiry = p.expiryDate;
+        } else {
             stock.push({
-                date: p.purchaseDate,
-                name: p.productName,
-                buy: p.buyPrice,
-                sell: p.sellPrice,
-                qtyOriginal: p.quantity,
-                qtyLeft: p.quantity,
-                expiry: p.expiryDate
+                barcode:p.barcode,
+                name:p.name,
+                buy:p.buyPrice,
+                sell:p.sellPrice,
+                qtyOriginal:p.qty,
+                qtyLeft:p.qty,
+                date:p.purchaseDate,
+                expiry:p.expiryDate
             });
         }
     });
 
     localStorage.setItem("stock", JSON.stringify(stock));
-
-    alert("تم حفظ المشتريات في المخزون بنجاح ✅");
-
-    purchaseList=[];
+    alert("✅ تم حفظ المشتريات في المخزون");
+    purchases=[];
     render();
 }
 </script>
-
 </body>
 </html>
