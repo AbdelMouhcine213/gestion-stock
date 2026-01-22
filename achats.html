@@ -2,111 +2,111 @@
 <html lang="ar">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>المشتريات</title>
-
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#28a745">
-
-<script src="https://unpkg.com/@zxing/library@latest"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🛒 المشتريات</title>
 
 <style>
 *{box-sizing:border-box;}
 body{
-    font-family:'Comic Sans MS', Arial;
+    font-family:Arial;
     direction:rtl;
-    background:linear-gradient(160deg,#050b18,#0a1f3f);
+    background:#0a1f3f;
     color:white;
     margin:0;
     padding:15px;
 }
 
 header{
+    background:#28a745;
+    padding:15px;
     text-align:center;
-    font-size:34px;
-    font-weight:bold;
-    padding:18px;
-    border-radius:18px;
-    background:linear-gradient(90deg,#28a745,#20c997);
-    box-shadow:0 0 35px rgba(40,255,150,.8);
+    font-size:28px;
+    border-radius:12px;
     margin-bottom:15px;
 }
 
-.container{max-width:1100px;margin:auto;}
-
-.card{
-    background:rgba(15,27,46,.96);
-    border-radius:22px;
-    padding:20px;
-    margin-bottom:18px;
-    border:2px solid rgba(0,255,150,.35);
-    box-shadow:0 0 28px rgba(0,255,150,.45);
-}
-
-button{
-    width:100%;
-    padding:16px;
-    font-size:20px;
-    border:none;
-    border-radius:18px;
-    font-weight:bold;
-    cursor:pointer;
-}
-
-.scan{
-    background:linear-gradient(45deg,#ffc107,#ff9800);
-    margin-bottom:12px;
-}
-
-video{
-    width:100%;
-    height:260px;
-    object-fit:cover;
-    border-radius:18px;
-    display:none;
-    border:3px solid #00ffff;
-    box-shadow:0 0 25px #00ffff;
-}
-
-/* تكبير عرض الكاميرا (إحساس Landscape) */
-.video-landscape{
-    aspect-ratio: 16 / 9;
-}
-
-.flex{
+.container{
     display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+    grid-template-columns:220px 1fr;
     gap:15px;
 }
 
-input{
-    width:100%;
-    padding:14px;
-    font-size:18px;
-    border-radius:14px;
-    border:1px solid #00ff99;
+/* ===== قائمة الصور ===== */
+.images{
     background:#08152a;
+    border-radius:15px;
+    padding:10px;
+    overflow-y:auto;
+    max-height:80vh;
+}
+
+.img-item{
+    border:2px solid #00ff99;
+    border-radius:12px;
+    margin-bottom:10px;
+    padding:5px;
+    cursor:pointer;
+    text-align:center;
+}
+
+.img-item img{
+    width:100%;
+    height:120px;
+    object-fit:contain;
+    background:#fff;
+    border-radius:10px;
+}
+
+.img-item span{
+    display:block;
+    margin-top:5px;
+    font-size:14px;
     color:#00ffcc;
 }
+
+/* ===== المدخلات ===== */
+.card{
+    background:#08152a;
+    padding:15px;
+    border-radius:15px;
+}
+
+input,button{
+    width:100%;
+    padding:10px;
+    margin:5px 0;
+    border-radius:10px;
+    border:none;
+    font-size:16px;
+}
+
+input{
+    background:#000;
+    color:#0ff;
+    border:1px solid #00ff99;
+}
+
+button{
+    background:#17a2b8;
+    color:white;
+    cursor:pointer;
+}
+
+button:hover{opacity:.8;}
 
 table{
     width:100%;
     border-collapse:collapse;
-    background:#050e1f;
-}
-th{
-    background:linear-gradient(90deg,#28a745,#20c997);
-    padding:10px;
-}
-td{
-    padding:8px;
-    text-align:center;
-}
-
-.save{
-    background:linear-gradient(45deg,#28a745,#20c997);
     margin-top:10px;
 }
+
+th,td{
+    padding:8px;
+    border-bottom:1px solid #123;
+    text-align:center;
+}
+th{background:#28a745;}
+
 </style>
 </head>
 
@@ -116,99 +116,139 @@ td{
 
 <div class="container">
 
-<!-- قارئ الباركود مباشرة تحت العنوان -->
+<!-- ===== قائمة الصور ===== -->
+<div class="images" id="imageList"></div>
+
+<!-- ===== المحتوى ===== -->
 <div class="card">
 
-<button class="scan" onclick="startScanner()">📷 فتح قارئ الباركود</button>
-
-<video id="camera" class="video-landscape" playsinline></video>
-
-</div>
-
-<div class="card">
-<div class="flex">
-
-<input id="barcode" placeholder="📦 الباركود (13 رقم)">
-<input id="productSearch" placeholder="🧾 اسم المنتج">
-<input id="buyPrice" placeholder="💰 سعر الشراء">
-<input id="sellPrice" placeholder="💵 سعر البيع">
+<input id="barcode" placeholder="📦 الباركود">
+<input id="product" placeholder="🧾 اسم المنتج">
+<input id="buy" placeholder="💰 سعر الشراء">
+<input id="sell" placeholder="💵 سعر البيع">
 <input id="qty" type="number" placeholder="📦 الكمية">
-<input id="purchaseDate" type="date">
-<input id="expiryDate" type="date">
+<input id="date" type="date">
+<input id="expiry" type="date">
 
-<button onclick="addPurchase()" style="background:#17a2b8;color:white;">➕ إضافة</button>
+<label>📷 صورة المنتج</label>
+<input type="file" id="imageInput" accept="image/*">
 
-</div>
-</div>
+<button onclick="addPurchase()">➕ إضافة</button>
 
-<div class="card">
 <table>
 <thead>
 <tr>
-<th>الشراء</th>
 <th>المنتج</th>
-<th>شراء</th>
-<th>بيع</th>
-<th>كمية</th>
-<th>صلاحية</th>
+<th>الكمية</th>
+<th>المجموع</th>
 <th>حذف</th>
 </tr>
 </thead>
 <tbody id="tbody"></tbody>
 </table>
 
-<button class="save" onclick="savePurchases()">💾 حفظ المشتريات</button>
-</div>
+<button onclick="save()">💾 حفظ في المخزون</button>
 
 </div>
-
-<audio id="beep" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg"></audio>
+</div>
 
 <script>
-let codeReader;
-let scanning=false;
+let stock = JSON.parse(localStorage.getItem("stock")) || [];
+let purchases = [];
+const tbody = document.getElementById("tbody");
 
-const video=document.getElementById("camera");
-const beep=document.getElementById("beep");
+/* ===== عرض الصور ===== */
+function renderImages(){
+    const list=document.getElementById("imageList");
+    list.innerHTML="";
+    stock.forEach(p=>{
+        if(!p.image) return;
+        let div=document.createElement("div");
+        div.className="img-item";
+        div.innerHTML=`
+            <img src="${p.image}">
+            <span>${p.name}</span>
+        `;
+        div.onclick=()=>{
+            product.value=p.name;
+            sell.value=p.sell;
+            barcode.value=p.barcode||"";
+        };
+        list.appendChild(div);
+    });
+}
+renderImages();
 
-async function startScanner(){
-    if(scanning) return;
-    scanning=true;
+/* ===== إضافة ===== */
+function addPurchase(){
+    let imgFile=document.getElementById("imageInput").files[0];
+    let reader=new FileReader();
 
-    video.style.display="block";
+    reader.onload=function(){
+        purchases.push({
+            name:product.value,
+            buy:+buy.value,
+            sell:+sell.value,
+            qty:+qty.value,
+            date:date.value,
+            expiry:expiry.value,
+            barcode:barcode.value,
+            image:reader.result
+        });
+        render();
+    }
 
-    codeReader=new ZXing.BrowserMultiFormatReader();
+    if(imgFile) reader.readAsDataURL(imgFile);
+    else reader.onload();
+}
 
-    const devices=await codeReader.listVideoInputDevices();
-    const backCam=devices.find(d=>d.label.toLowerCase().includes("back"))||devices[0];
+/* ===== جدول ===== */
+function render(){
+    tbody.innerHTML="";
+    purchases.forEach((p,i)=>{
+        tbody.innerHTML+=`
+        <tr>
+        <td>${p.name}</td>
+        <td>${p.qty}</td>
+        <td>${p.qty*p.buy}</td>
+        <td><button onclick="del(${i})">🗑️</button></td>
+        </tr>`;
+    });
+}
 
-    codeReader.decodeFromVideoDevice(
-        backCam.deviceId,
-        video,
-        (result,err)=>{
-            if(result){
-                const code=result.text;
+function del(i){
+    purchases.splice(i,1);
+    render();
+}
 
-                // تثبيت القراءة: أرقام فقط + 13 رقم
-                if(/^\d{13}$/.test(code)){
-                    document.getElementById("barcode").value=code;
-                    beep.play();
-                    stopScanner();
-                }
-            }
+/* ===== حفظ ===== */
+function save(){
+    purchases.forEach(p=>{
+        let s=stock.find(x=>x.name===p.name);
+        if(s){
+            s.qtyLeft+=p.qty;
+            s.qtyOriginal+=p.qty;
+            if(p.image) s.image=p.image;
+        }else{
+            stock.push({
+                name:p.name,
+                buy:p.buy,
+                sell:p.sell,
+                qtyOriginal:p.qty,
+                qtyLeft:p.qty,
+                barcode:p.barcode,
+                expiry:p.expiry,
+                date:p.date,
+                image:p.image
+            });
         }
-    );
+    });
+    localStorage.setItem("stock",JSON.stringify(stock));
+    alert("✅ تم الحفظ");
+    purchases=[];
+    render();
+    renderImages();
 }
-
-function stopScanner(){
-    scanning=false;
-    if(codeReader) codeReader.reset();
-    video.style.display="none";
-}
-
-/* منطقك الأصلي يبقى كما هو */
-function addPurchase(){ }
-function savePurchases(){ }
 </script>
 
 </body>
