@@ -3,169 +3,217 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>💳 المبيعات</title>
+<title>POS</title>
 
 <style>
 *{box-sizing:border-box}
-
 body{
     margin:0;
     font-family:Arial;
     direction:rtl;
-    background:linear-gradient(160deg,#050b18,#0a1f3f);
+    background:linear-gradient(160deg,#050b18,#0b2a52);
     color:white;
 }
 
 /* ===== العنوان ===== */
 header{
-    background:linear-gradient(90deg,#28a745,#20c997);
-    padding:18px;
-    text-align:center;
-    font-size:28px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:15px;
+    background:linear-gradient(90deg,#198754,#20c997);
+    font-size:26px;
     font-weight:bold;
-    box-shadow:0 0 20px rgba(0,255,150,.6);
+}
+
+/* ===== اللغة ===== */
+select{
+    padding:6px;
+    border-radius:8px;
+    border:none;
+    font-size:16px;
 }
 
 /* ===== التصنيفات ===== */
 #categories{
     display:flex;
-    flex-wrap:wrap;
-    gap:8px;
+    gap:10px;
     padding:10px;
-    justify-content:center;
+    overflow-x:auto;
 }
-
-.cat-btn{
-    background:#198754;
-    border:none;
-    color:white;
+.cat{
+    background:#0dcaf0;
+    color:black;
     padding:10px 18px;
     border-radius:20px;
-    cursor:pointer;
     font-weight:bold;
+    cursor:pointer;
+    white-space:nowrap;
 }
-.cat-btn:hover{
-    background:#20c997;
-}
+.cat:hover{background:#66e3ff}
 
-/* ===== شبكة المنتجات ===== */
+/* ===== المنتجات ===== */
 #products{
     display:grid;
     grid-template-columns:repeat(auto-fill,minmax(140px,1fr));
     gap:12px;
     padding:12px;
 }
-
 .product{
-    background:#ffffff;
-    color:#000;
+    background:white;
+    color:black;
     border-radius:16px;
     padding:8px;
     text-align:center;
     cursor:pointer;
-    box-shadow:0 0 10px rgba(0,0,0,.3);
-    transition:.2s;
+    box-shadow:0 0 15px rgba(0,0,0,.3);
 }
-.product:hover{
-    transform:scale(1.05);
-}
-
 .product img{
     width:100%;
     height:120px;
     object-fit:contain;
 }
+.product span{display:block}
 
-.product span{
-    display:block;
-    font-size:14px;
-    margin-top:4px;
-}
-
-/* ===== نافذة البيع ===== */
-#saleBox{
-    position:fixed;
-    bottom:0;
-    left:0;
-    right:0;
-    background:#08152a;
-    border-top:3px solid #20c997;
+/* ===== سلة ===== */
+#cartBox{
+    background:#081a33;
+    margin:10px;
+    border-radius:16px;
     padding:10px;
+    box-shadow:0 0 15px rgba(0,255,150,.4);
 }
 
-.sale-grid{
-    display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(120px,1fr));
-    gap:8px;
+#cartTitle{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
 }
 
-input{
-    padding:10px;
-    border-radius:10px;
-    border:none;
-    font-size:16px;
-}
-
-button.sell{
-    background:#ffc107;
-    border:none;
+#cartTitle input{
     font-size:18px;
     font-weight:bold;
-    border-radius:12px;
+    border-radius:8px;
+    border:none;
+    padding:6px;
+}
+
+/* ===== جدول ===== */
+table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:8px;
+}
+th,td{
+    border-bottom:1px solid #444;
+    padding:6px;
+    text-align:center;
+}
+th{background:#0dcaf0;color:black}
+
+button{
+    padding:6px 10px;
+    border:none;
+    border-radius:6px;
     cursor:pointer;
+}
+.del{background:#dc3545;color:white}
+
+/* ===== المجموع ===== */
+#totalBox{
+    margin-top:10px;
+    background:black;
+    border-radius:16px;
+    padding:15px;
+    text-align:center;
+    box-shadow:0 0 30px rgba(0,255,0,.7);
+}
+#totalBox span{
+    font-size:20px;
+}
+#total{
+    font-size:42px;
+    color:#00ff88;
+    font-weight:bold;
 }
 </style>
 </head>
 
 <body>
 
-<header>💳 المبيعات</header>
+<header>
+    <span id="title">💳 المبيعات</span>
+    <select id="lang" onchange="setLang(this.value)">
+        <option value="ar">العربية</option>
+        <option value="fr">Français</option>
+        <option value="en">English</option>
+    </select>
+</header>
 
-<!-- التصنيفات -->
 <div id="categories"></div>
-
-<!-- المنتجات -->
 <div id="products"></div>
 
-<!-- صندوق البيع -->
-<div id="saleBox">
-    <div class="sale-grid">
-        <input id="pname" placeholder="المنتج" disabled>
-        <input id="price" placeholder="السعر" disabled>
-        <input id="qty" type="number" placeholder="الكمية" value="1">
-        <input id="total" placeholder="المجموع" disabled>
-        <button class="sell" onclick="sell()">✔ بيع</button>
+<!-- سلة -->
+<div id="cartBox">
+    <div id="cartTitle">
+        <input id="cartName" value="🛒 سلة الشراء">
+        <span id="itemsLabel">العناصر</span>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th id="p">المنتج</th>
+                <th id="q">الكمية</th>
+                <th id="pr">السعر</th>
+                <th id="t">المجموع</th>
+                <th>✖</th>
+            </tr>
+        </thead>
+        <tbody id="cart"></tbody>
+    </table>
+
+    <div id="totalBox">
+        <span id="totalLabel">المجموع الكلي</span>
+        <div id="total">0</div>
     </div>
 </div>
 
 <script>
 let stock = JSON.parse(localStorage.getItem("stock")) || [];
-let selectedProduct=null;
+let cart=[];
 
-const catsDiv=document.getElementById("categories");
-const productsDiv=document.getElementById("products");
+/* ===== لغات ===== */
+const words={
+ar:{title:"💳 المبيعات",items:"العناصر",p:"المنتج",q:"الكمية",pr:"السعر",t:"المجموع",tot:"المجموع الكلي"},
+fr:{title:"💳 Ventes",items:"Articles",p:"Produit",q:"Qté",pr:"Prix",t:"Total",tot:"Total général"},
+en:{title:"💳 Sales",items:"Items",p:"Product",q:"Qty",pr:"Price",t:"Total",tot:"Grand Total"}
+};
 
-const pname=document.getElementById("pname");
-const price=document.getElementById("price");
-const qty=document.getElementById("qty");
-const total=document.getElementById("total");
-
-/* ===== التصنيفات ===== */
-function renderCategories(){
-    const cats=[...new Set(stock.map(p=>p.category))];
-    catsDiv.innerHTML="";
-    cats.forEach(c=>{
-        let b=document.createElement("button");
-        b.className="cat-btn";
-        b.textContent=c;
-        b.onclick=()=>showCategory(c);
-        catsDiv.appendChild(b);
-    });
+function setLang(l){
+    document.body.dir = l==="ar"?"rtl":"ltr";
+    document.getElementById("title").textContent=words[l].title;
+    itemsLabel.textContent=words[l].items;
+    p.textContent=words[l].p;
+    q.textContent=words[l].q;
+    pr.textContent=words[l].pr;
+    t.textContent=words[l].t;
+    totalLabel.textContent=words[l].tot;
 }
 
-/* ===== المنتجات ===== */
-function showCategory(cat){
-    productsDiv.innerHTML="";
+/* ===== تصنيفات ===== */
+const cats=[...new Set(stock.map(p=>p.category))];
+cats.forEach(c=>{
+    let d=document.createElement("div");
+    d.className="cat";
+    d.textContent=c;
+    d.onclick=()=>show(c);
+    categories.appendChild(d);
+});
+
+/* ===== منتجات ===== */
+function show(cat){
+    products.innerHTML="";
     stock.filter(p=>p.category===cat && p.qtyLeft>0)
     .forEach(p=>{
         let d=document.createElement("div");
@@ -173,44 +221,42 @@ function showCategory(cat){
         d.innerHTML=`
             <img src="${p.image}">
             <span>${p.name}</span>
-            <span>${p.sell} دج</span>
+            <b>${p.sell}</b>
         `;
-        d.onclick=()=>{
-            selectedProduct=p;
-            pname.value=p.name;
-            price.value=p.sell;
-            qty.value=1;
-            calc();
-        };
-        productsDiv.appendChild(d);
+        d.onclick=()=>add(p);
+        products.appendChild(d);
     });
 }
 
-/* ===== حساب ===== */
-function calc(){
-    total.value = price.value * qty.value;
-}
-qty.oninput=calc;
-
-/* ===== بيع ===== */
-function sell(){
-    if(!selectedProduct) return alert("اختر منتجًا");
-
-    if(qty.value>selectedProduct.qtyLeft){
-        alert("الكمية غير متوفرة");
-        return;
-    }
-
-    selectedProduct.qtyLeft -= Number(qty.value);
-    localStorage.setItem("stock",JSON.stringify(stock));
-
-    pname.value=price.value=qty.value=total.value="";
-    selectedProduct=null;
-    productsDiv.innerHTML="";
-    alert("✅ تم البيع");
+/* ===== إضافة للسلة ===== */
+function add(p){
+    let f=cart.find(i=>i.name===p.name);
+    if(f) f.qty++;
+    else cart.push({name:p.name,price:p.sell,qty:1});
+    render();
 }
 
-renderCategories();
+/* ===== رسم السلة ===== */
+function render(){
+    cartBox.querySelector("tbody").innerHTML="";
+    let sum=0;
+    cart.forEach((i,n)=>{
+        let tr=document.createElement("tr");
+        let tot=i.qty*i.price;
+        sum+=tot;
+        tr.innerHTML=`
+            <td>${i.name}</td>
+            <td><input type="number" value="${i.qty}" min="1" onchange="cart[${n}].qty=this.value;render()"></td>
+            <td>${i.price}</td>
+            <td>${tot}</td>
+            <td><button class="del" onclick="cart.splice(${n},1);render()">✖</button></td>
+        `;
+        cartBox.querySelector("tbody").appendChild(tr);
+    });
+    total.textContent=sum+" دج";
+}
+
+setLang("ar");
 </script>
 
 </body>
