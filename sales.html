@@ -2,261 +2,236 @@
 <html lang="ar">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>POS</title>
-
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>🛒 المبيعات - واجهة احترافية</title>
 <style>
-*{box-sizing:border-box}
+*{box-sizing:border-box;}
 body{
-    margin:0;
-    font-family:Arial;
+    font-family:'Comic Sans MS', Arial;
     direction:rtl;
-    background:linear-gradient(160deg,#050b18,#0b2a52);
+    background:linear-gradient(160deg,#050b18,#0a1f3f);
     color:white;
+    margin:0;
+    display:flex;
+    justify-content:center;
+    padding:20px;
 }
-
-/* ===== العنوان ===== */
 header{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    padding:15px;
-    background:linear-gradient(90deg,#198754,#20c997);
-    font-size:26px;
+    width:100%;
+    background:linear-gradient(90deg,#28a745,#20c997);
+    padding:20px;
+    text-align:center;
+    font-size:32px;
     font-weight:bold;
+    box-shadow:0 0 35px rgba(40,167,69,.8), inset 0 0 15px rgba(0,255,150,.3);
+    border-radius:15px;
+    margin-bottom:20px;
 }
-
-/* ===== اللغة ===== */
-select{
-    padding:6px;
-    border-radius:8px;
-    border:none;
-    font-size:16px;
+.container{
+    max-width:1200px;
+    width:100%;
 }
-
-/* ===== التصنيفات ===== */
-#categories{
-    display:flex;
-    gap:10px;
-    padding:10px;
-    overflow-x:auto;
+.card{
+    background:rgba(15,27,46,.95);
+    border-radius:25px;
+    padding:25px;
+    margin-bottom:20px;
+    border:2px solid rgba(0,255,150,.3);
+    box-shadow:0 0 30px rgba(0,255,150,.4), inset 0 0 25px rgba(0,255,150,.15);
 }
-.cat{
-    background:#0dcaf0;
-    color:black;
-    padding:10px 18px;
-    border-radius:20px;
-    font-weight:bold;
-    cursor:pointer;
-    white-space:nowrap;
-}
-.cat:hover{background:#66e3ff}
-
-/* ===== المنتجات ===== */
-#products{
+.flex{
     display:grid;
-    grid-template-columns:repeat(auto-fill,minmax(140px,1fr));
-    gap:12px;
+    grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+    gap:20px;
+}
+input{
+    width:100%;
     padding:12px;
+    font-size:16px;
+    border-radius:12px;
+    border:1px solid #00ff99;
+    background:rgba(8,21,42,.9);
+    color:#00ffcc;
+    outline:none;
 }
-.product{
-    background:white;
-    color:black;
-    border-radius:16px;
-    padding:8px;
-    text-align:center;
-    cursor:pointer;
-    box-shadow:0 0 15px rgba(0,0,0,.3);
+input:focus{
+    box-shadow:0 0 15px #00ff99, inset 0 0 10px #00ff99;
 }
-.product img{
-    width:100%;
-    height:120px;
-    object-fit:contain;
-}
-.product span{display:block}
-
-/* ===== سلة ===== */
-#cartBox{
-    background:#081a33;
-    margin:10px;
-    border-radius:16px;
-    padding:10px;
-    box-shadow:0 0 15px rgba(0,255,150,.4);
-}
-
-#cartTitle{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-}
-
-#cartTitle input{
+.btn{
+    padding:14px;
     font-size:18px;
-    font-weight:bold;
-    border-radius:8px;
     border:none;
-    padding:6px;
-}
-
-/* ===== جدول ===== */
-table{
-    width:100%;
-    border-collapse:collapse;
-    margin-top:8px;
-}
-th,td{
-    border-bottom:1px solid #444;
-    padding:6px;
-    text-align:center;
-}
-th{background:#0dcaf0;color:black}
-
-button{
-    padding:6px 10px;
-    border:none;
-    border-radius:6px;
+    border-radius:14px;
     cursor:pointer;
-}
-.del{background:#dc3545;color:white}
-
-/* ===== المجموع ===== */
-#totalBox{
-    margin-top:10px;
-    background:black;
-    border-radius:16px;
-    padding:15px;
-    text-align:center;
-    box-shadow:0 0 30px rgba(0,255,0,.7);
-}
-#totalBox span{
-    font-size:20px;
-}
-#total{
-    font-size:42px;
-    color:#00ff88;
+    width:100%;
     font-weight:bold;
+    transition:.25s;
 }
+.scan{ background:linear-gradient(45deg,#ffc107,#ff9800); color:black; }
+.add{ background:linear-gradient(45deg,#17a2b8,#0dcaf0); color:white; }
+.confirm{ background:linear-gradient(45deg,#28a745,#20c997); color:white; }
+.delete{ background:#dc3545; color:white; border:none; padding:6px 12px; border-radius:10px; cursor:pointer; }
+.cart-total{ font-size:28px; font-weight:bold; color:#ff0; text-align:right; margin-top:10px; }
+.product-img{ width:100%; border-radius:15px; cursor:pointer; transition:.25s; }
+.product-img:hover{ transform:scale(1.05); box-shadow:0 0 15px #0ff; }
+table{ width:100%; border-collapse:collapse; background:#050e1f; border-radius:15px; overflow:hidden; font-size:16px; margin-top:15px; }
+th{ background:linear-gradient(90deg,#28a745,#20c997); padding:12px; text-align:center; }
+td{ padding:10px; border-bottom:1px solid #123; text-align:center; }
+tr:hover{ background:rgba(0,255,150,.1); }
+@media(max-width:600px){ header{ font-size:24px; } }
 </style>
 </head>
-
 <body>
 
-<header>
-    <span id="title">💳 المبيعات</span>
-    <select id="lang" onchange="setLang(this.value)">
-        <option value="ar">العربية</option>
-        <option value="fr">Français</option>
-        <option value="en">English</option>
-    </select>
-</header>
+<header>🛒 واجهة المبيعات</header>
 
-<div id="categories"></div>
-<div id="products"></div>
+<div class="container">
 
-<!-- سلة -->
-<div id="cartBox">
-    <div id="cartTitle">
-        <input id="cartName" value="🛒 سلة الشراء">
-        <span id="itemsLabel">العناصر</span>
+    <!-- ===== المنتجات بالصور ===== -->
+    <div class="card" id="productList">
+        <div class="flex" id="productGrid">
+            <!-- سيتم إضافة الصور بواسطة JS -->
+        </div>
     </div>
 
-    <table>
+    <!-- ===== السلة ===== -->
+    <div class="card">
+        <h2>🛒 سلة المشتريات</h2>
+        <table>
         <thead>
-            <tr>
-                <th id="p">المنتج</th>
-                <th id="q">الكمية</th>
-                <th id="pr">السعر</th>
-                <th id="t">المجموع</th>
-                <th>✖</th>
-            </tr>
+        <tr>
+            <th>المنتج</th>
+            <th>السعر</th>
+            <th>الكمية</th>
+            <th>المجموع</th>
+            <th>تعديل</th>
+            <th>حذف</th>
+        </tr>
         </thead>
-        <tbody id="cart"></tbody>
-    </table>
-
-    <div id="totalBox">
-        <span id="totalLabel">المجموع الكلي</span>
-        <div id="total">0</div>
+        <tbody id="cartBody"></tbody>
+        </table>
+        <div class="cart-total">المجموع الكلي: <span id="cartTotal">0</span> دج</div>
+        <button class="btn confirm" onclick="confirmSale()">✅ تأكيد البيع</button>
+        <button class="btn save" onclick="showStats()">📊 عرض الإحصائيات</button>
     </div>
+
 </div>
 
 <script>
-let stock = JSON.parse(localStorage.getItem("stock")) || [];
-let cart=[];
+// بيانات المخزون (نماذج)
+let stock = JSON.parse(localStorage.getItem("stock")) || [
+    {name:"شوكولاتة", sell:300, buy:200, qtyLeft:50, img:"choco.jpg"},
+    {name:"عطر رجالي", sell:1200, buy:900, qtyLeft:30, img:"perfume.jpg"},
+    {name:"حلويات", sell:150, buy:100, qtyLeft:100, img:"candy.jpg"}
+];
+let cart = [];
+let sales = JSON.parse(localStorage.getItem("sales")) || [];
 
-/* ===== لغات ===== */
-const words={
-ar:{title:"💳 المبيعات",items:"العناصر",p:"المنتج",q:"الكمية",pr:"السعر",t:"المجموع",tot:"المجموع الكلي"},
-fr:{title:"💳 Ventes",items:"Articles",p:"Produit",q:"Qté",pr:"Prix",t:"Total",tot:"Total général"},
-en:{title:"💳 Sales",items:"Items",p:"Product",q:"Qty",pr:"Price",t:"Total",tot:"Grand Total"}
-};
-
-function setLang(l){
-    document.body.dir = l==="ar"?"rtl":"ltr";
-    document.getElementById("title").textContent=words[l].title;
-    itemsLabel.textContent=words[l].items;
-    p.textContent=words[l].p;
-    q.textContent=words[l].q;
-    pr.textContent=words[l].pr;
-    t.textContent=words[l].t;
-    totalLabel.textContent=words[l].tot;
-}
-
-/* ===== تصنيفات ===== */
-const cats=[...new Set(stock.map(p=>p.category))];
-cats.forEach(c=>{
-    let d=document.createElement("div");
-    d.className="cat";
-    d.textContent=c;
-    d.onclick=()=>show(c);
-    categories.appendChild(d);
-});
-
-/* ===== منتجات ===== */
-function show(cat){
-    products.innerHTML="";
-    stock.filter(p=>p.category===cat && p.qtyLeft>0)
-    .forEach(p=>{
-        let d=document.createElement("div");
-        d.className="product";
-        d.innerHTML=`
-            <img src="${p.image}">
-            <span>${p.name}</span>
-            <b>${p.sell}</b>
-        `;
-        d.onclick=()=>add(p);
-        products.appendChild(d);
+// عرض المنتجات بالصور
+function renderProducts(){
+    const grid = document.getElementById("productGrid");
+    grid.innerHTML="";
+    stock.forEach((p,i)=>{
+        if(p.qtyLeft>0){
+            let div = document.createElement("div");
+            div.innerHTML=`<img src="${p.img}" class="product-img" onclick="addToCart(${i})"><p>${p.name}<br>(${p.qtyLeft})</p>`;
+            grid.appendChild(div);
+        }
     });
 }
+renderProducts();
 
-/* ===== إضافة للسلة ===== */
-function add(p){
-    let f=cart.find(i=>i.name===p.name);
-    if(f) f.qty++;
-    else cart.push({name:p.name,price:p.sell,qty:1});
-    render();
+// إضافة للسلة
+function addToCart(i){
+    let p = stock[i];
+    let existing = cart.find(c=>c.name===p.name);
+    if(existing){
+        existing.qty++;
+    } else {
+        cart.push({name:p.name, price:p.sell, qty:1});
+    }
+    renderCart();
 }
 
-/* ===== رسم السلة ===== */
-function render(){
-    cartBox.querySelector("tbody").innerHTML="";
-    let sum=0;
-    cart.forEach((i,n)=>{
-        let tr=document.createElement("tr");
-        let tot=i.qty*i.price;
-        sum+=tot;
+// عرض السلة
+function renderCart(){
+    const tbody = document.getElementById("cartBody");
+    let total=0;
+    tbody.innerHTML="";
+    cart.forEach((c,i)=>{
+        let tr = document.createElement("tr");
+        let sum = c.price*c.qty;
+        total+=sum;
         tr.innerHTML=`
-            <td>${i.name}</td>
-            <td><input type="number" value="${i.qty}" min="1" onchange="cart[${n}].qty=this.value;render()"></td>
-            <td>${i.price}</td>
-            <td>${tot}</td>
-            <td><button class="del" onclick="cart.splice(${n},1);render()">✖</button></td>
+<td>${c.name}</td>
+<td>${c.price}</td>
+<td><input type="number" value="${c.qty}" min="1" style="width:60px" onchange="changeQty(${i},this.value)"></td>
+<td>${sum}</td>
+<td><button class="btn add" onclick="changeName(${i})">✏️</button></td>
+<td><button class="delete" onclick="removeItem(${i})">🗑️</button></td>
         `;
-        cartBox.querySelector("tbody").appendChild(tr);
+        tbody.appendChild(tr);
     });
-    total.textContent=sum+" دج";
+    document.getElementById("cartTotal").textContent=total;
 }
 
-setLang("ar");
+// تعديل الكمية
+function changeQty(i,val){
+    cart[i].qty = Number(val);
+    renderCart();
+}
+
+// تعديل الاسم
+function changeName(i){
+    let newName = prompt("أدخل الاسم الجديد", cart[i].name);
+    if(newName) cart[i].name=newName;
+    renderCart();
+}
+
+// حذف عنصر
+function removeItem(i){
+    cart.splice(i,1);
+    renderCart();
+}
+
+// تأكيد البيع
+function confirmSale(){
+    if(cart.length===0){ alert("لا توجد عناصر في السلة"); return; }
+    let today = new Date();
+    let dateStr = today.toISOString().split('T')[0];
+    cart.forEach(item=>{
+        let s = stock.find(p=>p.name===item.name);
+        if(s) s.qtyLeft -= item.qty;
+        let profit = (item.price - (s?s.buy:0))*item.qty;
+        sales.push({name:item.name, qty:item.qty, price:item.price, total:item.price*item.qty, profit:profit, date:dateStr});
+    });
+    localStorage.setItem("stock", JSON.stringify(stock));
+    localStorage.setItem("sales", JSON.stringify(sales));
+    cart=[];
+    renderCart();
+    renderProducts();
+    alert("✅ تم تأكيد البيع وتحديث المخزون");
+}
+
+// احصائيات
+function profitStats(){
+    let daily={}, monthly={};
+    sales.forEach(s=>{
+        let d = s.date;
+        let m = d.slice(0,7);
+        daily[d]=(daily[d]||0)+s.profit;
+        monthly[m]=(monthly[m]||0)+s.profit;
+    });
+    return {daily,monthly};
+}
+function showStats(){
+    let stats = profitStats();
+    let msg="📅 الربح اليومي:\n";
+    for(let d in stats.daily) msg+=`${d}: ${stats.daily[d]} دج\n`;
+    msg+="\n📅 الربح الشهري:\n";
+    for(let m in stats.monthly) msg+=`${m}: ${stats.monthly[m]} دج\n`;
+    alert(msg);
+}
 </script>
 
 </body>
