@@ -4,165 +4,33 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>POS</title>
-
 <style>
 *{box-sizing:border-box}
-body{
-    margin:0;
-    font-family:Arial;
-    direction:rtl;
-    background:linear-gradient(160deg,#050b18,#0b2a52);
-    color:white;
-}
-
-/* ===== العنوان ===== */
-header{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    padding:15px;
-    background:linear-gradient(90deg,#198754,#20c997);
-    font-size:26px;
-    font-weight:bold;
-}
-
-/* ===== اللغة ===== */
-select{
-    padding:6px;
-    border-radius:8px;
-    border:none;
-    font-size:16px;
-}
-
-/* ===== التصنيفات ===== */
-#categories{
-    display:flex;
-    gap:10px;
-    padding:10px;
-    overflow-x:auto;
-}
-.cat{
-    background:#0dcaf0;
-    color:black;
-    padding:10px 18px;
-    border-radius:20px;
-    font-weight:bold;
-    cursor:pointer;
-    white-space:nowrap;
-}
+body{margin:0;font-family:Arial;direction:rtl;background:linear-gradient(160deg,#050b18,#0b2a52);color:white;}
+header{display:flex;justify-content:space-between;align-items:center;padding:15px;background:linear-gradient(90deg,#198754,#20c997);font-size:26px;font-weight:bold;}
+select{padding:6px;border-radius:8px;border:none;font-size:16px;}
+#categories{display:flex;gap:10px;padding:10px;overflow-x:auto;}
+.cat{background:#0dcaf0;color:black;padding:10px 18px;border-radius:20px;font-weight:bold;cursor:pointer;white-space:nowrap;}
 .cat:hover{background:#66e3ff}
-
-/* ===== المنتجات ===== */
-#products{
-    display:grid;
-    grid-template-columns:repeat(auto-fill,minmax(140px,1fr));
-    gap:12px;
-    padding:12px;
-}
-.product{
-    background:white;
-    color:black;
-    border-radius:16px;
-    padding:8px;
-    text-align:center;
-    cursor:pointer;
-    box-shadow:0 0 15px rgba(0,0,0,.3);
-    position:relative;
-}
-.product img{
-    width:100%;
-    height:120px;
-    object-fit:contain;
-}
-.product span, .product b{
-    display:block;
-}
-.stockLabel{
-    position:absolute;
-    top:8px;
-    right:8px;
-    background:rgba(0,0,0,0.7);
-    color:#00ff88;
-    padding:2px 6px;
-    border-radius:6px;
-    font-size:14px;
-    font-weight:bold;
-}
-
-/* ===== سلة ===== */
-#cartBox{
-    background:#081a33;
-    margin:10px;
-    border-radius:16px;
-    padding:10px;
-    box-shadow:0 0 15px rgba(0,255,150,.4);
-}
-
-#cartTitle{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-}
-
-#cartTitle input{
-    font-size:18px;
-    font-weight:bold;
-    border-radius:8px;
-    border:none;
-    padding:6px;
-}
-
-/* ===== جدول ===== */
-table{
-    width:100%;
-    border-collapse:collapse;
-    margin-top:8px;
-}
-th,td{
-    border-bottom:1px solid #444;
-    padding:6px;
-    text-align:center;
-}
+#products{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;padding:12px;}
+.product{background:white;color:black;border-radius:16px;padding:8px;text-align:center;cursor:pointer;box-shadow:0 0 15px rgba(0,0,0,.3);position:relative;}
+.product img{width:100%;height:120px;object-fit:contain;}
+.product span, .product b{display:block;}
+.stockLabel{position:absolute;top:8px;right:8px;background:rgba(0,0,0,0.7);color:#00ff88;padding:2px 6px;border-radius:6px;font-size:14px;font-weight:bold;}
+#cartBox{background:#081a33;margin:10px;border-radius:16px;padding:10px;box-shadow:0 0 15px rgba(0,255,150,.4);}
+#cartTitle{display:flex;justify-content:space-between;align-items:center;}
+#cartTitle input{font-size:18px;font-weight:bold;border-radius:8px;border:none;padding:6px;}
+table{width:100%;border-collapse:collapse;margin-top:8px;}
+th,td{border-bottom:1px solid #444;padding:6px;text-align:center;}
 th{background:#0dcaf0;color:black}
-
-button{
-    padding:6px 10px;
-    border:none;
-    border-radius:6px;
-    cursor:pointer;
-}
+button{padding:6px 10px;border:none;border-radius:6px;cursor:pointer;}
 .del{background:#dc3545;color:white}
-
-/* ===== المجموع ===== */
-#totalBox{
-    margin-top:10px;
-    background:black;
-    border-radius:16px;
-    padding:15px;
-    text-align:center;
-    box-shadow:0 0 30px rgba(0,255,0,.7);
-}
-#totalBox span{
-    font-size:20px;
-}
-#total{
-    font-size:42px;
-    color:#00ff88;
-    font-weight:bold;
-}
-.btn.confirm{
-    margin-top:10px;
-    padding:10px 20px;
-    font-size:18px;
-    background:linear-gradient(45deg,#28a745,#20c997);
-    color:white;
-    border-radius:12px;
-    cursor:pointer;
-    border:none;
-}
+#totalBox{margin-top:10px;background:black;border-radius:16px;padding:15px;text-align:center;box-shadow:0 0 30px rgba(0,255,0,.7);}
+#totalBox span{font-size:20px;}
+#total{font-size:42px;color:#00ff88;font-weight:bold;}
+.btn.confirm{margin-top:10px;padding:10px 20px;font-size:18px;background:linear-gradient(45deg,#28a745,#20c997);color:white;border-radius:12px;cursor:pointer;border:none;}
 </style>
 </head>
-
 <body>
 
 <header>
@@ -177,7 +45,6 @@ button{
 <div id="categories"></div>
 <div id="products"></div>
 
-<!-- سلة -->
 <div id="cartBox">
     <div id="cartTitle">
         <input id="cartName" value="🛒 سلة الشراء">
@@ -205,10 +72,9 @@ button{
 </div>
 
 <script>
-// المخزون والسلة
-let stock = JSON.parse(localStorage.getItem("stock")) || [];
-let cart=[];
-let sales = JSON.parse(localStorage.getItem("sales")) || [];
+const SHEET_URL = "https://script.google.com/macros/s/YOUR_WEB_APP_ID/exec"; // ضع هنا Web App URL من Google Apps Script
+
+let stock=[], cart=[];
 
 /* ===== لغات ===== */
 const words={
@@ -228,14 +94,20 @@ function setLang(l){
     totalLabel.textContent=words[l].tot;
 }
 
+// تحميل المخزون من Google Sheets
+async function loadStock(){
+    const res = await fetch(SHEET_URL+"?action=getStock");
+    stock = await res.json();
+    renderCategories();
+}
+loadStock();
+
 /* ===== تعديل اسم التصنيفات ===== */
 function editCategory(catName){
     let newName = prompt("أدخل الاسم الجديد للتصنيف", catName);
     if(newName){
-        stock.filter(p=>p.category===catName).forEach(p=>p.category=newName);
-        renderCategories();
-        renderProducts(currentCat);
-        localStorage.setItem("stock",JSON.stringify(stock));
+        fetch(SHEET_URL+"?action=editCategory&old="+encodeURIComponent(catName)+"&new="+encodeURIComponent(newName));
+        loadStock();
     }
 }
 
@@ -253,7 +125,6 @@ function renderCategories(){
         categories.appendChild(d);
     });
 }
-renderCategories();
 
 /* ===== منتجات ===== */
 function show(cat){
@@ -273,7 +144,7 @@ function show(cat){
     });
 }
 
-/* ===== إضافة للسلة مع عرض الكمية المتبقية ===== */
+/* ===== إضافة للسلة ===== */
 function add(p){
     let f=cart.find(i=>i.name===p.name);
     if(f){
@@ -306,35 +177,21 @@ function render(){
     total.textContent=sum+" دج";
 }
 
-/* ===== تأكيد البيع وتحديث المخزون والاحصائيات ===== */
-function confirmSale(){
+/* ===== تأكيد البيع ===== */
+async function confirmSale(){
     if(cart.length===0){ alert("لا توجد عناصر في السلة"); return; }
-    let today = new Date();
-    let dateStr = today.toISOString().split('T')[0];
-    cart.forEach(item=>{
-        let s = stock.find(p=>p.name===item.name);
-        if(s) s.qtyLeft -= item.qty;
-        let profit = (item.price - (s?s.buy:0))*item.qty;
-        sales.push({name:item.name, qty:item.qty, price:item.price, total:item.price*item.qty, profit:profit, date:dateStr});
+    const res = await fetch(SHEET_URL, {
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({action:"confirmSale",cart})
     });
-    localStorage.setItem("stock", JSON.stringify(stock));
-    localStorage.setItem("sales", JSON.stringify(sales));
-    cart=[];
-    render();
-    renderProducts(currentCat);
-    alert("✅ تم تأكيد البيع وتحديث المخزون والإحصائيات");
-}
-
-/* ===== احصائيات الربح ===== */
-function profitStats(){
-    let daily={}, monthly={};
-    sales.forEach(s=>{
-        let d = s.date;
-        let m = d.slice(0,7);
-        daily[d]=(daily[d]||0)+s.profit;
-        monthly[m]=(monthly[m]||0)+s.profit;
-    });
-    return {daily,monthly};
+    const data = await res.json();
+    if(data.success){
+        alert("✅ تم تأكيد البيع وتحديث المخزون والإحصائيات");
+        cart=[];
+        loadStock();
+        render();
+    } else alert("❌ حدث خطأ في حفظ البيانات");
 }
 
 /* ===== تعديل اسم السلة ===== */
@@ -343,7 +200,6 @@ cartName.addEventListener("dblclick",()=>{
     if(newName) cartName.value=newName;
 });
 
-// لغة افتراضية
 setLang("ar");
 </script>
 
