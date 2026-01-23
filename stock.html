@@ -41,7 +41,8 @@ th{background:#28a745;}
 <h3>إضافة منتج جديد</h3>
 <input id="barcode" placeholder="📦 الباركود">
 <input id="product" placeholder="🧾 اسم المنتج">
-<input id="category" placeholder="🏷️ المجموعة">
+<select id="categorySelect"></select>
+<input id="newCategory" placeholder="أدخل مجموعة جديدة إذا أردت">
 <input id="buy" placeholder="💰 سعر الشراء">
 <input id="sell" placeholder="💵 سعر البيع">
 <input id="qty" type="number" placeholder="📦 الكمية">
@@ -59,7 +60,7 @@ th{background:#28a745;}
 <th>المجموعة</th>
 <th>الكمية الأصلية</th>
 <th>الكمية المتبقية</th>
-<th>السعر بيع</th>
+<th>سعر البيع</th>
 <th>تعديل/حذف</th>
 </tr>
 </thead>
@@ -71,6 +72,22 @@ th{background:#28a745;}
 <script>
 let stock = JSON.parse(localStorage.getItem("stock")) || [];
 const tbody = document.getElementById("tbody");
+
+// ===== المجموعات الأساسية =====
+let categories = ["الحلويات","المشروبات","عطور رجالية","عطور نسائية","Cosmétique","TABAC"];
+
+// ===== تحديث Dropdown المجموعات =====
+function updateCategoryDropdown(){
+    const select = document.getElementById("categorySelect");
+    select.innerHTML="";
+    categories.forEach(cat=>{
+        let opt = document.createElement("option");
+        opt.value = cat;
+        opt.textContent = cat;
+        select.appendChild(opt);
+    });
+}
+updateCategoryDropdown();
 
 // ===== عرض الصور والمخزون =====
 function renderImages(){
@@ -85,11 +102,11 @@ function renderImages(){
             <span>${p.name} (${p.category})</span>
         `;
         div.onclick = ()=>{ 
-            product.value = p.name;
-            sell.value = p.sell;
-            buy.value = p.buy;
-            barcode.value = p.barcode || "";
-            category.value = p.category;
+            document.getElementById("product").value = p.name;
+            document.getElementById("sell").value = p.sell;
+            document.getElementById("buy").value = p.buy;
+            document.getElementById("barcode").value = p.barcode || "";
+            document.getElementById("categorySelect").value = p.category;
         };
         list.appendChild(div);
     });
@@ -98,23 +115,37 @@ function renderImages(){
 
 // ===== إضافة شراء =====
 function addPurchase(){
+    let prodName = document.getElementById("product").value.trim();
+    let prodCategory = document.getElementById("newCategory").value.trim() || document.getElementById("categorySelect").value;
+    let buyPrice = +document.getElementById("buy").value;
+    let sellPrice = +document.getElementById("sell").value;
+    let qtyValue = +document.getElementById("qty").value;
+    let barcodeVal = document.getElementById("barcode").value;
+    let dateVal = document.getElementById("date").value;
+    let expiryVal = document.getElementById("expiry").value;
     let imgFile = document.getElementById("imageInput").files[0];
-    let reader = new FileReader();
 
+    if(!prodName || !prodCategory || !buyPrice || !sellPrice || !qtyValue){ alert("🚫 يرجى تعبئة جميع الحقول"); return; }
+
+    if(prodCategory && !categories.includes(prodCategory)) categories.push(prodCategory);
+    updateCategoryDropdown();
+
+    let reader = new FileReader();
     reader.onload = function(){
         const prod = {
-            name: product.value,
-            category: category.value,
-            buy: +buy.value,
-            sell: +sell.value,
-            qtyOriginal: +qty.value,
-            qtyLeft: +qty.value,
-            date: date.value,
-            expiry: expiry.value,
-            barcode: barcode.value,
-            image: reader.result
+            name: prodName,
+            category: prodCategory,
+            buy: buyPrice,
+            sell: sellPrice,
+            qtyOriginal: qtyValue,
+            qtyLeft: qtyValue,
+            date: dateVal,
+            expiry: expiryVal,
+            barcode: barcodeVal,
+            image: reader.result || ""
         };
-        // إضافة إلى المخزون
+
+        // دمج إذا المنتج موجود
         let exist = stock.find(x=>x.name===prod.name && x.category===prod.category);
         if(exist){
             exist.qtyOriginal += prod.qtyOriginal;
@@ -127,7 +158,7 @@ function addPurchase(){
         localStorage.setItem("stock", JSON.stringify(stock));
         clearInputs();
         renderImages();
-        alert("✅ تم إضافة المنتج للمخزون");
+        alert("✅ تم إضافة المنتج بنجاح");
     }
 
     if(imgFile) reader.readAsDataURL(imgFile);
@@ -136,8 +167,15 @@ function addPurchase(){
 
 // ===== مسح المدخلات =====
 function clearInputs(){
-    product.value = category.value = buy.value = sell.value = qty.value = date.value = expiry.value = barcode.value = "";
-    imageInput.value = "";
+    document.getElementById("product").value = "";
+    document.getElementById("newCategory").value = "";
+    document.getElementById("buy").value = "";
+    document.getElementById("sell").value = "";
+    document.getElementById("qty").value = "";
+    document.getElementById("barcode").value = "";
+    document.getElementById("date").value = "";
+    document.getElementById("expiry").value = "";
+    document.getElementById("imageInput").value = "";
 }
 
 // ===== رسم جدول المخزون =====
@@ -175,6 +213,9 @@ function editItem(i){
     p.sell = +newSell;
     p.qtyOriginal = +newQty;
     p.qtyLeft = Math.min(p.qtyLeft, +newQty);
+
+    if(!categories.includes(newCat)) categories.push(newCat);
+    updateCategoryDropdown();
 
     localStorage.setItem("stock", JSON.stringify(stock));
     renderImages();
