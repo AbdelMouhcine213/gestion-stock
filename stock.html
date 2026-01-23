@@ -3,194 +3,208 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Gestion Stock & POS</title>
+<title>POS - المبيعات</title>
 <style>
 *{box-sizing:border-box;}
-body{margin:0;font-family:Arial;direction:rtl;background:#0a1f3f;color:white;padding:10px;}
-header{background:#28a745;padding:15px;text-align:center;font-size:28px;border-radius:12px;margin-bottom:15px;}
-.container{display:grid;grid-template-columns:250px 1fr;gap:15px;}
-
-/* ===== قائمة الصور ===== */
-.images{background:#08152a;border-radius:15px;padding:10px;overflow-y:auto;max-height:80vh;}
-.img-item{border:2px solid #00ff99;border-radius:12px;margin-bottom:10px;padding:5px;cursor:pointer;text-align:center;}
-.img-item img{width:100%;height:120px;object-fit:contain;background:#fff;border-radius:10px;}
-.img-item span{display:block;margin-top:5px;font-size:14px;color:#00ffcc;}
-
-/* ===== المدخلات ===== */
-.card{background:#08152a;padding:15px;border-radius:15px;}
-input,button,select{width:100%;padding:10px;margin:5px 0;border-radius:10px;border:none;font-size:16px;}
-input{background:#000;color:#0ff;border:1px solid #00ff99;}
-button{background:#17a2b8;color:white;cursor:pointer;}
-button:hover{opacity:.8;}
-table{width:100%;border-collapse:collapse;margin-top:10px;}
-th,td{padding:8px;border-bottom:1px solid #123;text-align:center;}
-th{background:#28a745;}
-.stockLabel{color:#0f0;font-weight:bold;}
+body{margin:0;font-family:Arial;direction:rtl;background:linear-gradient(160deg,#050b18,#0b2a52);color:white;}
+header{display:flex;justify-content:space-between;align-items:center;padding:15px;background:linear-gradient(90deg,#198754,#20c997);font-size:26px;font-weight:bold;}
+select,input{padding:6px;border-radius:8px;border:none;font-size:16px;}
+#searchBox{width:250px;padding:8px;border-radius:10px;border:1px solid #0ff;background:#000;color:#0ff;}
+#categories{display:flex;gap:10px;padding:10px;overflow-x:auto;margin-top:10px;}
+.cat{background:#0dcaf0;color:black;padding:10px 18px;border-radius:20px;font-weight:bold;cursor:pointer;white-space:nowrap;}
+.cat:hover{background:#66e3ff}
+#products{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;padding:12px;margin-top:10px;}
+.product{background:white;color:black;border-radius:16px;padding:8px;text-align:center;cursor:pointer;box-shadow:0 0 15px rgba(0,0,0,.3);position:relative;}
+.product img{width:100%;height:120px;object-fit:contain;}
+.product span,.product b{display:block;}
+.stockLabel{position:absolute;top:8px;right:8px;background:rgba(0,0,0,0.7);color:#00ff88;padding:2px 6px;border-radius:6px;font-size:14px;font-weight:bold;}
+#cartBox{background:#081a33;margin:10px;border-radius:16px;padding:10px;box-shadow:0 0 15px rgba(0,255,150,.4);}
+#cartTitle{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+table{width:100%;border-collapse:collapse;}
+th,td{border-bottom:1px solid #444;padding:6px;text-align:center;}
+th{background:#0dcaf0;color:black}
+button{padding:6px 10px;border:none;border-radius:6px;cursor:pointer;}
+.del{background:#dc3545;color:white}
+#totalBox{margin-top:10px;background:black;border-radius:16px;padding:15px;text-align:center;box-shadow:0 0 30px rgba(0,255,0,.7);}
+#totalBox span{font-size:20px;}
+#total{font-size:42px;color:#00ff88;font-weight:bold;}
+.btn.confirm{margin-top:10px;padding:10px 20px;font-size:18px;background:linear-gradient(45deg,#28a745,#20c997);color:white;border-radius:12px;cursor:pointer;border:none;}
 </style>
 </head>
 <body>
 
-<header>🛒 المشتريات والمخزون</header>
+<header>
+    <span id="title">💳 المبيعات</span>
+    <div>
+        <input id="searchBox" placeholder="🔍 ابحث عن المنتج">
+        <select id="lang" onchange="setLang(this.value)">
+            <option value="ar">العربية</option>
+            <option value="fr">Français</option>
+            <option value="en">English</option>
+        </select>
+    </div>
+</header>
 
-<div class="container">
-<!-- ===== قائمة الصور ===== -->
-<div class="images" id="imageList"></div>
+<div id="categories"></div>
+<div id="products"></div>
 
-<!-- ===== المحتوى ===== -->
-<div class="card">
-<h3>إضافة منتج جديد</h3>
-<input id="barcode" placeholder="📦 الباركود">
-<input id="product" placeholder="🧾 اسم المنتج">
-<input id="category" placeholder="🏷️ المجموعة">
-<input id="buy" placeholder="💰 سعر الشراء">
-<input id="sell" placeholder="💵 سعر البيع">
-<input id="qty" type="number" placeholder="📦 الكمية">
-<input id="date" type="date">
-<input id="expiry" type="date">
-<label>📷 صورة المنتج</label>
-<input type="file" id="imageInput" accept="image/*">
-<button onclick="addPurchase()">➕ إضافة</button>
+<div id="cartBox">
+    <div id="cartTitle">
+        <span>🛒 سلة الشراء</span>
+        <span id="itemsLabel">العناصر</span>
+    </div>
 
-<h3>المخزون الحالي</h3>
-<table>
-<thead>
-<tr>
-<th>المنتج</th>
-<th>المجموعة</th>
-<th>الكمية الأصلية</th>
-<th>الكمية المتبقية</th>
-<th>السعر بيع</th>
-<th>تعديل/حذف</th>
-</tr>
-</thead>
-<tbody id="tbody"></tbody>
-</table>
-</div>
+    <table>
+        <thead>
+            <tr>
+                <th id="p">المنتج</th>
+                <th id="q">الكمية</th>
+                <th id="pr">السعر</th>
+                <th id="t">المجموع</th>
+                <th>✖</th>
+            </tr>
+        </thead>
+        <tbody id="cart"></tbody>
+    </table>
+
+    <div id="totalBox">
+        <span id="totalLabel">المجموع الكلي</span>
+        <div id="total">0</div>
+    </div>
+    <button onclick="confirmSale()" class="btn confirm">✅ تأكيد البيع</button>
 </div>
 
 <script>
 let stock = JSON.parse(localStorage.getItem("stock")) || [];
-const tbody = document.getElementById("tbody");
+let cart = [];
 
-// ===== عرض الصور والمخزون =====
-function renderImages(){
-    const list = document.getElementById("imageList");
-    list.innerHTML="";
-    stock.forEach((p,i)=>{
-        if(!p.image) return;
-        let div = document.createElement("div");
-        div.className="img-item";
-        div.innerHTML=`
-            <img src="${p.image}">
-            <span>${p.name} (${p.category})</span>
-        `;
-        div.onclick = ()=>{ 
-            product.value = p.name;
-            sell.value = p.sell;
-            buy.value = p.buy;
-            barcode.value = p.barcode || "";
-            category.value = p.category;
-        };
-        list.appendChild(div);
+// ===== لغات =====
+const words = {
+ar:{title:"💳 المبيعات",items:"العناصر",p:"المنتج",q:"الكمية",pr:"السعر",t:"المجموع",tot:"المجموع الكلي"},
+fr:{title:"💳 Ventes",items:"Articles",p:"Produit",q:"Qté",pr:"Prix",t:"Total",tot:"Total général"},
+en:{title:"💳 Sales",items:"Items",p:"Product",q:"Qty",pr:"Price",t:"Total",tot:"Grand Total"}
+};
+
+function setLang(l){
+    document.body.dir = l==="ar"?"rtl":"ltr";
+    document.getElementById("title").textContent = words[l].title;
+    itemsLabel.textContent = words[l].items;
+    p.textContent = words[l].p;
+    q.textContent = words[l].q;
+    pr.textContent = words[l].pr;
+    t.textContent = words[l].t;
+    totalLabel.textContent = words[l].tot;
+}
+
+// ===== تصنيفات تلقائية من المخزون =====
+let currentCat = null;
+function renderCategories(){
+    const catsDiv = document.getElementById("categories");
+    catsDiv.innerHTML="";
+    const cats = [...new Set(stock.map(p=>p.category))];
+    cats.forEach(c=>{
+        const d = document.createElement("div");
+        d.className="cat";
+        d.textContent = c;
+        d.onclick = ()=>{ currentCat=c; showProducts(c); };
+        catsDiv.appendChild(d);
     });
-    renderStockTable();
+}
+renderCategories();
+
+// ===== عرض منتجات التصنيف =====
+function showProducts(cat){
+    const prodDiv = document.getElementById("products");
+    prodDiv.innerHTML="";
+    stock.filter(p=>p.category===cat && p.qtyLeft>0)
+    .forEach(p=>{
+        const d = document.createElement("div");
+        d.className="product";
+        d.innerHTML = `
+            <img src="${p.image}">
+            <span>${p.name}</span>
+            <b>${p.sell} دج</b>
+            <div class="stockLabel">المتبقي: ${p.qtyLeft}</div>
+        `;
+        d.onclick = ()=>addToCart(p);
+        prodDiv.appendChild(d);
+    });
 }
 
-// ===== إضافة شراء =====
-function addPurchase(){
-    let imgFile = document.getElementById("imageInput").files[0];
-    let reader = new FileReader();
-
-    reader.onload = function(){
-        const prod = {
-            name: product.value,
-            category: category.value,
-            buy: +buy.value,
-            sell: +sell.value,
-            qtyOriginal: +qty.value,
-            qtyLeft: +qty.value,
-            date: date.value,
-            expiry: expiry.value,
-            barcode: barcode.value,
-            image: reader.result
-        };
-        // إضافة إلى المخزون
-        let exist = stock.find(x=>x.name===prod.name && x.category===prod.category);
-        if(exist){
-            exist.qtyOriginal += prod.qtyOriginal;
-            exist.qtyLeft += prod.qtyLeft;
-            exist.buy = prod.buy;
-            exist.sell = prod.sell;
-            exist.image = prod.image;
-        } else stock.push(prod);
-
-        localStorage.setItem("stock", JSON.stringify(stock));
-        clearInputs();
-        renderImages();
-        alert("✅ تم إضافة المنتج للمخزون");
+// ===== إضافة إلى سلة البيع =====
+function addToCart(p){
+    let f = cart.find(i=>i.name===p.name && i.category===p.category);
+    if(f){
+        if(f.qty < p.qtyLeft) f.qty++;
+        else alert("🚫 لا توجد كمية كافية في المخزون");
+    } else {
+        if(p.qtyLeft>0) cart.push({name:p.name,price:p.sell,qty:1,qtyLeft:p.qtyLeft,category:p.category});
+        else { alert("🚫 المنتج نفد من المخزون"); return; }
     }
-
-    if(imgFile) reader.readAsDataURL(imgFile);
-    else reader.onload();
+    renderCart();
 }
 
-// ===== مسح المدخلات =====
-function clearInputs(){
-    product.value = category.value = buy.value = sell.value = qty.value = date.value = expiry.value = barcode.value = "";
-    imageInput.value = "";
-}
-
-// ===== رسم جدول المخزون =====
-function renderStockTable(){
+// ===== رسم سلة البيع =====
+function renderCart(){
+    const tbody = document.getElementById("cart");
     tbody.innerHTML="";
-    stock.forEach((p,i)=>{
-        let tr = document.createElement("tr");
+    let sum = 0;
+    cart.forEach((i,n)=>{
+        let tot = i.qty*i.price;
+        sum += tot;
+        const tr = document.createElement("tr");
         tr.innerHTML = `
-            <td>${p.name}</td>
-            <td>${p.category}</td>
-            <td>${p.qtyOriginal}</td>
-            <td class="stockLabel">${p.qtyLeft}</td>
-            <td>${p.sell}</td>
-            <td>
-                <button onclick="editItem(${i})">✏️</button>
-                <button onclick="deleteItem(${i})">🗑️</button>
-            </td>
+            <td>${i.name} (المتبقي: ${i.qtyLeft - i.qty})</td>
+            <td><input type="number" value="${i.qty}" min="1" max="${i.qtyLeft}" onchange="cart[${n}].qty=Math.min(this.value,${i.qtyLeft});renderCart()"></td>
+            <td><input type="number" value="${i.price}" min="0" onchange="cart[${n}].price=+this.value;renderCart()"></td>
+            <td>${tot}</td>
+            <td><button class="del" onclick="cart.splice(${n},1);renderCart()">✖</button></td>
         `;
         tbody.appendChild(tr);
     });
+    total.textContent = sum + " دج";
 }
 
-// ===== تعديل منتج =====
-function editItem(i){
-    const p = stock[i];
-    let newName = prompt("اسم المنتج:", p.name) || p.name;
-    let newCat = prompt("المجموعة:", p.category) || p.category;
-    let newBuy = prompt("سعر الشراء:", p.buy) || p.buy;
-    let newSell = prompt("سعر البيع:", p.sell) || p.sell;
-    let newQty = prompt("الكمية الأصلية:", p.qtyOriginal) || p.qtyOriginal;
-
-    p.name = newName;
-    p.category = newCat;
-    p.buy = +newBuy;
-    p.sell = +newSell;
-    p.qtyOriginal = +newQty;
-    p.qtyLeft = Math.min(p.qtyLeft, +newQty);
-
+// ===== تأكيد البيع =====
+function confirmSale(){
+    if(cart.length===0){ alert("لا توجد عناصر في السلة"); return; }
+    cart.forEach(c=>{
+        const prod = stock.find(p=>p.name===c.name && p.category===c.category);
+        if(prod) prod.qtyLeft -= c.qty;
+    });
     localStorage.setItem("stock", JSON.stringify(stock));
-    renderImages();
+    alert("✅ تم تأكيد البيع وتحديث المخزون");
+    cart=[];
+    renderCart();
+    renderCategories();
+    if(currentCat) showProducts(currentCat);
 }
 
-// ===== حذف منتج =====
-function deleteItem(i){
-    if(confirm("هل تريد حذف هذا المنتج؟")){
-        stock.splice(i,1);
-        localStorage.setItem("stock", JSON.stringify(stock));
-        renderImages();
-    }
-}
+// ===== شريط البحث الذكي =====
+const searchBox = document.getElementById("searchBox");
+searchBox.addEventListener("input",()=>{
+    const term = searchBox.value.trim().toLowerCase();
+    const prodDiv = document.getElementById("products");
+    prodDiv.innerHTML="";
+    if(term===""){ if(currentCat) showProducts(currentCat); return; }
+    stock.filter(p=>p.name.toLowerCase().startsWith(term) && p.qtyLeft>0)
+    .forEach(p=>{
+        const d = document.createElement("div");
+        d.className="product";
+        d.innerHTML = `
+            <img src="${p.image}">
+            <span>${p.name}</span>
+            <b>${p.sell} دج</b>
+            <div class="stockLabel">المتبقي: ${p.qtyLeft}</div>
+        `;
+        d.onclick = ()=>addToCart(p);
+        prodDiv.appendChild(d);
+    });
+});
 
-renderImages();
+setLang("ar");
+renderCart();
 </script>
 
 </body>
-</html
+</html>
