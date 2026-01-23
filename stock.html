@@ -9,10 +9,14 @@
 body{margin:0;font-family:Arial;direction:rtl;background:#0a1f3f;color:white;padding:10px;}
 header{background:#28a745;padding:15px;text-align:center;font-size:28px;border-radius:12px;margin-bottom:15px;}
 .container{display:grid;grid-template-columns:250px 1fr;gap:15px;}
+
+/* قائمة الصور */
 .images{background:#08152a;border-radius:15px;padding:10px;overflow-y:auto;max-height:80vh;}
 .img-item{border:2px solid #00ff99;border-radius:12px;margin-bottom:10px;padding:5px;cursor:pointer;text-align:center;}
 .img-item img{width:100%;height:120px;object-fit:contain;background:#fff;border-radius:10px;}
 .img-item span{display:block;margin-top:5px;font-size:14px;color:#00ffcc;}
+
+/* المدخلات */
 .card{background:#08152a;padding:15px;border-radius:15px;}
 input,button,select{width:100%;padding:10px;margin:5px 0;border-radius:10px;border:none;font-size:16px;}
 input{background:#000;color:#0ff;border:1px solid #00ff99;}
@@ -26,16 +30,26 @@ th{background:#28a745;}
 </head>
 <body>
 
-<header>🛒 المخزون </header>
+<header>🛒 إدارة المخزون</header>
 
 <div class="container">
+<!-- قائمة الصور -->
 <div class="images" id="imageList"></div>
 
+<!-- المدخلات -->
 <div class="card">
 <h3>إضافة منتج جديد</h3>
 <input id="barcode" placeholder="📦 الباركود">
 <input id="product" placeholder="🧾 اسم المنتج">
-<input id="category" placeholder="🏷️ اختر المجموعة أو أدخل جديدة">
+<select id="category">
+    <option value="">🏷️ اختر المجموعة</option>
+    <option value="الحلويات">الحلويات</option>
+    <option value="المشروبات">المشروبات</option>
+    <option value="العطور الرجالية">العطور الرجالية</option>
+    <option value="العطور النسائية">العطور النسائية</option>
+    <option value="Cosmétique">Cosmétique</option>
+    <option value="Autres">Autres</option>
+</select>
 <input id="buy" placeholder="💰 سعر الشراء">
 <input id="sell" placeholder="💵 سعر البيع">
 <input id="qty" type="number" placeholder="📦 الكمية">
@@ -53,7 +67,7 @@ th{background:#28a745;}
 <th>المجموعة</th>
 <th>الكمية الأصلية</th>
 <th>الكمية المتبقية</th>
-<th>السعر بيع</th>
+<th>سعر البيع</th>
 <th>تعديل/حذف</th>
 </tr>
 </thead>
@@ -63,13 +77,10 @@ th{background:#28a745;}
 </div>
 
 <script>
-// جلب المخزون من LocalStorage مع حذف منتجات TABAC
 let stock = JSON.parse(localStorage.getItem("stock")) || [];
-stock = stock.filter(p => p.category !== "TABAC");
-localStorage.setItem("stock", JSON.stringify(stock));
-
 const tbody = document.getElementById("tbody");
 
+// عرض الصور والمخزون
 function renderImages(){
     const list = document.getElementById("imageList");
     list.innerHTML="";
@@ -79,21 +90,21 @@ function renderImages(){
         div.className="img-item";
         div.innerHTML=`
             <img src="${p.image}">
-            <span>${p.name} (${p.category})</span>
+            <span>${p.name} ${p.category? '('+p.category+')' : ''}</span>
         `;
-        div.onclick=()=>{ 
+        div.onclick = ()=>{ 
             product.value = p.name;
             sell.value = p.sell;
             buy.value = p.buy;
             barcode.value = p.barcode || "";
-            category.value = p.category;
+            category.value = p.category || "";
         };
         list.appendChild(div);
     });
     renderStockTable();
 }
 
-// إضافة منتج جديد
+// إضافة شراء
 function addPurchase(){
     let imgFile = document.getElementById("imageInput").files[0];
     let reader = new FileReader();
@@ -101,7 +112,7 @@ function addPurchase(){
     reader.onload = function(){
         const prod = {
             name: product.value,
-            category: category.value || "بدون مجموعة", // اختياري
+            category: category.value || "",
             buy: +buy.value,
             sell: +sell.value,
             qtyOriginal: +qty.value,
@@ -111,7 +122,7 @@ function addPurchase(){
             barcode: barcode.value,
             image: reader.result
         };
-        // إضافة إلى المخزون أو تحديث المنتج إذا موجود
+        // التحقق إذا المنتج موجود
         let exist = stock.find(x=>x.name===prod.name && x.category===prod.category);
         if(exist){
             exist.qtyOriginal += prod.qtyOriginal;
@@ -131,11 +142,13 @@ function addPurchase(){
     else reader.onload();
 }
 
+// مسح المدخلات
 function clearInputs(){
     product.value = category.value = buy.value = sell.value = qty.value = date.value = expiry.value = barcode.value = "";
     imageInput.value = "";
 }
 
+// رسم جدول المخزون
 function renderStockTable(){
     tbody.innerHTML="";
     stock.forEach((p,i)=>{
@@ -155,6 +168,7 @@ function renderStockTable(){
     });
 }
 
+// تعديل منتج
 function editItem(i){
     const p = stock[i];
     let newName = prompt("اسم المنتج:", p.name) || p.name;
@@ -174,6 +188,7 @@ function editItem(i){
     renderImages();
 }
 
+// حذف منتج
 function deleteItem(i){
     if(confirm("هل تريد حذف هذا المنتج؟")){
         stock.splice(i,1);
@@ -187,4 +202,3 @@ renderImages();
 
 </body>
 </html>
-
