@@ -1,78 +1,5 @@
-<!DOCTYPE html>
-<html lang="ar">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>POS</title>
-<style>
-*{box-sizing:border-box}
-body{margin:0;font-family:Arial;direction:rtl;background:linear-gradient(160deg,#050b18,#0b2a52);color:white;}
-header{display:flex;justify-content:space-between;align-items:center;padding:15px;background:linear-gradient(90deg,#198754,#20c997);font-size:26px;font-weight:bold;}
-select{padding:6px;border-radius:8px;border:none;font-size:16px;}
-#categories{display:flex;gap:10px;padding:10px;overflow-x:auto;}
-.cat{background:#0dcaf0;color:black;padding:10px 18px;border-radius:20px;font-weight:bold;cursor:pointer;white-space:nowrap;}
-.cat:hover{background:#66e3ff}
-#products{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;padding:12px;}
-.product{background:white;color:black;border-radius:16px;padding:8px;text-align:center;cursor:pointer;box-shadow:0 0 15px rgba(0,0,0,.3);position:relative;}
-.product img{width:100%;height:120px;object-fit:contain;}
-.product span, .product b{display:block;}
-.stockLabel{position:absolute;top:8px;right:8px;background:rgba(0,0,0,0.7);color:#00ff88;padding:2px 6px;border-radius:6px;font-size:14px;font-weight:bold;}
-#cartBox{background:#081a33;margin:10px;border-radius:16px;padding:10px;box-shadow:0 0 15px rgba(0,255,150,.4);}
-#cartTitle{display:flex;justify-content:space-between;align-items:center;}
-#cartTitle input{font-size:18px;font-weight:bold;border-radius:8px;border:none;padding:6px;}
-table{width:100%;border-collapse:collapse;margin-top:8px;}
-th,td{border-bottom:1px solid #444;padding:6px;text-align:center;}
-th{background:#0dcaf0;color:black}
-button{padding:6px 10px;border:none;border-radius:6px;cursor:pointer;}
-.del{background:#dc3545;color:white}
-#totalBox{margin-top:10px;background:black;border-radius:16px;padding:15px;text-align:center;box-shadow:0 0 30px rgba(0,255,0,.7);}
-#totalBox span{font-size:20px;}
-#total{font-size:42px;color:#00ff88;font-weight:bold;}
-.btn.confirm{margin-top:10px;padding:10px 20px;font-size:18px;background:linear-gradient(45deg,#28a745,#20c997);color:white;border-radius:12px;cursor:pointer;border:none;}
-</style>
-</head>
-<body>
-
-<header>
-    <span id="title">💳 المبيعات</span>
-    <select id="lang" onchange="setLang(this.value)">
-        <option value="ar">العربية</option>
-        <option value="fr">Français</option>
-        <option value="en">English</option>
-    </select>
-</header>
-
-<div id="categories"></div>
-<div id="products"></div>
-
-<div id="cartBox">
-    <div id="cartTitle">
-        <input id="cartName" value="🛒 سلة الشراء">
-        <span id="itemsLabel">العناصر</span>
-    </div>
-
-    <table>
-        <thead>
-            <tr>
-                <th id="p">المنتج</th>
-                <th id="q">الكمية</th>
-                <th id="pr">السعر</th>
-                <th id="t">المجموع</th>
-                <th>✖</th>
-            </tr>
-        </thead>
-        <tbody id="cart"></tbody>
-    </table>
-
-    <div id="totalBox">
-        <span id="totalLabel">المجموع الكلي</span>
-        <div id="total">0</div>
-    </div>
-    <button onclick="confirmSale()" class="btn confirm">✅ تأكيد البيع</button>
-</div>
-
 <script>
-const SHEET_URL = "https://script.google.com/macros/s/YOUR_WEB_APP_ID/exec"; // ضع هنا Web App URL من Google Apps Script
+const SHEET_URL = "https://script.google.com/macros/s/YOUR_WEB_APP_ID/exec";
 
 let stock=[], cart=[];
 
@@ -85,7 +12,7 @@ en:{title:"💳 Sales",items:"Items",p:"Product",q:"Qty",pr:"Price",t:"Total",to
 
 function setLang(l){
     document.body.dir = l==="ar"?"rtl":"ltr";
-    document.getElementById("title").textContent=words[l].title;
+    title.textContent=words[l].title;
     itemsLabel.textContent=words[l].items;
     p.textContent=words[l].p;
     q.textContent=words[l].q;
@@ -94,15 +21,16 @@ function setLang(l){
     totalLabel.textContent=words[l].tot;
 }
 
-// تحميل المخزون من Google Sheets
+/* ===== تحميل المخزون ===== */
 async function loadStock(){
     const res = await fetch(SHEET_URL+"?action=getStock");
     stock = await res.json();
     renderCategories();
+    if(currentCat) show(currentCat);
 }
 loadStock();
 
-/* ===== تعديل اسم التصنيفات ===== */
+/* ===== تعديل اسم التصنيف ===== */
 function editCategory(catName){
     let newName = prompt("أدخل الاسم الجديد للتصنيف", catName);
     if(newName){
@@ -121,12 +49,12 @@ function renderCategories(){
         d.className="cat";
         d.textContent=c;
         d.onclick=()=>{ currentCat=c; show(c); };
-        d.oncontextmenu=(e)=>{ e.preventDefault(); editCategory(c); };
+        d.oncontextmenu=e=>{ e.preventDefault(); editCategory(c); };
         categories.appendChild(d);
     });
 }
 
-/* ===== منتجات ===== */
+/* ===== عرض المنتجات ===== */
 function show(cat){
     products.innerHTML="";
     stock.filter(p=>p.category===cat && p.qtyLeft>0)
@@ -146,62 +74,98 @@ function show(cat){
 
 /* ===== إضافة للسلة ===== */
 function add(p){
-    let f=cart.find(i=>i.name===p.name);
-    if(f){
-        if(f.qty<p.qtyLeft) f.qty++;
-        else alert("🚫 لا توجد كمية كافية في المخزون");
-    } else {
-        if(p.qtyLeft>0) cart.push({name:p.name,price:p.sell,qty:1,qtyLeft:p.qtyLeft});
-        else { alert("🚫 المنتج نفد من المخزون"); return; }
+    if(p.qtyLeft<=0){ alert("🚫 نفد المخزون"); return; }
+
+    let item = cart.find(i=>i.name===p.name);
+    if(item){
+        item.qty++;
+    }else{
+        cart.push({name:p.name,price:p.sell,qty:1});
     }
+    p.qtyLeft--;
     render();
+    show(currentCat);
 }
 
 /* ===== رسم السلة ===== */
 function render(){
-    cartBox.querySelector("tbody").innerHTML="";
+    cart.innerHTML="";
     let sum=0;
+
     cart.forEach((i,n)=>{
-        let tr=document.createElement("tr");
+        let p = stock.find(x=>x.name===i.name);
         let tot=i.qty*i.price;
         sum+=tot;
+
+        let tr=document.createElement("tr");
         tr.innerHTML=`
-            <td>${i.name} (المتبقي: ${i.qtyLeft - i.qty})</td>
-            <td><input type="number" value="${i.qty}" min="1" max="${i.qtyLeft}" onchange="cart[${n}].qty=Math.min(this.value,${i.qtyLeft});render()"></td>
+            <td>${i.name}<br><small>المتبقي: ${p.qtyLeft}</small></td>
+            <td>
+                <input type="number" min="1" value="${i.qty}"
+                onchange="updateQty(${n},this.value)">
+            </td>
             <td>${i.price}</td>
             <td>${tot}</td>
-            <td><button class="del" onclick="cart.splice(${n},1);render()">✖</button></td>
+            <td><button class="del" onclick="removeItem(${n})">✖</button></td>
         `;
-        cartBox.querySelector("tbody").appendChild(tr);
+        document.getElementById("cart").appendChild(tr);
     });
     total.textContent=sum+" دج";
 }
 
+/* ===== تعديل الكمية ===== */
+function updateQty(i,newQty){
+    let item=cart[i];
+    let p=stock.find(x=>x.name===item.name);
+    newQty=Number(newQty);
+
+    if(newQty<1) newQty=1;
+
+    let diff=newQty-item.qty;
+    if(diff>0 && p.qtyLeft<diff){
+        alert("🚫 كمية غير متوفرة");
+        return;
+    }
+    item.qty=newQty;
+    p.qtyLeft-=diff;
+    render();
+    show(currentCat);
+}
+
+/* ===== حذف عنصر ===== */
+function removeItem(i){
+    let item=cart[i];
+    let p=stock.find(x=>x.name===item.name);
+    p.qtyLeft+=item.qty;
+    cart.splice(i,1);
+    render();
+    show(currentCat);
+}
+
 /* ===== تأكيد البيع ===== */
 async function confirmSale(){
-    if(cart.length===0){ alert("لا توجد عناصر في السلة"); return; }
-    const res = await fetch(SHEET_URL, {
+    if(cart.length===0){ alert("السلة فارغة"); return; }
+
+    const res = await fetch(SHEET_URL,{
         method:"POST",
         headers:{"Content-Type":"application/json"},
         body:JSON.stringify({action:"confirmSale",cart})
     });
-    const data = await res.json();
+    const data=await res.json();
+
     if(data.success){
-        alert("✅ تم تأكيد البيع وتحديث المخزون والإحصائيات");
+        alert("✅ تم البيع");
         cart=[];
         loadStock();
         render();
-    } else alert("❌ حدث خطأ في حفظ البيانات");
+    }else alert("❌ خطأ في الحفظ");
 }
 
 /* ===== تعديل اسم السلة ===== */
-cartName.addEventListener("dblclick",()=>{ 
-    let newName = prompt("أدخل اسم جديد للسلة", cartName.value);
-    if(newName) cartName.value=newName;
-});
+cartName.ondblclick=()=>{
+    let n=prompt("اسم جديد للسلة",cartName.value);
+    if(n) cartName.value=n;
+};
 
 setLang("ar");
 </script>
-
-</body>
-</html>
