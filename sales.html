@@ -13,6 +13,7 @@ select{padding:6px;border-radius:8px;border:none;font-size:16px;}
 .cat{background:#0dcaf0;color:black;padding:10px 18px;border-radius:20px;font-weight:bold;cursor:pointer;white-space:nowrap;}
 .cat.active{background:#00ff88}
 #searchGroup{margin:10px 12px;padding:6px;width:calc(100% - 24px);border-radius:10px;border:none;font-size:16px;}
+#suggestions{background:#fff;color:#000;position:absolute;z-index:1000;width:calc(100% - 24px);border-radius:10px;max-height:180px;overflow-y:auto;display:none;}
 #products{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;padding:12px;}
 .product{background:white;color:black;border-radius:16px;padding:8px;text-align:center;cursor:pointer;box-shadow:0 0 15px rgba(0,0,0,.3);position:relative;}
 .product img{width:100%;height:120px;object-fit:contain;}
@@ -30,6 +31,8 @@ button{padding:6px 10px;border:none;border-radius:6px;cursor:pointer;}
 #totalBox span{font-size:20px;}
 #total{font-size:42px;color:#00ff88;font-weight:bold;}
 .btn.confirm{margin-top:10px;padding:10px 20px;font-size:18px;background:linear-gradient(45deg,#28a745,#20c997);color:white;border-radius:12px;cursor:pointer;border:none;}
+.suggestionItem{padding:5px 8px;cursor:pointer;}
+.suggestionItem:hover{background:#eee;color:black;}
 </style>
 </head>
 <body>
@@ -44,7 +47,8 @@ button{padding:6px 10px;border:none;border-radius:6px;cursor:pointer;}
 </header>
 
 <!-- شريط البحث العام -->
-<input id="searchGroup" placeholder="🔍 ابحث عن أي منتج..." onkeyup="searchProducts(this.value)">
+<input id="searchGroup" placeholder="🔍 ابحث عن أي منتج..." onkeyup="showSuggestions(this.value)">
+<div id="suggestions"></div>
 
 <div id="categories"></div>
 <div id="products"></div>
@@ -76,14 +80,15 @@ button{padding:6px 10px;border:none;border-radius:6px;cursor:pointer;}
 </div>
 
 <script>
+// ===== المخزون والسلّة =====
 let stock = JSON.parse(localStorage.getItem("products")) || [];
 let cart = [];
 let currentCat = null;
 
-// مجموعات ثابتة (يمكنك تعديلها أو إضافتها)
+// ===== المجموعات الثابتة =====
 let categoriesList = ["الحلويات","المشروبات","العطور الرجالية","المكسرات","العطور النسائية","Cosmétique","التدخين"];
 
-/* ===== لغات ===== */
+// ===== لغات =====
 const words={
 ar:{title:"💳 المبيعات",items:"العناصر",p:"المنتج",q:"الكمية",pr:"السعر",t:"المجموع",tot:"المجموع الكلي"},
 fr:{title:"💳 Ventes",items:"Articles",p:"Produit",q:"Qté",pr:"Prix",t:"Total",tot:"Total général"},
@@ -120,12 +125,12 @@ function renderCategories(){
     if(categoriesList.length>0) catsDiv.children[0].click();
 }
 
-// ===== عرض المنتجات
+// ===== عرض المنتجات حسب المجموعة
 function showProducts(cat){
     const productsDiv = document.getElementById("products");
     productsDiv.innerHTML="";
     stock.filter(p=>p.category===cat && p.qtyLeft>0)
-         .forEach((p,i)=>{
+         .forEach((p)=>{
         let d=document.createElement("div");
         d.className="product";
         d.innerHTML=`
@@ -139,24 +144,24 @@ function showProducts(cat){
     });
 }
 
-// ===== بحث المنتجات العام
-function searchProducts(text){
+// ===== البحث الذكي (Autocomplete)
+function showSuggestions(text){
+    const sugDiv = document.getElementById("suggestions");
+    if(text.trim()===""){ sugDiv.style.display="none"; return; }
     const t = text.toLowerCase();
-    let filtered = stock.filter(p=>p.name.toLowerCase().includes(t) && p.qtyLeft>0);
-    const productsDiv = document.getElementById("products");
-    productsDiv.innerHTML="";
+    const filtered = stock.filter(p=>p.name.toLowerCase().startsWith(t) && p.qtyLeft>0);
+    sugDiv.innerHTML="";
     filtered.forEach(p=>{
         let d=document.createElement("div");
-        d.className="product";
-        d.innerHTML=`
-            <img src="${p.image}">
-            <span>${p.name}</span>
-            <b>${p.sell} دج</b>
-            <div class="stockLabel">المتبقي: ${p.qtyLeft}</div>
-        `;
-        d.onclick=()=>addToCart(p);
-        productsDiv.appendChild(d);
+        d.className="suggestionItem";
+        d.textContent=p.name;
+        d.onclick=()=>{
+            addToCart(p);
+            sugDiv.style.display="none";
+        };
+        sugDiv.appendChild(d);
     });
+    sugDiv.style.display = filtered.length>0 ? "block" : "none";
 }
 
 // ===== إضافة للسلة
@@ -166,7 +171,7 @@ function addToCart(p){
         if(f.qty<p.qtyLeft) f.qty++;
         else alert("🚫 لا توجد كمية كافية");
     } else {
-        if(p.qtyLeft>0) cart.push({name:p.name,price:p.sell,qty:1,qtyLeft:p.qtyLeft});
+        if(p.qtyLeft>0) cart.push({name:p.name,price:p.sell,qty:1,qtyLeft:p.qtyLeft,category:p.category,image:p.image});
         else return;
     }
     renderCart();
@@ -195,8 +200,7 @@ function renderCart(){
 
 function changeQty(idx,val){
     let item = cart[idx];
-    let newVal = Math.min(val,item.qtyLeft);
-    item.qty = newVal;
+    item.qty = Math.min(val,item.qtyLeft);
     renderCart();
 }
 
@@ -205,16 +209,18 @@ function removeItem(idx){
     renderCart();
 }
 
-// ===== تأكيد البيع
+// ===== تأكيد البيع مع ربط المشتريات
 function confirmSale(){
     if(cart.length===0){ alert("لا توجد عناصر في السلة"); return; }
-    // هنا يمكنك ربط Google Sheets أو LocalStorage لتخزين البيع
     cart.forEach(c=>{
+        // تحديث المخزون
         let s = stock.find(x=>x.name===c.name);
         if(s) s.qtyLeft -= c.qty;
+        // إضافة تلقائية إلى المخزن حسب المجموعة إذا لم يكن موجود
+        else stock.push({name:c.name,sell:c.price,qtyLeft:0,category:c.category,image:c.image});
     });
     localStorage.setItem("products",JSON.stringify(stock));
-    alert("✅ تم تأكيد البيع");
+    alert("✅ تم تأكيد البيع وتحديث المخزون");
     cart=[];
     renderCart();
     showProducts(currentCat);
@@ -222,7 +228,6 @@ function confirmSale(){
 
 renderCategories();
 setLang("ar");
-
 </script>
 
 </body>
