@@ -2,160 +2,43 @@
 <html lang="ar">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>الإحصائيات</title>
 <style>
-body{font-family:Arial;direction:rtl;background:#0b1a33;color:white;padding:20px;}
-h2{color:#0ff;}
-table{width:100%;border-collapse:collapse;margin-top:10px;}
-th,td{padding:8px;border-bottom:1px solid #444;text-align:center;}
-th{background:#28a745;color:black;}
+body{font-family:Arial;direction:rtl;background:#0b1a33;color:white;padding:20px}
+table{width:100%;border-collapse:collapse}
+th,td{padding:8px;border-bottom:1px solid #444;text-align:center}
+th{background:#28a745;color:black}
 </style>
-
-<!-- Firebase SDK -->
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 </head>
 <body>
 
-<h2>📊 الإحصائيات اليومية والأسبوعية والشهرية</h2>
+<h2>📊 الإحصائيات</h2>
 
-<h3>💰 الفائدة اليومية</h3>
 <table>
 <thead>
-<tr>
-<th>التاريخ</th>
-<th>الربح الخام</th>
-<th>الربح الصافي</th>
-</tr>
+<tr><th>التاريخ</th><th>الربح الخام</th><th>الربح الصافي</th></tr>
 </thead>
-<tbody id="daily"></tbody>
+<tbody id="t"></tbody>
 </table>
 
-<h3>📅 الفائدة الأسبوعية</h3>
-<table>
-<thead>
-<tr>
-<th>التاريخ</th>
-<th>الربح الخام</th>
-<th>الربح الصافي</th>
-</tr>
-</thead>
-<tbody id="weekly"></tbody>
-</table>
+<script type="module">
+import { db } from "./firebase.js";
+import { ref, onValue }
+from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-<h3>🗓️ الفائدة الشهرية</h3>
-<table>
-<thead>
-<tr>
-<th>التاريخ</th>
-<th>الربح الخام</th>
-<th>الربح الصافي</th>
-</tr>
-</thead>
-<tbody id="monthly"></tbody>
-</table>
-
-<script>
-// ===== Firebase Config =====
-const firebaseConfig = {
-    apiKey: "API_KEY_HERE",
-    authDomain: "PROJECT_ID.firebaseapp.com",
-    databaseURL: "https://PROJECT_ID.firebaseio.com",
-    projectId: "PROJECT_ID",
-    storageBucket: "PROJECT_ID.appspot.com",
-    messagingSenderId: "SENDER_ID",
-    appId: "APP_ID"
-};
-firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
-
-// ===== تحميل سجل المبيعات من Firebase =====
-let salesHistory = [];
-
-db.ref("salesHistory").on("value", snap => {
-    salesHistory = snap.val() || [];
-    renderStats();
+onValue(ref(db,"sales"),snap=>{
+ let t=document.getElementById("t");
+ t.innerHTML="";
+ let d={};
+ Object.values(snap.val()||{}).forEach(s=>{
+  if(!d[s.date]) d[s.date]={g:0,n:0};
+  d[s.date].g+=s.sell*s.qty;
+  d[s.date].n+=(s.sell-s.buy)*s.qty;
+ });
+ for(let k in d){
+  t.innerHTML+=`<tr><td>${k}</td><td>${d[k].g}</td><td>${d[k].n}</td></tr>`;
+ }
 });
-
-// ===== دوال حساب الإحصائيات =====
-function formatDate(d){ return d.toISOString().split("T")[0]; }
-
-function getDailyStats(){
-    const daily = {};
-    salesHistory.forEach(s=>{
-        const date = s.date.split("T")[0];
-        if(!daily[date]) daily[date] = {gross:0, net:0};
-        daily[date].gross += s.sell*s.qty;
-        daily[date].net += (s.sell-s.buy)*s.qty;
-    });
-    return daily;
-}
-
-function getWeeklyStats(){
-    const weekly = {};
-    salesHistory.forEach(s=>{
-        const d = new Date(s.date);
-        const year = d.getFullYear();
-        const week = getWeekNumber(d);
-        const key = `${year}-W${week}`;
-        if(!weekly[key]) weekly[key] = {gross:0, net:0};
-        weekly[key].gross += s.sell*s.qty;
-        weekly[key].net += (s.sell-s.buy)*s.qty;
-    });
-    return weekly;
-}
-
-function getMonthlyStats(){
-    const monthly = {};
-    salesHistory.forEach(s=>{
-        const d = new Date(s.date);
-        const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
-        if(!monthly[key]) monthly[key] = {gross:0, net:0};
-        monthly[key].gross += s.sell*s.qty;
-        monthly[key].net += (s.sell-s.buy)*s.qty;
-    });
-    return monthly;
-}
-
-function getWeekNumber(d){
-    const date = new Date(d.getFullYear(),d.getMonth(),d.getDate());
-    const dayNum = date.getDay() || 7;
-    date.setDate(date.getDate() + 4 - dayNum);
-    const yearStart = new Date(date.getFullYear(),0,1);
-    return Math.ceil((((date - yearStart)/86400000)+1)/7);
-}
-
-// ===== رسم الجداول =====
-function renderStats(){
-    const dailyStats = getDailyStats();
-    const weeklyStats = getWeeklyStats();
-    const monthlyStats = getMonthlyStats();
-
-    const dailyTbody = document.getElementById("daily");
-    dailyTbody.innerHTML="";
-    for(const d in dailyStats){
-        const tr = document.createElement("tr");
-        tr.innerHTML=`<td>${d}</td><td>${dailyStats[d].gross}</td><td>${dailyStats[d].net}</td>`;
-        dailyTbody.appendChild(tr);
-    }
-
-    const weeklyTbody = document.getElementById("weekly");
-    weeklyTbody.innerHTML="";
-    for(const w in weeklyStats){
-        const tr = document.createElement("tr");
-        tr.innerHTML=`<td>${w}</td><td>${weeklyStats[w].gross}</td><td>${weeklyStats[w].net}</td>`;
-        weeklyTbody.appendChild(tr);
-    }
-
-    const monthlyTbody = document.getElementById("monthly");
-    monthlyTbody.innerHTML="";
-    for(const m in monthlyStats){
-        const tr = document.createElement("tr");
-        tr.innerHTML=`<td>${m}</td><td>${monthlyStats[m].gross}</td><td>${monthlyStats[m].net}</td>`;
-        monthlyTbody.appendChild(tr);
-    }
-}
 </script>
 
 </body>
