@@ -125,10 +125,9 @@ function renderImages(){
 function addPurchase(){
     let imgFile = document.getElementById("imageInput").files[0];
     let reader = new FileReader();
+
     reader.onload = function(){
-        const id = Date.now();
         const prod = {
-            id,
             name: product.value,
             category: category.value || "",
             buy: +buy.value,
@@ -139,6 +138,25 @@ function addPurchase(){
             expiry: expiry.value,
             barcode: barcode.value,
             image: reader.result
+        };
+
+        // حفظ في Firebase
+        const newProdRef = firebase.database().ref("stock").push(); // إنشاء مفتاح جديد
+        newProdRef.set(prod, (error)=>{
+            if(error){
+                alert("❌ حدث خطأ أثناء الحفظ في Firebase");
+            } else {
+                clearInputs();
+                loadStockFromFirebase(); // تحميل المخزون من Firebase مرة أخرى
+                alert("✅ تم إضافة المنتج للمخزون");
+            }
+        });
+    }
+
+    if(imgFile) reader.readAsDataURL(imgFile);
+    else reader.onload();
+}
+
         };
         // التحقق من وجود المنتج
         let exist = stock.find(x=>x.name===prod.name && x.category===prod.category);
@@ -213,3 +231,4 @@ function deleteItem(i){
 
 </body>
 </html>
+
