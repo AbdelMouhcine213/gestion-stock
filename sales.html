@@ -2,7 +2,7 @@
 <html lang="ar">
 <head>
 <meta charset="UTF-8">
-<title>شاشة البيع POS</title>
+<title>شاشة البيع</title>
 
 <style>
 body{
@@ -30,16 +30,12 @@ header{
     padding:15px;
     border-right:3px solid #e5e7eb;
 }
-
-/* البحث */
 .search{
     width:100%;
     padding:10px;
     margin-bottom:15px;
     font-size:16px;
 }
-
-/* المجموعات */
 .category{
     margin-bottom:25px;
 }
@@ -49,8 +45,6 @@ header{
     padding:8px;
     border-radius:6px;
 }
-
-/* المنتجات */
 .items{
     display:flex;
     flex-wrap:wrap;
@@ -74,13 +68,10 @@ header{
     font-size:12px;
     color:#ef4444;
 }
-
-/* السلة */
 .cart input{
     width:100%;
     padding:8px;
     margin-bottom:10px;
-    font-size:16px;
 }
 table{
     width:100%;
@@ -96,10 +87,6 @@ th,td{
     font-size:18px;
     font-weight:bold;
 }
-button{
-    padding:5px 8px;
-    cursor:pointer;
-}
 </style>
 </head>
 
@@ -109,164 +96,139 @@ button{
 
 <div class="container">
 
-<!-- المنتجات -->
 <div class="products">
-
-<input type="text" class="search" placeholder="🔍 ابحث عن منتج" onkeyup="searchProducts(this.value)">
-
+<input class="search" placeholder="🔍 البحث عن منتج" onkeyup="searchProducts(this.value)">
 <div id="products"></div>
-
 </div>
 
-<!-- السلة -->
 <div class="cart">
-
-<input type="text" id="cartName" value="سلة بيع افتراضية">
-
+<input id="cartName" value="سلة بيع">
 <table>
 <thead>
 <tr>
-<th>المنتج</th>
+<th>منتج</th>
 <th>كمية</th>
 <th>سعر</th>
-<th>حذف</th>
+<th>❌</th>
 </tr>
 </thead>
 <tbody id="cartItems"></tbody>
 </table>
-
 <div class="total">المجموع: <span id="total">0</span> دج</div>
-
 </div>
 
 </div>
 
 <script>
-// البيانات (مجموعات + صور)
-let categories = [
-{
-name:"حبوب",
-products:[
-{id:1,name:"أرز",price:120,stock:20,img:"images/rice.jpg"},
-{id:2,name:"عدس",price:150,stock:15,img:"images/lentil.jpg"}
-]
-},
-{
-name:"مواد غذائية",
-products:[
-{id:3,name:"سكر",price:90,stock:30,img:"images/sugar.jpg"},
-{id:4,name:"فرينة",price:70,stock:25,img:"images/flour.jpg"}
-]
-}
-];
-
+let products = JSON.parse(localStorage.getItem("products")) || [];
 let cart = [];
 
+// تحويل المنتجات إلى مجموعات
+function groupByCategory(list){
+    let grouped = {};
+    list.forEach(p=>{
+        if(!grouped[p.category]) grouped[p.category]=[];
+        grouped[p.category].push(p);
+    });
+    return grouped;
+}
+
 // عرض المنتجات
-function renderProducts(list=categories){
-let html="";
-list.forEach(cat=>{
-html+=`<div class="category">
-<h3>${cat.name}</h3>
-<div class="items">`;
-cat.products.forEach(p=>{
-html+=`
-<div class="item" onclick="addToCart(${p.id})">
-<img src="${p.img}">
-<div>${p.name}</div>
-<div>${p.price} دج</div>
-<div class="stock">متبقي: ${p.stock}</div>
-</div>`;
-});
-html+=`</div></div>`;
-});
-document.getElementById("products").innerHTML=html;
+function renderProducts(list = products){
+    let grouped = groupByCategory(list);
+    let html = "";
+    for(let cat in grouped){
+        html += `<div class="category">
+        <h3>${cat}</h3>
+        <div class="items">`;
+        grouped[cat].forEach((p,i)=>{
+            html += `
+            <div class="item" onclick="addToCart(${i})">
+                <img src="${p.image}">
+                <div>${p.name}</div>
+                <div>${p.price} دج</div>
+                <div class="stock">متبقي: ${p.quantity}</div>
+            </div>`;
+        });
+        html += `</div></div>`;
+    }
+    document.getElementById("products").innerHTML = html;
 }
 renderProducts();
 
 // إضافة للسلة
-function addToCart(id){
-let product;
-categories.forEach(c=>{
-c.products.forEach(p=>{
-if(p.id===id) product=p;
-});
-});
-if(product.stock<=0) return alert("الكمية منتهية");
-
-let item=cart.find(i=>i.id===id);
-if(item){
-item.qty++;
-}else{
-cart.push({id:product.id,name:product.name,price:product.price,qty:1});
-}
-product.stock--;
-renderCart();
-renderProducts();
+function addToCart(index){
+    let p = products[index];
+    if(p.quantity <= 0){
+        alert("الكمية غير متوفرة");
+        return;
+    }
+    let item = cart.find(i => i.name === p.name);
+    if(item){
+        item.qty++;
+    }else{
+        cart.push({name:p.name, price:p.price, qty:1});
+    }
+    p.quantity--;
+    save();
+    renderCart();
+    renderProducts();
 }
 
 // السلة
 function renderCart(){
-let html="";
-let total=0;
-cart.forEach((i,index)=>{
-total+=i.price*i.qty;
-html+=`
-<tr>
-<td>${i.name}</td>
-<td>
-<input type="number" value="${i.qty}" min="1"
-onchange="updateQty(${index},this.value)">
-</td>
-<td>${i.price*i.qty}</td>
-<td><button onclick="removeItem(${index})">❌</button></td>
-</tr>`;
-});
-document.getElementById("cartItems").innerHTML=html;
-document.getElementById("total").innerText=total;
+    let html = "";
+    let total = 0;
+    cart.forEach((i,idx)=>{
+        total += i.price * i.qty;
+        html += `
+        <tr>
+            <td>${i.name}</td>
+            <td>
+                <input type="number" value="${i.qty}" min="1"
+                onchange="changeQty(${idx},this.value)">
+            </td>
+            <td>${i.price * i.qty}</td>
+            <td><button onclick="removeItem(${idx})">❌</button></td>
+        </tr>`;
+    });
+    document.getElementById("cartItems").innerHTML = html;
+    document.getElementById("total").innerText = total;
 }
 
-// تعديل كمية
-function updateQty(index,value){
-let diff=value-cart[index].qty;
-let product;
-categories.forEach(c=>{
-c.products.forEach(p=>{
-if(p.id===cart[index].id) product=p;
-});
-});
-if(product.stock-diff<0) return alert("كمية غير متوفرة");
-product.stock-=diff;
-cart[index].qty=parseInt(value);
-renderCart();
-renderProducts();
+function changeQty(i,val){
+    let diff = val - cart[i].qty;
+    let p = products.find(x => x.name === cart[i].name);
+    if(p.quantity - diff < 0){
+        alert("كمية غير كافية");
+        return;
+    }
+    p.quantity -= diff;
+    cart[i].qty = parseInt(val);
+    save();
+    renderCart();
+    renderProducts();
 }
 
-// حذف
-function removeItem(index){
-let product;
-categories.forEach(c=>{
-c.products.forEach(p=>{
-if(p.id===cart[index].id) product=p;
-});
-});
-product.stock+=cart[index].qty;
-cart.splice(index,1);
-renderCart();
-renderProducts();
+function removeItem(i){
+    let p = products.find(x => x.name === cart[i].name);
+    p.quantity += cart[i].qty;
+    cart.splice(i,1);
+    save();
+    renderCart();
+    renderProducts();
 }
 
 // البحث
 function searchProducts(txt){
-txt=txt.toLowerCase();
-let filtered=[];
-categories.forEach(c=>{
-let prods=c.products.filter(p=>p.name.toLowerCase().includes(txt));
-if(prods.length>0){
-filtered.push({name:c.name,products:prods});
+    let filtered = products.filter(p =>
+        p.name.toLowerCase().includes(txt.toLowerCase())
+    );
+    renderProducts(filtered);
 }
-});
-renderProducts(filtered);
+
+function save(){
+    localStorage.setItem("products", JSON.stringify(products));
 }
 </script>
 
