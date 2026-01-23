@@ -28,6 +28,8 @@ button{padding:6px 10px;border:none;border-radius:6px;cursor:pointer;}
 #totalBox{margin-top:10px;background:black;border-radius:16px;padding:15px;text-align:center;box-shadow:0 0 30px rgba(0,255,0,.7);}
 #totalBox span{font-size:20px;}
 #total{font-size:42px;color:#00ff88;font-weight:bold;}
+#statsBox{margin:10px;padding:10px;background:#111;border-radius:16px;}
+#statsBox h3{margin:5px 0;color:#0ff;}
 .btn.confirm{margin-top:10px;padding:10px 20px;font-size:18px;background:linear-gradient(45deg,#28a745,#20c997);color:white;border-radius:12px;cursor:pointer;border:none;}
 </style>
 </head>
@@ -74,11 +76,22 @@ button{padding:6px 10px;border:none;border-radius:6px;cursor:pointer;}
     <button onclick="confirmSale()" class="btn confirm">✅ تأكيد البيع</button>
 </div>
 
+<div id="statsBox">
+<h3>📊 إحصائيات اليوم</h3>
+<p id="dailyProfit">الربح الصافي: 0 دج | الربح الخام: 0 دج</p>
+<h3>📊 إحصائيات الأسبوع</h3>
+<p id="weeklyProfit">الربح الصافي: 0 دج | الربح الخام: 0 دج</p>
+<h3>📊 إحصائيات الشهر</h3>
+<p id="monthlyProfit">الربح الصافي: 0 دج | الربح الخام: 0 دج</p>
+</div>
+
 <script>
 // ===== المخزون الأصلي =====
 let stock = JSON.parse(localStorage.getItem("stock")) || [];
 // ===== مخزون السجائر =====
 let tabacStock = JSON.parse(localStorage.getItem("tabacStock")) || [];
+// ===== السجل الكامل للبيعات =====
+let salesHistory = JSON.parse(localStorage.getItem("salesHistory")) || [];
 
 let cart = [];
 
@@ -143,11 +156,6 @@ function addToCart(p){
         else alert("🚫 لا توجد كمية كافية في المخزون");
     } else {
         let item = {...p, qty:1};
-        // إذا كانت Tabac يمكن اختيار بيع بالعلبة أو بالسجائر
-        if(p.category==="TABAC"){
-            let choice = prompt(`بيع بالقطعة أو بالعلبة؟ اكتب "قطعة" أو "علبة"`);
-            if(choice==="علبة") item.qty *= 20; // علبة تحتوي على 20 قطعة
-        }
         cart.push(item);
     }
     renderCart();
@@ -174,21 +182,36 @@ function renderCart(){
     total.textContent = sum + " دج";
 }
 
-// ===== تأكيد البيع =====
+// ===== تأكيد البيع مع تسجيل التاريخ وحساب الأرباح =====
 function confirmSale(){
     if(cart.length===0){ alert("لا توجد عناصر في السلة"); return; }
+    const today = new Date();
     cart.forEach(c=>{
         let targetStock = c.category==="TABAC" ? tabacStock : stock;
         const prod = targetStock.find(p=>p.name===c.name && p.category===c.category);
         if(prod) prod.qtyLeft -= c.qty;
+
+        // تسجيل البيع في السجل
+        salesHistory.push({
+            name: c.name,
+            category: c.category,
+            qty: c.qty,
+            sell: c.sell,
+            buy: c.buy,
+            date: today.toISOString()
+        });
     });
+
     localStorage.setItem("stock", JSON.stringify(stock));
     localStorage.setItem("tabacStock", JSON.stringify(tabacStock));
+    localStorage.setItem("salesHistory", JSON.stringify(salesHistory));
+
     alert("✅ تم تأكيد البيع وتحديث المخزون");
     cart=[];
     renderCart();
     renderCategories();
     if(currentCat) showProducts(currentCat);
+    renderStats();
 }
 
 // ===== شريط البحث الذكي =====
@@ -213,8 +236,44 @@ searchBox.addEventListener("input",()=>{
     });
 });
 
+// ===== إحصائيات =====
+function renderStats(){
+    const daily = salesHistory.filter(s=>{
+        const d = new Date(s.date);
+        const now = new Date();
+        return d.toDateString()===now.toDateString();
+    });
+    const weekly = salesHistory.filter(s=>{
+        const d = new Date(s.date);
+        const now = new Date();
+        const weekStart = new Date(now);
+        weekStart.setDate(now.getDate()-now.getDay());
+        return d>=weekStart;
+    });
+    const monthly = salesHistory.filter(s=>{
+        const d = new Date(s.date);
+        const now = new Date();
+        return d.getMonth()===now.getMonth() && d.getFullYear()===now.getFullYear();
+    });
+
+    function calcProfit(arr){
+        let raw=0, net=0;
+        arr.forEach(s=>{ raw+=s.sell*s.qty; net+=(s.sell-s.buy)*s.qty; });
+        return {raw,net};
+    }
+
+    const dProfit = calcProfit(daily);
+    const wProfit = calcProfit(weekly);
+    const mProfit = calcProfit(monthly);
+
+    document.getElementById("dailyProfit").textContent=`الربح الصافي: ${dProfit.net} دج | الربح الخام: ${dProfit.raw} دج`;
+    document.getElementById("weeklyProfit").textContent=`الربح الصافي: ${wProfit.net} دج | الربح الخام: ${wProfit.raw} دج`;
+    document.getElementById("monthlyProfit").textContent=`الربح الصافي: ${mProfit.net} دج | الربح الخام: ${mProfit.raw} دج`;
+}
+
 setLang("ar");
 renderCart();
+renderStats();
 </script>
 
 </body>
