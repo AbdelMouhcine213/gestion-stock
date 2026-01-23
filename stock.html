@@ -3,20 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Gestion Stock</title>
+<title>Gestion Stock</title> 
 <style>
 *{box-sizing:border-box;}
 body{margin:0;font-family:Arial;direction:rtl;background:#0a1f3f;color:white;padding:10px;}
 header{background:#28a745;padding:15px;text-align:center;font-size:28px;border-radius:12px;margin-bottom:15px;}
 .container{display:grid;grid-template-columns:250px 1fr;gap:15px;}
-
-/* قائمة الصور */
 .images{background:#08152a;border-radius:15px;padding:10px;overflow-y:auto;max-height:80vh;}
 .img-item{border:2px solid #00ff99;border-radius:12px;margin-bottom:10px;padding:5px;cursor:pointer;text-align:center;}
 .img-item img{width:100%;height:120px;object-fit:contain;background:#fff;border-radius:10px;}
 .img-item span{display:block;margin-top:5px;font-size:14px;color:#00ffcc;}
-
-/* المدخلات */
 .card{background:#08152a;padding:15px;border-radius:15px;}
 input,button,select{width:100%;padding:10px;margin:5px 0;border-radius:10px;border:none;font-size:16px;}
 input{background:#000;color:#0ff;border:1px solid #00ff99;}
@@ -27,16 +23,18 @@ th,td{padding:8px;border-bottom:1px solid #123;text-align:center;}
 th{background:#28a745;}
 .stockLabel{color:#0f0;font-weight:bold;}
 </style>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 </head>
 <body>
 
 <header>🛒 إدارة المخزون</header>
 
 <div class="container">
-<!-- قائمة الصور -->
 <div class="images" id="imageList"></div>
 
-<!-- المدخلات -->
 <div class="card">
 <h3>إضافة منتج جديد</h3>
 <input id="barcode" placeholder="📦 الباركود">
@@ -77,10 +75,30 @@ th{background:#28a745;}
 </div>
 
 <script>
-let stock = JSON.parse(localStorage.getItem("stock")) || [];
+// ===== Firebase Config =====
+const firebaseConfig = {
+    apiKey: "API_KEY_HERE",
+    authDomain: "PROJECT_ID.firebaseapp.com",
+    databaseURL: "https://PROJECT_ID.firebaseio.com",
+    projectId: "PROJECT_ID",
+    storageBucket: "PROJECT_ID.appspot.com",
+    messagingSenderId: "SENDER_ID",
+    appId: "APP_ID"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+// ===== المتغيرات =====
+let stock = [];
 const tbody = document.getElementById("tbody");
 
-// عرض الصور والمخزون
+// ===== تحميل المخزون من Firebase =====
+db.ref("stock").on("value", snap => {
+    stock = snap.val() || [];
+    renderImages();
+});
+
+// ===== عرض الصور والمخزون =====
 function renderImages(){
     const list = document.getElementById("imageList");
     list.innerHTML="";
@@ -104,7 +122,7 @@ function renderImages(){
     renderStockTable();
 }
 
-// إضافة شراء
+// ===== إضافة شراء مع Firebase =====
 function addPurchase(){
     let imgFile = document.getElementById("imageInput").files[0];
     let reader = new FileReader();
@@ -122,19 +140,18 @@ function addPurchase(){
             barcode: barcode.value,
             image: reader.result
         };
-        // التحقق إذا المنتج موجود
-        let exist = stock.find(x=>x.name===prod.name && x.category===prod.category);
-        if(exist){
-            exist.qtyOriginal += prod.qtyOriginal;
-            exist.qtyLeft += prod.qtyLeft;
-            exist.buy = prod.buy;
-            exist.sell = prod.sell;
-            exist.image = prod.image;
+
+        let existIndex = stock.findIndex(x=>x.name===prod.name && x.category===prod.category);
+        if(existIndex!==-1){
+            stock[existIndex].qtyOriginal += prod.qtyOriginal;
+            stock[existIndex].qtyLeft += prod.qtyLeft;
+            stock[existIndex].buy = prod.buy;
+            stock[existIndex].sell = prod.sell;
+            stock[existIndex].image = prod.image;
         } else stock.push(prod);
 
-        localStorage.setItem("stock", JSON.stringify(stock));
+        db.ref("stock").set(stock);
         clearInputs();
-        renderImages();
         alert("✅ تم إضافة المنتج للمخزون");
     }
 
@@ -142,13 +159,13 @@ function addPurchase(){
     else reader.onload();
 }
 
-// مسح المدخلات
+// ===== مسح المدخلات =====
 function clearInputs(){
     product.value = category.value = buy.value = sell.value = qty.value = date.value = expiry.value = barcode.value = "";
     imageInput.value = "";
 }
 
-// رسم جدول المخزون
+// ===== رسم جدول المخزون =====
 function renderStockTable(){
     tbody.innerHTML="";
     stock.forEach((p,i)=>{
@@ -168,7 +185,7 @@ function renderStockTable(){
     });
 }
 
-// تعديل منتج
+// ===== تعديل منتج مع Firebase =====
 function editItem(i){
     const p = stock[i];
     let newName = prompt("اسم المنتج:", p.name) || p.name;
@@ -184,20 +201,16 @@ function editItem(i){
     p.qtyOriginal = +newQty;
     p.qtyLeft = Math.min(p.qtyLeft, +newQty);
 
-    localStorage.setItem("stock", JSON.stringify(stock));
-    renderImages();
+    db.ref("stock").set(stock);
 }
 
-// حذف منتج
+// ===== حذف منتج مع Firebase =====
 function deleteItem(i){
     if(confirm("هل تريد حذف هذا المنتج؟")){
         stock.splice(i,1);
-        localStorage.setItem("stock", JSON.stringify(stock));
-        renderImages();
+        db.ref("stock").set(stock);
     }
 }
-
-renderImages();
 </script>
 
 </body>
