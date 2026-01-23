@@ -32,6 +32,9 @@ button{padding:6px 10px;border:none;border-radius:6px;cursor:pointer;}
 #statsBox h3{margin:5px 0;color:#0ff;}
 .btn.confirm{margin-top:10px;padding:10px 20px;font-size:18px;background:linear-gradient(45deg,#28a745,#20c997);color:white;border-radius:12px;cursor:pointer;border:none;}
 </style>
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 </head>
 <body>
 
@@ -86,14 +89,24 @@ button{padding:6px 10px;border:none;border-radius:6px;cursor:pointer;}
 </div>
 
 <script>
-// ===== المخزون الأصلي =====
-let stock = JSON.parse(localStorage.getItem("stock")) || [];
-// ===== مخزون السجائر =====
-let tabacStock = JSON.parse(localStorage.getItem("tabacStock")) || [];
-// ===== السجل الكامل للبيعات =====
-let salesHistory = JSON.parse(localStorage.getItem("salesHistory")) || [];
+// ===== Firebase Config =====
+const firebaseConfig = {
+    apiKey: "API_KEY_HERE",
+    authDomain: "PROJECT_ID.firebaseapp.com",
+    databaseURL: "https://PROJECT_ID.firebaseio.com",
+    projectId: "PROJECT_ID",
+    storageBucket: "PROJECT_ID.appspot.com",
+    messagingSenderId: "SENDER_ID",
+    appId: "APP_ID"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
 
+// ===== المتغيرات =====
+let stock = [];
+let salesHistory = [];
 let cart = [];
+let currentCat = null;
 
 // ===== لغات =====
 const words = {
@@ -101,7 +114,6 @@ ar:{title:"💳 المبيعات",items:"العناصر",p:"المنتج",q:"ا�
 fr:{title:"💳 Ventes",items:"Articles",p:"Produit",q:"Qté",pr:"Prix",t:"Total",tot:"Total général"},
 en:{title:"💳 Sales",items:"Items",p:"Product",q:"Qty",pr:"Price",t:"Total",tot:"Grand Total"}
 };
-
 function setLang(l){
     document.body.dir = l==="ar"?"rtl":"ltr";
     document.getElementById("title").textContent = words[l].title;
@@ -113,12 +125,22 @@ function setLang(l){
     totalLabel.textContent = words[l].tot;
 }
 
-// ===== تصنيفات تلقائية من المخزونين =====
-let currentCat = null;
+// ===== تحميل البيانات من Firebase =====
+db.ref("stock").on("value", snap => {
+    stock = snap.val() || [];
+    renderCategories();
+    if(currentCat) showProducts(currentCat);
+});
+db.ref("salesHistory").on("value", snap => {
+    salesHistory = snap.val() || [];
+    renderStats();
+});
+
+// ===== عرض التصنيفات =====
 function renderCategories(){
     const catsDiv = document.getElementById("categories");
     catsDiv.innerHTML="";
-    const allCats = [...new Set([...stock,...tabacStock].map(p=>p.category))];
+    const allCats = [...new Set(stock.map(p=>p.category))];
     allCats.forEach(c=>{
         const d = document.createElement("div");
         d.className="cat";
@@ -127,14 +149,12 @@ function renderCategories(){
         catsDiv.appendChild(d);
     });
 }
-renderCategories();
 
-// ===== عرض منتجات التصنيف =====
+// ===== عرض المنتجات =====
 function showProducts(cat){
     const prodDiv = document.getElementById("products");
     prodDiv.innerHTML="";
-    const combinedStock = [...stock, ...tabacStock];
-    combinedStock.filter(p=>p.category===cat && p.qtyLeft>0).forEach(p=>{
+    stock.filter(p=>p.category===cat && p.qtyLeft>0).forEach(p=>{
         const d = document.createElement("div");
         d.className="product";
         d.innerHTML = `
@@ -161,7 +181,7 @@ function addToCart(p){
     renderCart();
 }
 
-// ===== رسم سلة البيع =====
+// ===== رسم السلة =====
 function renderCart(){
     const tbody = document.getElementById("cart");
     tbody.innerHTML="";
@@ -182,29 +202,22 @@ function renderCart(){
     total.textContent = sum + " دج";
 }
 
-// ===== تأكيد البيع مع تسجيل التاريخ وحساب الأرباح =====
+// ===== تأكيد البيع مع تحديث Firebase =====
 function confirmSale(){
     if(cart.length===0){ alert("لا توجد عناصر في السلة"); return; }
-    const today = new Date();
-    cart.forEach(c=>{
-        let targetStock = c.category==="TABAC" ? tabacStock : stock;
-        const prod = targetStock.find(p=>p.name===c.name && p.category===c.category);
-        if(prod) prod.qtyLeft -= c.qty;
+    const today = new Date().toISOString();
 
-        // تسجيل البيع في السجل
-        salesHistory.push({
-            name: c.name,
-            category: c.category,
-            qty: c.qty,
-            sell: c.sell,
-            buy: c.buy,
-            date: today.toISOString()
-        });
+    cart.forEach(c=>{
+        const prodIndex = stock.findIndex(p=>p.name===c.name && p.category===c.category);
+        if(prodIndex!==-1){
+            stock[prodIndex].qtyLeft -= c.qty;
+            salesHistory.push({...c, date: today});
+        }
     });
 
-    localStorage.setItem("stock", JSON.stringify(stock));
-    localStorage.setItem("tabacStock", JSON.stringify(tabacStock));
-    localStorage.setItem("salesHistory", JSON.stringify(salesHistory));
+    // تحديث Firebase
+    db.ref("stock").set(stock);
+    db.ref("salesHistory").set(salesHistory);
 
     alert("✅ تم تأكيد البيع وتحديث المخزون");
     cart=[];
@@ -214,15 +227,14 @@ function confirmSale(){
     renderStats();
 }
 
-// ===== شريط البحث الذكي =====
+// ===== شريط البحث =====
 const searchBox = document.getElementById("searchBox");
 searchBox.addEventListener("input",()=>{
     const term = searchBox.value.trim().toLowerCase();
     const prodDiv = document.getElementById("products");
     prodDiv.innerHTML="";
     if(term===""){ if(currentCat) showProducts(currentCat); return; }
-    const combinedStock = [...stock, ...tabacStock];
-    combinedStock.filter(p=>p.name.toLowerCase().startsWith(term) && p.qtyLeft>0).forEach(p=>{
+    stock.filter(p=>p.name.toLowerCase().startsWith(term) && p.qtyLeft>0).forEach(p=>{
         const d = document.createElement("div");
         d.className="product";
         d.innerHTML = `
@@ -238,21 +250,12 @@ searchBox.addEventListener("input",()=>{
 
 // ===== إحصائيات =====
 function renderStats(){
-    const daily = salesHistory.filter(s=>{
-        const d = new Date(s.date);
-        const now = new Date();
-        return d.toDateString()===now.toDateString();
-    });
-    const weekly = salesHistory.filter(s=>{
-        const d = new Date(s.date);
-        const now = new Date();
-        const weekStart = new Date(now);
-        weekStart.setDate(now.getDate()-now.getDay());
-        return d>=weekStart;
-    });
+    const now = new Date();
+    const daily = salesHistory.filter(s=>new Date(s.date).toDateString()===now.toDateString());
+    const weekStart = new Date(now); weekStart.setDate(now.getDate()-now.getDay());
+    const weekly = salesHistory.filter(s=>new Date(s.date)>=weekStart);
     const monthly = salesHistory.filter(s=>{
         const d = new Date(s.date);
-        const now = new Date();
         return d.getMonth()===now.getMonth() && d.getFullYear()===now.getFullYear();
     });
 
