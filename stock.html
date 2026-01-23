@@ -2,71 +2,67 @@
 <html lang="ar">
 <head>
 <meta charset="UTF-8">
+<title>إدارة المخزون</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Gestion Stock</title> 
 <style>
-*{box-sizing:border-box;}
-body{margin:0;font-family:Arial;direction:rtl;background:#0a1f3f;color:white;padding:10px;}
-header{background:#28a745;padding:15px;text-align:center;font-size:28px;border-radius:12px;margin-bottom:15px;}
-.container{display:grid;grid-template-columns:250px 1fr;gap:15px;}
-.images{background:#08152a;border-radius:15px;padding:10px;overflow-y:auto;max-height:80vh;}
-.img-item{border:2px solid #00ff99;border-radius:12px;margin-bottom:10px;padding:5px;cursor:pointer;text-align:center;}
-.img-item img{width:100%;height:120px;object-fit:contain;background:#fff;border-radius:10px;}
-.img-item span{display:block;margin-top:5px;font-size:14px;color:#00ffcc;}
-.card{background:#08152a;padding:15px;border-radius:15px;}
-input,button,select{width:100%;padding:10px;margin:5px 0;border-radius:10px;border:none;font-size:16px;}
-input{background:#000;color:#0ff;border:1px solid #00ff99;}
-button{background:#17a2b8;color:white;cursor:pointer;}
-button:hover{opacity:.8;}
-table{width:100%;border-collapse:collapse;margin-top:10px;}
-th,td{padding:8px;border-bottom:1px solid #123;text-align:center;}
-th{background:#28a745;}
-.stockLabel{color:#0f0;font-weight:bold;}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial;direction:rtl;background:#0a1f3f;color:white;padding:10px}
+header{background:#28a745;padding:15px;text-align:center;font-size:28px;border-radius:12px;margin-bottom:15px}
+.container{display:grid;grid-template-columns:250px 1fr;gap:15px}
+.images{background:#08152a;border-radius:15px;padding:10px;overflow-y:auto;max-height:80vh}
+.img-item{border:2px solid #00ff99;border-radius:12px;margin-bottom:10px;padding:5px;text-align:center}
+.img-item img{width:100%;height:120px;object-fit:contain;background:#fff;border-radius:10px}
+.img-item span{display:block;margin-top:5px;font-size:14px;color:#00ffcc}
+.card{background:#08152a;padding:15px;border-radius:15px}
+input,select,button{width:100%;padding:10px;margin:5px 0;border-radius:10px;border:none;font-size:16px}
+input{background:#000;color:#0ff;border:1px solid #00ff99}
+button{background:#17a2b8;color:white}
+table{width:100%;border-collapse:collapse;margin-top:10px}
+th,td{padding:8px;border-bottom:1px solid #123;text-align:center}
+th{background:#28a745}
+.stockLabel{color:#0f0;font-weight:bold}
 </style>
-
-<!-- Firebase SDK -->
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 </head>
 <body>
 
-<header>🛒 إدارة المخزون</header>
+<header>📦 إدارة المخزون</header>
 
 <div class="container">
+
 <div class="images" id="imageList"></div>
 
 <div class="card">
-<h3>إضافة منتج جديد</h3>
-<input id="barcode" placeholder="📦 الباركود">
-<input id="product" placeholder="🧾 اسم المنتج">
-<select id="category">
-    <option value="">🏷️ اختر المجموعة</option>
-    <option value="الحلويات">الحلويات</option>
-    <option value="المشروبات">المشروبات</option>
-    <option value="العطور الرجالية">العطور الرجالية</option>
-    <option value="العطور النسائية">العطور النسائية</option>
-    <option value="Cosmétique">Cosmétique</option>
-    <option value="Autres">Autres</option>
-</select>
-<input id="buy" placeholder="💰 سعر الشراء">
-<input id="sell" placeholder="💵 سعر البيع">
-<input id="qty" type="number" placeholder="📦 الكمية">
-<input id="date" type="date">
-<input id="expiry" type="date">
-<label>📷 صورة المنتج</label>
-<input type="file" id="imageInput" accept="image/*">
-<button onclick="addPurchase()">➕ إضافة</button>
+<h3>إضافة منتج</h3>
+<input id="barcode" placeholder="الباركود">
+<input id="product" placeholder="اسم المنتج">
 
-<h3>المخزون الحالي</h3>
+<select id="category">
+<option value="">اختر المجموعة</option>
+<option>الحلويات</option>
+<option>المشروبات</option>
+<option>العطور الرجالية</option>
+<option>العطور النسائية</option>
+<option>Cosmétique</option>
+<option>Autres</option>
+</select>
+
+<input id="buy" placeholder="سعر الشراء">
+<input id="sell" placeholder="سعر البيع">
+<input id="qty" type="number" placeholder="الكمية">
+<input type="file" id="imageInput" accept="image/*">
+
+<button onclick="addProduct()">➕ إضافة</button>
+
+<h3>المخزون</h3>
 <table>
 <thead>
 <tr>
 <th>المنتج</th>
 <th>المجموعة</th>
-<th>الكمية الأصلية</th>
-<th>الكمية المتبقية</th>
-<th>سعر البيع</th>
-<th>تعديل/حذف</th>
+<th>الأصلية</th>
+<th>المتبقية</th>
+<th>البيع</th>
+<th>حذف</th>
 </tr>
 </thead>
 <tbody id="tbody"></tbody>
@@ -74,143 +70,60 @@ th{background:#28a745;}
 </div>
 </div>
 
-<script>
-// ===== Firebase Config =====
-const firebaseConfig = {
-    apiKey: "API_KEY_HERE",
-    authDomain: "PROJECT_ID.firebaseapp.com",
-    databaseURL: "https://PROJECT_ID.firebaseio.com",
-    projectId: "PROJECT_ID",
-    storageBucket: "PROJECT_ID.appspot.com",
-    messagingSenderId: "SENDER_ID",
-    appId: "APP_ID"
-};
-firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
+<script type="module">
+import { db } from "./firebase.js";
+import { ref, push, set, onValue, remove } from
+"https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-// ===== المتغيرات =====
-let stock = [];
+const stockRef = ref(db,"stock");
 const tbody = document.getElementById("tbody");
+const imageList = document.getElementById("imageList");
 
-// ===== تحميل المخزون من Firebase =====
-db.ref("stock").on("value", snap => {
-    stock = snap.val() || [];
-    renderImages();
+onValue(stockRef,snap=>{
+ const data=snap.val()||{};
+ tbody.innerHTML="";
+ imageList.innerHTML="";
+ Object.entries(data).forEach(([id,p])=>{
+  if(p.image){
+   let d=document.createElement("div");
+   d.className="img-item";
+   d.innerHTML=`<img src="${p.image}"><span>${p.name}</span>`;
+   imageList.appendChild(d);
+  }
+  let tr=document.createElement("tr");
+  tr.innerHTML=`
+   <td>${p.name}</td>
+   <td>${p.category}</td>
+   <td>${p.qtyOriginal}</td>
+   <td class="stockLabel">${p.qtyLeft}</td>
+   <td>${p.sell}</td>
+   <td><button onclick="del('${id}')">🗑️</button></td>`;
+  tbody.appendChild(tr);
+ });
 });
 
-// ===== عرض الصور والمخزون =====
-function renderImages(){
-    const list = document.getElementById("imageList");
-    list.innerHTML="";
-    stock.forEach((p,i)=>{
-        if(!p.image) return;
-        let div = document.createElement("div");
-        div.className="img-item";
-        div.innerHTML=`
-            <img src="${p.image}">
-            <span>${p.name} ${p.category? '('+p.category+')' : ''}</span>
-        `;
-        div.onclick = ()=>{ 
-            product.value = p.name;
-            sell.value = p.sell;
-            buy.value = p.buy;
-            barcode.value = p.barcode || "";
-            category.value = p.category || "";
-        };
-        list.appendChild(div);
-    });
-    renderStockTable();
-}
+window.addProduct=()=>{
+ let reader=new FileReader();
+ let file=imageInput.files[0];
+ reader.onload=()=>{
+  push(stockRef,{
+   name:product.value,
+   category:category.value,
+   buy:+buy.value,
+   sell:+sell.value,
+   qtyOriginal:+qty.value,
+   qtyLeft:+qty.value,
+   barcode:barcode.value,
+   image:reader.result
+  });
+  product.value=buy.value=sell.value=qty.value=barcode.value="";
+ };
+ if(file) reader.readAsDataURL(file);
+};
 
-// ===== إضافة شراء مع Firebase =====
-function addPurchase(){
-    let imgFile = document.getElementById("imageInput").files[0];
-    let reader = new FileReader();
-
-    reader.onload = function(){
-        const prod = {
-            name: product.value,
-            category: category.value || "",
-            buy: +buy.value,
-            sell: +sell.value,
-            qtyOriginal: +qty.value,
-            qtyLeft: +qty.value,
-            date: date.value,
-            expiry: expiry.value,
-            barcode: barcode.value,
-            image: reader.result
-        };
-
-        let existIndex = stock.findIndex(x=>x.name===prod.name && x.category===prod.category);
-        if(existIndex!==-1){
-            stock[existIndex].qtyOriginal += prod.qtyOriginal;
-            stock[existIndex].qtyLeft += prod.qtyLeft;
-            stock[existIndex].buy = prod.buy;
-            stock[existIndex].sell = prod.sell;
-            stock[existIndex].image = prod.image;
-        } else stock.push(prod);
-
-        db.ref("stock").set(stock);
-        clearInputs();
-        alert("✅ تم إضافة المنتج للمخزون");
-    }
-
-    if(imgFile) reader.readAsDataURL(imgFile);
-    else reader.onload();
-}
-
-// ===== مسح المدخلات =====
-function clearInputs(){
-    product.value = category.value = buy.value = sell.value = qty.value = date.value = expiry.value = barcode.value = "";
-    imageInput.value = "";
-}
-
-// ===== رسم جدول المخزون =====
-function renderStockTable(){
-    tbody.innerHTML="";
-    stock.forEach((p,i)=>{
-        let tr = document.createElement("tr");
-        tr.innerHTML=`
-            <td>${p.name}</td>
-            <td>${p.category}</td>
-            <td>${p.qtyOriginal}</td>
-            <td class="stockLabel">${p.qtyLeft}</td>
-            <td>${p.sell}</td>
-            <td>
-                <button onclick="editItem(${i})">✏️</button>
-                <button onclick="deleteItem(${i})">🗑️</button>
-            </td>
-        `;
-        tbody.appendChild(tr);
-    });
-}
-
-// ===== تعديل منتج مع Firebase =====
-function editItem(i){
-    const p = stock[i];
-    let newName = prompt("اسم المنتج:", p.name) || p.name;
-    let newCat = prompt("المجموعة:", p.category) || p.category;
-    let newBuy = prompt("سعر الشراء:", p.buy) || p.buy;
-    let newSell = prompt("سعر البيع:", p.sell) || p.sell;
-    let newQty = prompt("الكمية الأصلية:", p.qtyOriginal) || p.qtyOriginal;
-
-    p.name = newName;
-    p.category = newCat;
-    p.buy = +newBuy;
-    p.sell = +newSell;
-    p.qtyOriginal = +newQty;
-    p.qtyLeft = Math.min(p.qtyLeft, +newQty);
-
-    db.ref("stock").set(stock);
-}
-
-// ===== حذف منتج مع Firebase =====
-function deleteItem(i){
-    if(confirm("هل تريد حذف هذا المنتج؟")){
-        stock.splice(i,1);
-        db.ref("stock").set(stock);
-    }
-}
+window.del=(id)=>{
+ if(confirm("حذف المنتج؟")) remove(ref(db,"stock/"+id));
+};
 </script>
 
 </body>
