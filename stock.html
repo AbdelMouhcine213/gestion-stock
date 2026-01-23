@@ -76,7 +76,7 @@ th{background:#28a745;}
 </div>
 
 <script>
-/* 🔥 Firebase config (بدّل القيم فقط) */
+/* 🔥 Firebase config */
 firebase.initializeApp({
   apiKey: "API_KEY",
   authDomain: "PROJECT.firebaseapp.com",
@@ -90,7 +90,8 @@ const tbody = document.getElementById("tbody");
 
 /* ===== تحميل المخزون من Firebase ===== */
 db.ref("stock").on("value", snap=>{
-    stock = Object.values(snap.val()||{}).map(p=>({...p,id:p.id}));
+    const data = snap.val() || {};
+    stock = Object.keys(data).map(key => ({...data[key], id:key}));
     renderImages();
 });
 
@@ -98,7 +99,7 @@ db.ref("stock").on("value", snap=>{
 function renderImages(){
     const list = document.getElementById("imageList");
     list.innerHTML="";
-    stock.forEach((p,i)=>{
+    stock.forEach(p=>{
         if(!p.image) return;
         let div = document.createElement("div");
         div.className="img-item";
@@ -137,28 +138,10 @@ function addPurchase(){
             date: date.value,
             expiry: expiry.value,
             barcode: barcode.value,
-            image: reader.result
+            image: reader.result || ""
         };
 
-        // حفظ في Firebase
-        const newProdRef = firebase.database().ref("stock").push(); // إنشاء مفتاح جديد
-        newProdRef.set(prod, (error)=>{
-            if(error){
-                alert("❌ حدث خطأ أثناء الحفظ في Firebase");
-            } else {
-                clearInputs();
-                loadStockFromFirebase(); // تحميل المخزون من Firebase مرة أخرى
-                alert("✅ تم إضافة المنتج للمخزون");
-            }
-        });
-    }
-
-    if(imgFile) reader.readAsDataURL(imgFile);
-    else reader.onload();
-}
-
-        };
-        // التحقق من وجود المنتج
+        // التحقق إذا المنتج موجود مسبقاً
         let exist = stock.find(x=>x.name===prod.name && x.category===prod.category);
         if(exist){
             exist.qtyOriginal += prod.qtyOriginal;
@@ -168,11 +151,12 @@ function addPurchase(){
             exist.image = prod.image;
             db.ref("stock/"+exist.id).set(exist);
         } else {
-            db.ref("stock/"+id).set(prod);
+            const newRef = db.ref("stock").push();
+            newRef.set(prod);
         }
         clearInputs();
-        alert("✅ تم إضافة المنتج للمخزون");
-    };
+    }
+
     if(imgFile) reader.readAsDataURL(imgFile);
     else reader.onload();
 }
@@ -231,4 +215,3 @@ function deleteItem(i){
 
 </body>
 </html>
-
