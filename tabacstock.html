@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tabac Stock</title>
+<style>
+*{box-sizing:border-box;}
+body{margin:0;font-family:Arial;direction:rtl;background:#0a1f3f;color:white;padding:10px;}
+header{background:#17a2b8;padding:15px;text-align:center;font-size:28px;border-radius:12px;margin-bottom:15px;}
+.container{display:grid;grid-template-columns:250px 1fr;gap:15px;}
+.images{background:#08152a;border-radius:15px;padding:10px;overflow-y:auto;max-height:80vh;}
+.img-item{border:2px solid #00ff99;border-radius:12px;margin-bottom:10px;padding:5px;cursor:pointer;text-align:center;}
+.img-item img{width:100%;height:120px;object-fit:contain;background:#fff;border-radius:10px;}
+.img-item span{display:block;margin-top:5px;font-size:14px;color:#00ffcc;}
+.card{background:#08152a;padding:15px;border-radius:15px;}
+input,button,select{width:100%;padding:10px;margin:5px 0;border-radius:10px;border:none;font-size:16px;}
+input{background:#000;color:#0ff;border:1px solid #00ff99;}
+button{background:#17a2b8;color:white;cursor:pointer;}
+button:hover{opacity:.8;}
+table{width:100%;border-collapse:collapse;margin-top:10px;}
+th,td{padding:8px;border-bottom:1px solid #123;text-align:center;}
+th{background:#17a2b8;}
+.stockLabel{color:#0f0;font-weight:bold;}
+</style>
+</head>
+<body>
+
+<header>🛒 مخزون التبغ (TABAC)</header>
+
+<div class="container">
+<div class="images" id="imageList"></div>
+
+<div class="card">
+<h3>إضافة منتج جديد</h3>
+<input id="barcode" placeholder="📦 الباركود">
+<input id="product" placeholder="🧾 اسم المنتج">
+<input id="buy" placeholder="💰 سعر الشراء">
+<input id="sell" placeholder="💵 سعر البيع">
+<input id="qty" type="number" placeholder="📦 الكمية">
+<input id="date" type="date">
+<input id="expiry" type="date">
+<label>📷 صورة المنتج</label>
+<input type="file" id="imageInput" accept="image/*">
+<button onclick="addTabac()">➕ إضافة</button>
+
+<h3>المخزون الحالي</h3>
+<table>
+<thead>
+<tr>
+<th>المنتج</th>
+<th>الكمية الأصلية</th>
+<th>الكمية المتبقية</th>
+<th>سعر البيع</th>
+<th>تعديل/حذف</th>
+</tr>
+</thead>
+<tbody id="tbody"></tbody>
+</table>
+</div>
+</div>
+
+<script>
+let tabacStock = JSON.parse(localStorage.getItem("tabacStock")) || [];
+const tbody = document.getElementById("tbody");
+
+// ===== عرض الصور والمخزون =====
+function renderImages(){
+    const list = document.getElementById("imageList");
+    list.innerHTML="";
+    tabacStock.forEach((p,i)=>{
+        if(!p.image) return;
+        let div = document.createElement("div");
+        div.className="img-item";
+        div.innerHTML=`<img src="${p.image}"><span>${p.name}</span>`;
+        div.onclick = ()=>{ 
+            product.value = p.name;
+            sell.value = p.sell;
+            buy.value = p.buy;
+            barcode.value = p.barcode || "";
+        };
+        list.appendChild(div);
+    });
+    renderStockTable();
+}
+
+// ===== إضافة منتج TABAC =====
+function addTabac(){
+    let imgFile = document.getElementById("imageInput").files[0];
+    let reader = new FileReader();
+    reader.onload = function(){
+        const prod = {
+            name: product.value,
+            buy: +buy.value,
+            sell: +sell.value,
+            qtyOriginal: +qty.value,
+            qtyLeft: +qty.value,
+            date: date.value,
+            expiry: expiry.value,
+            barcode: barcode.value,
+            image: reader.result,
+            category: "TABAC"
+        };
+        // تحقق من وجود المنتج مسبقاً
+        let exist = tabacStock.find(x=>x.name===prod.name);
+        if(exist){
+            exist.qtyOriginal += prod.qtyOriginal;
+            exist.qtyLeft += prod.qtyLeft;
+            exist.buy = prod.buy;
+            exist.sell = prod.sell;
+            exist.image = prod.image;
+        } else tabacStock.push(prod);
+
+        localStorage.setItem("tabacStock", JSON.stringify(tabacStock));
+        clearInputs();
+        renderImages();
+        alert("✅ تم إضافة المنتج لمخزون التبغ");
+    }
+    if(imgFile) reader.readAsDataURL(imgFile);
+    else reader.onload();
+}
+
+// ===== مسح المدخلات =====
+function clearInputs(){
+    product.value = buy.value = sell.value = qty.value = date.value = expiry.value = barcode.value = "";
+    imageInput.value = "";
+}
+
+// ===== رسم جدول المخزون =====
+function renderStockTable(){
+    tbody.innerHTML="";
+    tabacStock.forEach((p,i)=>{
+        let tr = document.createElement("tr");
+        tr.innerHTML = `
+            <td>${p.name}</td>
+            <td>${p.qtyOriginal}</td>
+            <td class="stockLabel">${p.qtyLeft}</td>
+            <td>${p.sell}</td>
+            <td>
+                <button onclick="editTabac(${i})">✏️</button>
+                <button onclick="deleteTabac(${i})">🗑️</button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+// ===== تعديل منتج TABAC =====
+function editTabac(i){
+    const p = tabacStock[i];
+    let newName = prompt("اسم المنتج:", p.name) || p.name;
+    let newBuy = prompt("سعر الشراء:", p.buy) || p.buy;
+    let newSell = prompt("سعر البيع:", p.sell) || p.sell;
+    let newQty = prompt("الكمية الأصلية:", p.qtyOriginal) || p.qtyOriginal;
+
+    p.name = newName;
+    p.buy = +newBuy;
+    p.sell = +newSell;
+    p.qtyOriginal = +newQty;
+    p.qtyLeft = Math.min(p.qtyLeft, +newQty);
+
+    // تعديل الصورة إذا أحببنا
+    let newImg = prompt("هل تريد تغيير الصورة؟ ضع رابط الصورة مباشرة أو اتركه فارغاً");
+    if(newImg) p.image = newImg;
+
+    localStorage.setItem("tabacStock", JSON.stringify(tabacStock));
+    renderImages();
+}
+
+// ===== حذف منتج TABAC =====
+function deleteTabac(i){
+    if(confirm("هل تريد حذف هذا المنتج؟")){
+        tabacStock.splice(i,1);
+        localStorage.setItem("tabacStock", JSON.stringify(tabacStock));
+        renderImages();
+    }
+}
+
+renderImages();
+</script>
+
+</body>
+</html>
