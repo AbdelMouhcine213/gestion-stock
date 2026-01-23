@@ -63,6 +63,10 @@ header{
     font-size:14px;
     color:#00ffcc;
 }
+.img-item small{
+    color:#ffd700;
+    font-size:12px;
+}
 
 /* ===== المدخلات ===== */
 .card{
@@ -71,7 +75,7 @@ header{
     border-radius:15px;
 }
 
-input,button{
+input,select,button{
     width:100%;
     padding:10px;
     margin:5px 0;
@@ -80,7 +84,7 @@ input,button{
     font-size:16px;
 }
 
-input{
+input,select{
     background:#000;
     color:#0ff;
     border:1px solid #00ff99;
@@ -91,7 +95,6 @@ button{
     color:white;
     cursor:pointer;
 }
-
 button:hover{opacity:.8;}
 
 table{
@@ -106,7 +109,6 @@ th,td{
     text-align:center;
 }
 th{background:#28a745;}
-
 </style>
 </head>
 
@@ -124,6 +126,18 @@ th{background:#28a745;}
 
 <input id="barcode" placeholder="📦 الباركود">
 <input id="product" placeholder="🧾 اسم المنتج">
+
+<!-- ✅ خانة المجموعة -->
+<select id="category">
+    <option value="">📂 اختر المجموعة</option>
+    <option>حلويات</option>
+    <option>مشروبات</option>
+    <option>عطور رجالية</option>
+    <option>عطور نسائية</option>
+    <option>Cosmétique</option>
+    <option>تدخين</option>
+</select>
+
 <input id="buy" placeholder="💰 سعر الشراء">
 <input id="sell" placeholder="💵 سعر البيع">
 <input id="qty" type="number" placeholder="📦 الكمية">
@@ -157,7 +171,7 @@ let stock = JSON.parse(localStorage.getItem("stock")) || [];
 let purchases = [];
 const tbody = document.getElementById("tbody");
 
-/* ===== عرض الصور ===== */
+/* ===== عرض الصور مع المجموعة ===== */
 function renderImages(){
     const list=document.getElementById("imageList");
     list.innerHTML="";
@@ -168,11 +182,13 @@ function renderImages(){
         div.innerHTML=`
             <img src="${p.image}">
             <span>${p.name}</span>
+            <small>${p.category || ""}</small>
         `;
         div.onclick=()=>{
             product.value=p.name;
             sell.value=p.sell;
             barcode.value=p.barcode||"";
+            category.value=p.category||"";
         };
         list.appendChild(div);
     });
@@ -193,6 +209,7 @@ function addPurchase(){
             date:date.value,
             expiry:expiry.value,
             barcode:barcode.value,
+            category:category.value, // ✅
             image:reader.result
         });
         render();
@@ -208,7 +225,7 @@ function render(){
     purchases.forEach((p,i)=>{
         tbody.innerHTML+=`
         <tr>
-        <td>${p.name}</td>
+        <td>${p.name}<br><small>${p.category}</small></td>
         <td>${p.qty}</td>
         <td>${p.qty*p.buy}</td>
         <td><button onclick="del(${i})">🗑️</button></td>
@@ -228,6 +245,7 @@ function save(){
         if(s){
             s.qtyLeft+=p.qty;
             s.qtyOriginal+=p.qty;
+            s.category=p.category;
             if(p.image) s.image=p.image;
         }else{
             stock.push({
@@ -239,6 +257,7 @@ function save(){
                 barcode:p.barcode,
                 expiry:p.expiry,
                 date:p.date,
+                category:p.category, // ✅
                 image:p.image
             });
         }
