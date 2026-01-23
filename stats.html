@@ -11,6 +11,10 @@ table{width:100%;border-collapse:collapse;margin-top:10px;}
 th,td{padding:8px;border-bottom:1px solid #444;text-align:center;}
 th{background:#28a745;color:black;}
 </style>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 </head>
 <body>
 
@@ -53,17 +57,34 @@ th{background:#28a745;color:black;}
 </table>
 
 <script>
-// جلب سجل المبيعات
-let salesHistory = JSON.parse(localStorage.getItem("salesHistory")) || [];
+// ===== Firebase Config =====
+const firebaseConfig = {
+    apiKey: "API_KEY_HERE",
+    authDomain: "PROJECT_ID.firebaseapp.com",
+    databaseURL: "https://PROJECT_ID.firebaseio.com",
+    projectId: "PROJECT_ID",
+    storageBucket: "PROJECT_ID.appspot.com",
+    messagingSenderId: "SENDER_ID",
+    appId: "APP_ID"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
 
-// دالة لتنسيق التاريخ
+// ===== تحميل سجل المبيعات من Firebase =====
+let salesHistory = [];
+
+db.ref("salesHistory").on("value", snap => {
+    salesHistory = snap.val() || [];
+    renderStats();
+});
+
+// ===== دوال حساب الإحصائيات =====
 function formatDate(d){ return d.toISOString().split("T")[0]; }
 
-// ===== تجميع حسب اليوم =====
 function getDailyStats(){
     const daily = {};
     salesHistory.forEach(s=>{
-        const date = s.date;
+        const date = s.date.split("T")[0];
         if(!daily[date]) daily[date] = {gross:0, net:0};
         daily[date].gross += s.sell*s.qty;
         daily[date].net += (s.sell-s.buy)*s.qty;
@@ -71,7 +92,6 @@ function getDailyStats(){
     return daily;
 }
 
-// ===== تجميع حسب الأسبوع =====
 function getWeeklyStats(){
     const weekly = {};
     salesHistory.forEach(s=>{
@@ -86,7 +106,6 @@ function getWeeklyStats(){
     return weekly;
 }
 
-// ===== تجميع حسب الشهر =====
 function getMonthlyStats(){
     const monthly = {};
     salesHistory.forEach(s=>{
@@ -99,7 +118,6 @@ function getMonthlyStats(){
     return monthly;
 }
 
-// ===== دالة الأسبوع في السنة =====
 function getWeekNumber(d){
     const date = new Date(d.getFullYear(),d.getMonth(),d.getDate());
     const dayNum = date.getDay() || 7;
@@ -138,8 +156,6 @@ function renderStats(){
         monthlyTbody.appendChild(tr);
     }
 }
-
-renderStats();
 </script>
 
 </body>
