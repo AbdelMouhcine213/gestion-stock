@@ -1,184 +1,25 @@
-<!DOCTYPE html>
-<html lang="ar">
-<head>
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#28a745">
-<meta charset="UTF-8">
-<title>الإعدادات</title>
-<style>
-body{
-    font-family:Arial;
-    direction:rtl;
-    background:#f4f6f8;
-    margin:0;
-}
-header{
-    background:#fd7e14;
-    color:white;
-    padding:18px;
-    text-align:center;
-    font-size:28px;
-    font-weight:bold;
-}
-.container{ padding:20px; }
-.tab-buttons{ display:flex; gap:10px; margin-bottom:20px; }
-.tab-buttons button{
-    padding:12px 20px;font-size:18px;border:none;
-    border-radius:8px;cursor:pointer;background:#ddd;
-}
-.tab-buttons button.active{ background:#fd7e14;color:white; }
-.tab-content{
-    background:white;padding:20px;border-radius:12px;
-    box-shadow:0 0 10px rgba(0,0,0,.1);display:none;
-}
-input, select{
-    padding:12px;font-size:18px;margin:10px 0;
-    width:100%;border-radius:8px;border:1px solid #bbb;
-}
-.save-btn{
-    background:#28a745;color:white;font-size:20px;
-    padding:12px 20px;border:none;border-radius:8px;
-    cursor:pointer;margin-top:10px;
-}
-</style>
-</head>
-
-<body>
-<header>⚙️ الإعدادات</header>
-
-<div class="container">
-
-<div class="tab-buttons">
-    <button class="active" onclick="showTab('company')">معلومات الشركة</button>
-    <button onclick="showTab('user')">المستخدمين</button>
-    <button onclick="showTab('display')">الواجهة</button>
-    <button onclick="showTab('sales')">البيع والشراء</button>
-    <button onclick="showTab('backup')">النسخ الاحتياطي</button>
-    <button onclick="showTab('alerts')">الإشعارات</button>
-</div>
-
-<div class="tab-content" id="company" style="display:block;">
-    <h3>معلومات الشركة</h3>
-    <input id="companyName" placeholder="اسم الشركة">
-    <input id="companyPhone" placeholder="الهاتف">
-    <input id="companyEmail" placeholder="البريد الإلكتروني">
-    <input id="companyAddress" placeholder="العنوان">
-    <input id="companyVAT" type="number" placeholder="ضريبة القيمة المضافة %">
-    <button class="save-btn" onclick="saveCompany()">حفظ</button>
-</div>
-
-<div class="tab-content" id="user">
-    <h3>إعدادات المستخدمين</h3>
-    <input id="username" placeholder="اسم المستخدم">
-    <input id="password" type="password" placeholder="كلمة المرور">
-    <select id="role">
-        <option value="admin">مسؤول</option>
-        <option value="sales">موظف مبيعات</option>
-    </select>
-    <button class="save-btn" onclick="saveUser()">حفظ المستخدم</button>
-</div>
-
-<div class="tab-content" id="display">
-    <h3>إعدادات العرض</h3>
-    <select id="theme">
-        <option value="light">فاتح</option>
-        <option value="dark">داكن</option>
-    </select>
-    <input id="fontSize" type="number" placeholder="حجم الخط (px)">
-    <button class="save-btn" onclick="saveDisplay()">حفظ العرض</button>
-</div>
-
-<div class="tab-content" id="sales">
-    <h3>إعدادات البيع والشراء</h3>
-    <label><input type="checkbox" id="autoDeduct"> خصم الكمية تلقائياً</label>
-    <input id="currency" placeholder="العملة">
-    <input id="minQty" type="number" placeholder="الحد الأدنى">
-    <input id="maxQty" type="number" placeholder="الحد الأقصى">
-    <button class="save-btn" onclick="saveSales()">حفظ البيع</button>
-</div>
-
-<div class="tab-content" id="backup">
-    <h3>النسخ الاحتياطي</h3>
-    <button class="save-btn" onclick="exportData()">تصدير البيانات</button>
-    <input type="file" id="importFile">
-</div>
-
-<div class="tab-content" id="alerts">
-    <h3>الإشعارات</h3>
-    <label><input type="checkbox" id="lowStockAlert"> نفاد المخزون</label><br>
-    <label><input type="checkbox" id="expiryAlert"> قرب الانتهاء</label><br>
-    <label><input type="checkbox" id="salesAlert"> المبيعات</label>
-    <button class="save-btn" onclick="saveAlerts()">حفظ</button>
-</div>
-
-</div>
-
-<!-- ================= FIREBASE ================= -->
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+import { db } from "./firebase.js";
+import { ref, set }
+from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-const firebaseConfig = {
-  apiKey: "API_KEY",
-  authDomain: "PROJECT_ID.firebaseapp.com",
-  databaseURL: "https://PROJECT_ID-default-rtdb.firebaseio.com",
-  projectId: "PROJECT_ID",
-  storageBucket: "PROJECT_ID.appspot.com",
-  messagingSenderId: "SENDER_ID",
-  appId: "APP_ID"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-
-window.showTab = function(id){
-  document.querySelectorAll('.tab-content').forEach(t=>t.style.display='none');
-  document.querySelectorAll('.tab-buttons button').forEach(b=>b.classList.remove('active'));
-  document.getElementById(id).style.display='block';
-  event.target.classList.add('active');
-};
-
-window.saveCompany = ()=> set(ref(db,"settings/company"),{
-  name:companyName.value,phone:companyPhone.value,
-  email:companyEmail.value,address:companyAddress.value,
+window.saveCompany=()=>{
+ set(ref(db,"settings/company"),{
+  name:companyName.value,
+  phone:companyPhone.value,
+  email:companyEmail.value,
+  address:companyAddress.value,
   vat:companyVAT.value
-}).then(()=>alert("تم الحفظ"));
+ });
+ alert("تم الحفظ");
+};
 
-window.saveUser = ()=> set(ref(db,"users/"+username.value),{
-  username:username.value,password:password.value,role:role.value
-}).then(()=>alert("تم حفظ المستخدم"));
-
-window.saveDisplay = ()=> set(ref(db,"settings/display"),{
-  theme:theme.value,fontSize:fontSize.value
-}).then(()=>alert("تم الحفظ"));
-
-window.saveSales = ()=> set(ref(db,"settings/sales"),{
-  autoDeduct:autoDeduct.checked,
+window.saveSales=()=>{
+ set(ref(db,"settings/sales"),{
+  auto:autoDeduct.checked,
   currency:currency.value,
-  minQty:minQty.value,
-  maxQty:maxQty.value
-}).then(()=>alert("تم الحفظ"));
-
-window.saveAlerts = ()=> set(ref(db,"settings/alerts"),{
-  lowStock:lowStockAlert.checked,
-  expiry:expiryAlert.checked,
-  sales:salesAlert.checked
-}).then(()=>alert("تم الحفظ"));
-
-async function load(){
-  const paths=["company","display","sales","alerts"];
-  for(const p of paths){
-    const s=await get(ref(db,"settings/"+p));
-    if(!s.exists()) continue;
-    const d=s.val();
-    if(p==="company"){companyName.value=d.name||"";companyPhone.value=d.phone||"";companyEmail.value=d.email||"";companyAddress.value=d.address||"";companyVAT.value=d.vat||"";}
-    if(p==="display"){theme.value=d.theme;fontSize.value=d.fontSize;}
-    if(p==="sales"){autoDeduct.checked=d.autoDeduct;currency.value=d.currency;minQty.value=d.minQty;maxQty.value=d.maxQty;}
-    if(p==="alerts"){lowStockAlert.checked=d.lowStock;expiryAlert.checked=d.expiry;salesAlert.checked=d.sales;}
-  }
-}
-load();
+  min:minQty.value,
+  max:maxQty.value
+ });
+};
 </script>
-
-</body>
-</html>
