@@ -3,21 +3,17 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Gestion Stock & POS</title>
+<title>Gestion Stock</title>
 <style>
 *{box-sizing:border-box;}
 body{margin:0;font-family:Arial;direction:rtl;background:#0a1f3f;color:white;padding:10px;}
 header{background:#28a745;padding:15px;text-align:center;font-size:28px;border-radius:12px;margin-bottom:15px;}
 .container{display:grid;grid-template-columns:250px 1fr;gap:15px;}
-
-/* ===== قائمة الصور ===== */
 .images{background:#08152a;border-radius:15px;padding:10px;overflow-y:auto;max-height:80vh;}
 .img-item{border:2px solid #00ff99;border-radius:12px;margin-bottom:10px;padding:5px;cursor:pointer;text-align:center;}
 .img-item img{width:100%;height:120px;object-fit:contain;background:#fff;border-radius:10px;}
 .img-item span{display:block;margin-top:5px;font-size:14px;color:#00ffcc;}
-
-/* ===== المدخلات ===== */
-.card{background:#081a33;padding:15px;border-radius:15px;}
+.card{background:#08152a;padding:15px;border-radius:15px;}
 input,button,select{width:100%;padding:10px;margin:5px 0;border-radius:10px;border:none;font-size:16px;}
 input{background:#000;color:#0ff;border:1px solid #00ff99;}
 button{background:#17a2b8;color:white;cursor:pointer;}
@@ -30,18 +26,16 @@ th{background:#28a745;}
 </head>
 <body>
 
-<header>🛒 المشتريات والمخزون</header>
+<header>🛒 المخزون العادي</header>
 
 <div class="container">
-<!-- ===== قائمة الصور ===== -->
 <div class="images" id="imageList"></div>
 
-<!-- ===== المحتوى ===== -->
 <div class="card">
 <h3>إضافة منتج جديد</h3>
 <input id="barcode" placeholder="📦 الباركود">
 <input id="product" placeholder="🧾 اسم المنتج">
-<input id="category" placeholder="🏷️ المجموعة">
+<input id="category" placeholder="🏷️ اختر المجموعة أو أدخل جديدة">
 <input id="buy" placeholder="💰 سعر الشراء">
 <input id="sell" placeholder="💵 سعر البيع">
 <input id="qty" type="number" placeholder="📦 الكمية">
@@ -69,10 +63,13 @@ th{background:#28a745;}
 </div>
 
 <script>
+// جلب المخزون من LocalStorage مع حذف منتجات TABAC
 let stock = JSON.parse(localStorage.getItem("stock")) || [];
+stock = stock.filter(p => p.category !== "TABAC");
+localStorage.setItem("stock", JSON.stringify(stock));
+
 const tbody = document.getElementById("tbody");
 
-// ===== عرض الصور والمخزون =====
 function renderImages(){
     const list = document.getElementById("imageList");
     list.innerHTML="";
@@ -84,7 +81,7 @@ function renderImages(){
             <img src="${p.image}">
             <span>${p.name} (${p.category})</span>
         `;
-        div.onclick = ()=>{ 
+        div.onclick=()=>{ 
             product.value = p.name;
             sell.value = p.sell;
             buy.value = p.buy;
@@ -96,7 +93,7 @@ function renderImages(){
     renderStockTable();
 }
 
-// ===== إضافة شراء =====
+// إضافة منتج جديد
 function addPurchase(){
     let imgFile = document.getElementById("imageInput").files[0];
     let reader = new FileReader();
@@ -104,7 +101,7 @@ function addPurchase(){
     reader.onload = function(){
         const prod = {
             name: product.value,
-            category: category.value,
+            category: category.value || "بدون مجموعة", // اختياري
             buy: +buy.value,
             sell: +sell.value,
             qtyOriginal: +qty.value,
@@ -114,7 +111,7 @@ function addPurchase(){
             barcode: barcode.value,
             image: reader.result
         };
-        // إضافة أو تحديث المخزون
+        // إضافة إلى المخزون أو تحديث المنتج إذا موجود
         let exist = stock.find(x=>x.name===prod.name && x.category===prod.category);
         if(exist){
             exist.qtyOriginal += prod.qtyOriginal;
@@ -134,13 +131,11 @@ function addPurchase(){
     else reader.onload();
 }
 
-// ===== مسح المدخلات =====
 function clearInputs(){
     product.value = category.value = buy.value = sell.value = qty.value = date.value = expiry.value = barcode.value = "";
     imageInput.value = "";
 }
 
-// ===== رسم جدول المخزون =====
 function renderStockTable(){
     tbody.innerHTML="";
     stock.forEach((p,i)=>{
@@ -152,15 +147,14 @@ function renderStockTable(){
             <td class="stockLabel">${p.qtyLeft}</td>
             <td>${p.sell}</td>
             <td>
-                <button onclick="editItem(${i})">✏️ تعديل</button>
-                <button onclick="deleteItem(${i})">🗑️ حذف</button>
+                <button onclick="editItem(${i})">✏️</button>
+                <button onclick="deleteItem(${i})">🗑️</button>
             </td>
         `;
         tbody.appendChild(tr);
     });
 }
 
-// ===== تعديل منتج مع إمكانية تغيير الصورة =====
 function editItem(i){
     const p = stock[i];
     let newName = prompt("اسم المنتج:", p.name) || p.name;
@@ -169,36 +163,17 @@ function editItem(i){
     let newSell = prompt("سعر البيع:", p.sell) || p.sell;
     let newQty = prompt("الكمية الأصلية:", p.qtyOriginal) || p.qtyOriginal;
 
-    // اختيار صورة جديدة
-    let fileInput = document.createElement("input");
-    fileInput.type="file";
-    fileInput.accept="image/*";
-    fileInput.onchange = ()=> {
-        const file = fileInput.files[0];
-        if(file){
-            const reader = new FileReader();
-            reader.onload = ()=> {
-                p.image = reader.result;
-                finalizeEdit();
-            }
-            reader.readAsDataURL(file);
-        } else finalizeEdit();
-    }
-    fileInput.click();
+    p.name = newName;
+    p.category = newCat;
+    p.buy = +newBuy;
+    p.sell = +newSell;
+    p.qtyOriginal = +newQty;
+    p.qtyLeft = Math.min(p.qtyLeft, +newQty);
 
-    function finalizeEdit(){
-        p.name = newName;
-        p.category = newCat;
-        p.buy = +newBuy;
-        p.sell = +newSell;
-        p.qtyOriginal = +newQty;
-        p.qtyLeft = Math.min(p.qtyLeft, +newQty);
-        localStorage.setItem("stock", JSON.stringify(stock));
-        renderImages();
-    }
+    localStorage.setItem("stock", JSON.stringify(stock));
+    renderImages();
 }
 
-// ===== حذف منتج =====
 function deleteItem(i){
     if(confirm("هل تريد حذف هذا المنتج؟")){
         stock.splice(i,1);
