@@ -1,18 +1,24 @@
-// المجموعات الفرعية حسب الجنس
-const subGroups = {
-    Femme: ["Deodorant","Parfum","Stick","Shampoing","Gel Douche","Autres"],
-    Homme: ["Deodorant","Parfum","Stick","Shampoing","Gel Douche","Autres"]
-};
+// ============================================
+// ضع هنا رابط Web App الخاص بك من Google Apps Script
+// مثال: 
+// const webAppUrl = https://script.google.com/macros/s/AKfycbw0Dyq_CCQKIe51g38nhOqnADg65iZ8y-Z7fNfwtXn9j-2sphElaWt9pjjHfux0QnbPmg/exec;
+const webAppUrl = "https://script.google.com/macros/s/AKfycbw0Dyq_CCQKIe51g38nhOqnADg65iZ8y-Z7fNfwtXn9j-2sphElaWt9pjjHfux0QnbPmg/exec;
 
-// تخزين المشتريات محلياً
+// ============================================
+// بيانات المشتريات محلياً لتسهيل عرض الجدول
 let purchases = JSON.parse(localStorage.getItem("purchases")) || [];
 
 const purchaseForm = document.getElementById("purchaseForm");
 const mainGroup = document.getElementById("mainGroup");
 const subGroup = document.getElementById("subGroup");
 const tableBody = document.querySelector("#purchaseTable tbody");
-const searchInput = document.getElementById("searchInput");
 const totalLabel = document.getElementById("totalLabel");
+
+// المجموعات الفرعية حسب الجنس
+const subGroups = {
+    Femme: ["Deodorant","Parfum","Stick","Shampoing","Gel Douche","Autres"],
+    Homme: ["Deodorant","Parfum","Stick","Shampoing","Gel Douche","Autres"]
+};
 
 // عرض المجموعات الفرعية عند اختيار Femme أو Homme
 mainGroup.addEventListener("change", () => {
@@ -31,7 +37,7 @@ mainGroup.addEventListener("change", () => {
     }
 });
 
-// إضافة منتج جديد
+// إضافة منتج جديد من الفورم
 purchaseForm.addEventListener("submit", e => {
     e.preventDefault();
     const reader = new FileReader();
@@ -48,17 +54,48 @@ purchaseForm.addEventListener("submit", e => {
             subGroup: subGroup.value || "",
             image: reader.result || ""
         };
+
+        // حفظ محلياً
         purchases.push(newPurchase);
         localStorage.setItem("purchases", JSON.stringify(purchases));
+
+        // إرسال للمشتريات في Google Sheet
+        addPurchaseToSheet(newPurchase);
+
+        // تحديث الجدول
         renderTable();
+
+        // إعادة ضبط الفورم
         purchaseForm.reset();
         subGroup.style.display = "none";
     };
-    if(file) reader.readAsDataURL(file);
-    else reader.onload();
+    if(file) reader.readAsDataURL(file); else reader.onload();
 });
 
-// عرض المشتريات في الجدول
+// ============================================
+// دوال الربط مع Google Sheet
+function addPurchaseToSheet(purchase){
+    fetch(webAppUrl + "?action=addPurchase", {
+        method: "POST",
+        body: JSON.stringify(purchase)
+    })
+    .then(res => res.json())
+    .then(data => console.log("Purchase saved:", data))
+    .catch(err => console.error(err));
+}
+
+function addStockToSheet(purchase){
+    fetch(webAppUrl + "?action=addStock", {
+        method: "POST",
+        body: JSON.stringify(purchase)
+    })
+    .then(res => res.json())
+    .then(data => console.log("Stock saved:", data))
+    .catch(err => console.error(err));
+}
+
+// ============================================
+// عرض المشتريات في الجدول مع أزرار تأكيد وحفظ المخزون
 function renderTable(){
     tableBody.innerHTML = "";
     let total = 0;
@@ -74,7 +111,10 @@ function renderTable(){
             <td>${p.group}</td>
             <td>${p.subGroup}</td>
             <td>${p.image ? `<img src="${p.image}" class="product-img">` : ""}</td>
-            <td><button onclick="deletePurchase(${index})">حذف</button></td>
+            <td>
+                <button style="background:#0f0;color:#000;" onclick="confirmPurchase(${index})">✔️ تأكيد</button>
+                <button style="background:#ff0;color:#000;" onclick="saveToStock(${index})">📦 حفظ في المخزون</button>
+            </td>
         `;
         tableBody.appendChild(tr);
         total += p.sellPrice * p.quantity;
@@ -82,46 +122,16 @@ function renderTable(){
     totalLabel.textContent = `إجمالي سعر المجموعات: ${total}`;
 }
 
-// حذف منتج
-function deletePurchase(index){
-    purchases.splice(index, 1);
-    localStorage.setItem("purchases", JSON.stringify(purchases));
-    renderTable();
+// ============================================
+// أزرار تأكيد وحفظ المخزون
+function confirmPurchase(index){
+    alert("تم تأكيد المنتج: " + purchases[index].name);
 }
 
-// البحث
-searchInput.addEventListener("input", () => {
-    const query = searchInput.value.toLowerCase();
-    const filtered = purchases.filter(p => 
-        p.name.toLowerCase().includes(query) ||
-        p.date.includes(query) ||
-        p.sellPrice.toString().includes(query)
-    );
-    renderFilteredTable(filtered);
-});
-
-function renderFilteredTable(data){
-    tableBody.innerHTML = "";
-    let total = 0;
-    data.forEach((p, index) => {
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-            <td>${p.date}</td>
-            <td>${p.name}</td>
-            <td>${p.buyPrice}</td>
-            <td>${p.sellPrice}</td>
-            <td>${p.quantity}</td>
-            <td>${p.expiry}</td>
-            <td>${p.group}</td>
-            <td>${p.subGroup}</td>
-            <td>${p.image ? `<img src="${p.image}" class="product-img">` : ""}</td>
-            <td><button onclick="deletePurchase(${index})">حذف</button></td>
-        `;
-        tableBody.appendChild(tr);
-        total += p.sellPrice * p.quantity;
-    });
-    totalLabel.textContent = `إجمالي سعر المجموعات: ${total}`;
+function saveToStock(index){
+    addStockToSheet(purchases[index]);
+    alert("تم حفظ المنتج في المخزون ✅");
 }
 
-// تحميل المشتريات عند فتح الصفحة
+// تحميل البيانات عند فتح الصفحة
 renderTable();
