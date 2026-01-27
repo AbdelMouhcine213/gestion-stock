@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <title>البيع | Gestion Commerciale</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+
+  <style>
+    body{
+      margin:0;
+      font-family:'Tajawal', sans-serif;
+      background: radial-gradient(circle at top, #0f2027, #000);
+      color:white;
+      min-height:100vh;
+    }
+
+    header{
+      display:flex;
+      align-items:center;
+      gap:15px;
+      padding:20px;
+      color:#00fff7;
+      text-shadow:0 0 12px #00fff7;
+      font-size:22px;
+      font-weight:700;
+    }
+
+    .back{
+      cursor:pointer;
+      font-size:24px;
+    }
+
+    .container{
+      max-width:500px;
+      margin:40px auto;
+      padding:25px;
+      background:rgba(255,255,255,0.05);
+      border:1px solid rgba(0,255,247,0.3);
+      border-radius:20px;
+      box-shadow:0 0 20px rgba(0,255,247,0.2);
+    }
+
+    h2{
+      text-align:center;
+      margin-bottom:25px;
+      color:#00fff7;
+      text-shadow:0 0 12px #00fff7;
+    }
+
+    label{
+      display:block;
+      margin-bottom:5px;
+      font-size:14px;
+      opacity:0.8;
+    }
+
+    input{
+      width:100%;
+      padding:12px;
+      margin-bottom:18px;
+      border-radius:12px;
+      border:none;
+      outline:none;
+      background:#0b2a33;
+      color:white;
+      font-size:15px;
+      box-shadow:inset 0 0 8px rgba(0,255,247,0.3);
+    }
+
+    input:focus{
+      box-shadow:0 0 10px rgba(0,255,247,0.6);
+    }
+
+    button{
+      width:100%;
+      padding:14px;
+      border:none;
+      border-radius:14px;
+      font-size:17px;
+      font-weight:700;
+      cursor:pointer;
+      background:#00fff7;
+      color:#000;
+      box-shadow:0 0 20px rgba(0,255,247,0.8);
+      transition:0.3s;
+    }
+
+    button:hover{
+      box-shadow:0 0 30px rgba(0,255,247,1);
+      transform:scale(1.03);
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <div class="back" onclick="history.back()">⬅</div>
+  صفحة البيع
+</header>
+
+<div class="container">
+  <h2>عملية بيع جديدة</h2>
+
+  <label>اسم المنتج</label>
+  <input id="product" placeholder="مثال: سكر">
+
+  <label>الكمية</label>
+  <input id="qty" type="number" placeholder="مثال: 5">
+
+  <label>سعر الوحدة</label>
+  <input id="price" type="number" placeholder="مثال: 120">
+
+  <button onclick="saveVente()">تأكيد البيع</button>
+</div>
+
+<script>
+function saveVente(){
+  const product = document.getElementById("product").value;
+  const qty = document.getElementById("qty").value;
+  const price = document.getElementById("price").value;
+
+  if(!product || !qty || !price){
+    alert("يرجى ملء جميع الحقول");
+    return;
+  }
+
+  alert("✔️ واجهة البيع جاهزة، الربط في الخطوة القادمة");
+}
+</script>
+
+</body>
+</html>
