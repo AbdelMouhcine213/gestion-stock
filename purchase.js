@@ -2,7 +2,7 @@
 // ضع هنا رابط Web App الخاص بك من Google Apps Script
 // مثال: 
 // const webAppUrl = "https://script.google.com/macros/s/AKfycbx1234567890abcdefgHIJKLmnopQRST/exec";
-const webAppUrl = "PUT_YOUR_WEB_APP_URL_HERE";
+const webAppUrl = "https://script.google.com/macros/s/AKfycbw0Dyq_CCQKIe51g38nhOqnADg65iZ8y-Z7fNfwtXn9j-2sphElaWt9pjjHfux0QnbPmg/exec";
 
 let purchases = JSON.parse(localStorage.getItem("purchases")) || [];
 
