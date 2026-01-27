@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>المشتريات / Achats / Purchases</title>
+<style>
+body {
+    font-family: Arial, sans-serif;
+    direction: rtl;
+    background: #f0f2f5;
+    margin: 0;
+    padding: 20px;
+    color: #333;
+}
+header {
+    text-align: center;
+    margin-bottom: 20px;
+}
+.container {
+    max-width: 1200px;
+    margin: auto;
+}
+form, table {
+    width: 100%;
+    background: white;
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+input, select, button {
+    padding: 8px;
+    margin: 5px 0;
+    width: 100%;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
+table {
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+table th, table td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: center;
+}
+.search-bar {
+    margin-bottom: 10px;
+}
+.language-select {
+    float: left;
+    margin-bottom: 10px;
+}
+img.product-img {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 5px;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+<header>
+    <h1 id="title">المشتريات / Achats / Purchases</h1>
+</header>
+
+<div class="language-select">
+    <select id="langSelect">
+        <option value="ar">العربية</option>
+        <option value="fr">Français</option>
+        <option value="en">English</option>
+    </select>
+</div>
+
+<div class="search-bar">
+    <input type="text" id="searchInput" placeholder="ابحث باسم المنتج أو تاريخ الشراء أو سعر البيع">
+</div>
+
+<form id="purchaseForm">
+    <label id="labelDate">تاريخ الشراء:</label>
+    <input type="date" id="purchaseDate" required>
+
+    <label id="labelProduct">اسم المنتج:</label>
+    <input type="text" id="productName" required>
+
+    <label id="labelBuyPrice">سعر الشراء:</label>
+    <input type="number" id="buyPrice" min="0" step="0.01" required>
+
+    <label id="labelSellPrice">سعر البيع:</label>
+    <input type="number" id="sellPrice" min="0" step="0.01" required>
+
+    <label id="labelQty">الكمية:</label>
+    <input type="number" id="quantity" min="1" required>
+
+    <label id="labelExp">تاريخ نهاية الصلاحية:</label>
+    <input type="date" id="expiryDate">
+
+    <label id="labelGroup">المجموعة:</label>
+    <select id="mainGroup" required>
+        <option value="">اختر المجموعة</option>
+        <option value="Chocolat">Chocolat</option>
+        <option value="Boisson">Boisson</option>
+        <option value="Gateaux">Gateaux</option>
+        <option value="Les Glaces">Les Glaces</option>
+        <option value="Autres">Autres</option>
+        <option value="Femme">Femme</option>
+        <option value="Homme">Homme</option>
+    </select>
+
+    <select id="subGroup" style="display:none;">
+        <option value="">اختر المجموعة الفرعية</option>
+    </select>
+
+    <label id="labelImage">صورة المنتج:</label>
+    <input type="file" id="productImage" accept="image/*">
+
+    <button type="submit" id="addBtn">إضافة المنتج</button>
+</form>
+
+<table id="purchaseTable">
+    <thead>
+        <tr>
+            <th>تاريخ الشراء</th>
+            <th>اسم المنتج</th>
+            <th>سعر الشراء</th>
+            <th>سعر البيع</th>
+            <th>الكمية</th>
+            <th>تاريخ الصلاحية</th>
+            <th>المجموعة</th>
+            <th>المجموعة الفرعية</th>
+            <th>صورة</th>
+            <th>حذف</th>
+        </tr>
+    </thead>
+    <tbody></tbody>
+</table>
+
+<h3 id="totalLabel">إجمالي سعر المجموعات: 0</h3>
+</div>
+
+<script src="purchase.js"></script>
+</body>
+</html>
