@@ -157,3 +157,12 @@ function renderFilteredTable(data){
 
 // تحميل البيانات عند فتح الصفحة
 renderTable();
+function saveToStock(product) {
+  fetch(webAppUrl, {
+    method: "POST",
+    body: JSON.stringify(product),
+    headers: { "Content-Type": "application/json" }
+  })
+  .then(res => res.json())
+  .then(() => alert("✅ تم الحفظ في المخزون بنجاح"));
+}
