@@ -1,4 +1,4 @@
-const webAppUrl = "https://script.google.com/macros/library/d/1yiE79oY8K0sFb68BHff-pIiPknA2Kn0k-RCmgMiEIivf3s0nBQSptQPc/1";
+const webAppUrl = "https://script.google.com/macros/s/AKfycbw0Dyq_CCQKIe51g38nhOqnADg65iZ8y-Z7fNfwtXn9j-2sphElaWt9pjjHfux0QnbPmg/exec";
 
 const subGroups = {
   Femme: ["Deodorant","Parfum","Stick","Shampoing","Gel Douche","Autres"],
