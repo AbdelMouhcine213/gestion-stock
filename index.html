@@ -1,133 +1,121 @@
 <!DOCTYPE html>
 <html lang="ar">
 <head>
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#28a745">
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestion Commercial Professional</title>
-	<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#28a745">
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            direction: rtl;
-            background-color: #f0f2f5;
-        }
+  <meta charset="UTF-8">
+  <title>لوحة التحكم | Gestion Commerciale</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-        header {
-            background-color: #007bff;
-            color: white;
-            padding: 15px;
-            text-align: center;
-            font-size: 32px;
-            font-weight: bold;
-        }
+  <!-- خط -->
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
 
-        .content {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            min-height: 80vh;
-            gap: 30px; /* مسافة بين الصفوف */
-            padding: 20px;
-        }
+  <style>
+    body{
+      margin:0;
+      font-family:'Tajawal', sans-serif;
+      background: radial-gradient(circle at top, #0f2027, #000);
+      color:white;
+      min-height:100vh;
+    }
 
-        .row {
-            display: flex;
-            justify-content: center;
-            gap: 20px; /* مسافة بين المربعات داخل الصف */
-        }
+    header{
+      text-align:center;
+      padding:30px 10px;
+      font-size:26px;
+      font-weight:700;
+      color:#00fff7;
+      text-shadow:0 0 15px #00fff7;
+    }
 
-        .box {
-            width: 200px;
-            height: 150px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            color: white;
-            font-size: 20px;
-            font-weight: bold;
-            border-radius: 15px;
-            cursor: pointer;
-            transition: transform 0.2s;
-            text-align: center;
-            text-decoration: none;
-        }
+    .container{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+      gap:25px;
+      padding:30px;
+      max-width:900px;
+      margin:auto;
+    }
 
-        .box:hover {
-            transform: scale(1.1);
-        }
+    .card{
+      background:rgba(255,255,255,0.05);
+      border:1px solid rgba(0,255,247,0.3);
+      border-radius:18px;
+      padding:30px 15px;
+      text-align:center;
+      cursor:pointer;
+      transition:0.3s;
+      box-shadow:0 0 15px rgba(0,255,247,0.15);
+    }
 
-        /* ألوان كل مربع */
-        .achats { background-color: #17a2b8; }   /* الشراء - أزرق سماوي */
-        .sales { background-color: #ffc107; }      /* المبيعات - أصفر */
-        .stock { background-color: #28a745; }      /* المخزون - أخضر */
-        .clients { background-color: #6f42c1; }    /* العملاء - بنفسجي */
-        .settings { background-color: #dc3545; }   /* الإعدادات - أحمر */
-        .stats { background-color: #fd7e14; }      /* الإحصائيات - برتقالي */
+    .card:hover{
+      transform:translateY(-8px) scale(1.03);
+      box-shadow:0 0 25px rgba(0,255,247,0.6);
+    }
 
-        footer {
-            background-color: #343a40;
-            color: white;
-            padding: 10px;
-            text-align: center;
-        }
-    </style>
+    .icon{
+      font-size:36px;
+      margin-bottom:10px;
+      color:#00fff7;
+      text-shadow:0 0 12px #00fff7;
+    }
+
+    .title{
+      font-size:18px;
+      font-weight:700;
+    }
+
+    footer{
+      text-align:center;
+      font-size:13px;
+      opacity:0.6;
+      padding:15px;
+    }
+  </style>
 </head>
+
 <body>
+
 <header>
-    Gestion Commercial Professional
+  📊 نظام التسيير التجاري
 </header>
-</script>
 
-<div class="content">
-    <!-- الصف الأول -->
-    <div class="row">
-            <a href="sales.html" class="box sales">المبيعات</a>
-			 <a href="achats.html" class="box achats">الشراء</a>
-             <a href="stock.html" class="box stock">المخزون</a>
-    </div>
+<div class="container">
 
-    <!-- الصف الثاني -->
-    <div class="row">
-        <a href="clients.html" class="box clients">العملاء</a>
-        <a href="settings.html" class="box settings">الإعدادات</a>
-        <a href="stats.html" class="box stats">الإحصائيات</a>
-    </div>
+  <div class="card" onclick="go('vente.html')">
+    <div class="icon">💰</div>
+    <div class="title">البيع</div>
+  </div>
+
+  <div class="card" onclick="go('achats.html')">
+    <div class="icon">🛒</div>
+    <div class="title">المشتريات</div>
+  </div>
+
+  <div class="card" onclick="go('stock.html')">
+    <div class="icon">📦</div>
+    <div class="title">المخزون</div>
+  </div>
+
+  <div class="card" onclick="go('stats.html')">
+    <div class="icon">📈</div>
+    <div class="title">الإحصائيات</div>
+  </div>
+
+  <div class="card" onclick="go('settings.html')">
+    <div class="icon">⚙️</div>
+    <div class="title">الإعدادات</div>
+  </div>
+
 </div>
 
 <footer>
-    جميع الحقوق محفوظة &copy; 2026
+  © Gestion Commerciale
 </footer>
+
 <script>
-if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("sw.js");
+function go(page){
+  window.location.href = page;
 }
 </script>
 
-<script>
-if ("serviceWorker" in navigator) {
-navigator.serviceWorker.register("sw.js");
-}
-</script>
-
-	<script>
-fetch("PUT_YOUR_WEBAPP_URL_HERE", {
-  method: "POST",
-  body: JSON.stringify({
-    product: "سكر",
-    price: 120,
-    qty: 5
-  })
-})
-.then(res => res.json())
-.then(data => console.log(data));
-</script>
-	
 </body>
 </html>
-
