@@ -1,17 +1,59 @@
-// ============================================
-// ضع هنا رابط Web App الخاص بك من Google Apps Script
-// مثال: 
-// const webAppUrl = "https://script.google.com/macros/s/AKfycbx1234567890abcdefgHIJKLmnopQRST/exec";
-const webAppUrl = "https://script.google.com/macros/s/AKfycbw0Dyq_CCQKIe51g38nhOqnADg65iZ8y-Z7fNfwtXn9j-2sphElaWt9pjjHfux0QnbPmg/exec";
+const webAppUrl = "https://script.google.com/macros/library/d/1yiE79oY8K0sFb68BHff-pIiPknA2Kn0k-RCmgMiEIivf3s0nBQSptQPc/1";
 
-let purchases = JSON.parse(localStorage.getItem("purchases")) || [];
+const subGroups = {
+  Femme: ["Deodorant","Parfum","Stick","Shampoing","Gel Douche","Autres"],
+  Homme: ["Deodorant","Parfum","Stick","Shampoing","Gel Douche","Autres"]
+};
 
-const purchaseForm = document.getElementById("purchaseForm");
-const mainGroup = document.getElementById("mainGroup");
-const subGroup = document.getElementById("subGroup");
-const tableBody = document.querySelector("#purchaseTable tbody");
-const totalLabel = document.getElementById("totalLabel");
-const searchInput = document.getElementById("searchInput");
+function loadSubGroups(){
+  const g = document.getElementById("group").value;
+  const s = document.getElementById("subGroup");
+  s.innerHTML = "<option value=''>المجموعة الفرعية</option>";
+  if(subGroups[g]){
+    subGroups[g].forEach(v=>{
+      const o=document.createElement("option");
+      o.textContent=v;
+      s.appendChild(o);
+    });
+  }
+}
+
+function saveToStock(){
+  const img = document.getElementById("imageInput").files[0];
+  if(img){
+    const reader = new FileReader();
+    reader.onload = ()=> sendData(reader.result);
+    reader.readAsDataURL(img);
+  }else{
+    sendData("");
+  }
+}
+
+function sendData(image){
+  const data = {
+    date: purchaseDate.value,
+    name: productName.value,
+    buyPrice: buyPrice.value,
+    sellPrice: sellPrice.value,
+    qty: quantity.value,
+    expiry: expiryDate.value,
+    group: group.value,
+    subGroup: subGroup.value,
+    image
+  };
+
+  fetch(webAppUrl,{
+    method:"POST",
+    body:JSON.stringify(data),
+    headers:{"Content-Type":"application/json"}
+  })
+  .then(r=>r.json())
+  .then(()=>{
+    alert("✅ تم الحفظ في المشتريات و المخزون");
+    document.querySelectorAll("input,select").forEach(e=>e.value="");
+  })
+  .catch(()=>alert("❌ خطأ في الاتصال"));
+}
 
 // المجموعات الفرعية حسب الجنس
 const subGroups = {
