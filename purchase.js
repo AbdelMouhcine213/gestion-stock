@@ -1,11 +1,9 @@
 // ============================================
 // ضع هنا رابط Web App الخاص بك من Google Apps Script
 // مثال: 
-// const webAppUrl = https://script.google.com/macros/s/AKfycbw0Dyq_CCQKIe51g38nhOqnADg65iZ8y-Z7fNfwtXn9j-2sphElaWt9pjjHfux0QnbPmg/exec;
-const webAppUrl = "https://script.google.com/macros/s/AKfycbw0Dyq_CCQKIe51g38nhOqnADg65iZ8y-Z7fNfwtXn9j-2sphElaWt9pjjHfux0QnbPmg/exec;
+// const webAppUrl = "https://script.google.com/macros/s/AKfycbx1234567890abcdefgHIJKLmnopQRST/exec";
+const webAppUrl = "PUT_YOUR_WEB_APP_URL_HERE";
 
-// ============================================
-// بيانات المشتريات محلياً لتسهيل عرض الجدول
 let purchases = JSON.parse(localStorage.getItem("purchases")) || [];
 
 const purchaseForm = document.getElementById("purchaseForm");
@@ -13,6 +11,7 @@ const mainGroup = document.getElementById("mainGroup");
 const subGroup = document.getElementById("subGroup");
 const tableBody = document.querySelector("#purchaseTable tbody");
 const totalLabel = document.getElementById("totalLabel");
+const searchInput = document.getElementById("searchInput");
 
 // المجموعات الفرعية حسب الجنس
 const subGroups = {
@@ -37,7 +36,7 @@ mainGroup.addEventListener("change", () => {
     }
 });
 
-// إضافة منتج جديد من الفورم
+// إضافة منتج جديد
 purchaseForm.addEventListener("submit", e => {
     e.preventDefault();
     const reader = new FileReader();
@@ -54,18 +53,10 @@ purchaseForm.addEventListener("submit", e => {
             subGroup: subGroup.value || "",
             image: reader.result || ""
         };
-
-        // حفظ محلياً
         purchases.push(newPurchase);
         localStorage.setItem("purchases", JSON.stringify(purchases));
-
-        // إرسال للمشتريات في Google Sheet
         addPurchaseToSheet(newPurchase);
-
-        // تحديث الجدول
         renderTable();
-
-        // إعادة ضبط الفورم
         purchaseForm.reset();
         subGroup.style.display = "none";
     };
@@ -78,43 +69,37 @@ function addPurchaseToSheet(purchase){
     fetch(webAppUrl + "?action=addPurchase", {
         method: "POST",
         body: JSON.stringify(purchase)
-    })
-    .then(res => res.json())
-    .then(data => console.log("Purchase saved:", data))
-    .catch(err => console.error(err));
+    }).then(res => res.json()).then(console.log).catch(console.error);
 }
 
 function addStockToSheet(purchase){
     fetch(webAppUrl + "?action=addStock", {
         method: "POST",
         body: JSON.stringify(purchase)
-    })
-    .then(res => res.json())
-    .then(data => console.log("Stock saved:", data))
-    .catch(err => console.error(err));
+    }).then(res => res.json()).then(console.log).catch(console.error);
 }
 
 // ============================================
-// عرض المشتريات في الجدول مع أزرار تأكيد وحفظ المخزون
+// عرض الجدول + أزرار
 function renderTable(){
     tableBody.innerHTML = "";
     let total = 0;
-    purchases.forEach((p, index) => {
+    purchases.forEach((p,index)=>{
         const tr = document.createElement("tr");
         tr.innerHTML = `
-            <td>${p.date}</td>
-            <td>${p.name}</td>
-            <td>${p.buyPrice}</td>
-            <td>${p.sellPrice}</td>
-            <td>${p.quantity}</td>
-            <td>${p.expiry}</td>
-            <td>${p.group}</td>
-            <td>${p.subGroup}</td>
-            <td>${p.image ? `<img src="${p.image}" class="product-img">` : ""}</td>
-            <td>
-                <button style="background:#0f0;color:#000;" onclick="confirmPurchase(${index})">✔️ تأكيد</button>
-                <button style="background:#ff0;color:#000;" onclick="saveToStock(${index})">📦 حفظ في المخزون</button>
-            </td>
+        <td>${p.date}</td>
+        <td>${p.name}</td>
+        <td>${p.buyPrice}</td>
+        <td>${p.sellPrice}</td>
+        <td>${p.quantity}</td>
+        <td>${p.expiry}</td>
+        <td>${p.group}</td>
+        <td>${p.subGroup}</td>
+        <td>${p.image? `<img src="${p.image}" class="product-img">` : ""}</td>
+        <td>
+            <button style="background:#0f0;color:#000;" onclick="confirmPurchase(${index})">✔️ تأكيد</button>
+            <button style="background:#ff0;color:#000;" onclick="saveToStock(${index})">📦 حفظ في المخزون</button>
+        </td>
         `;
         tableBody.appendChild(tr);
         total += p.sellPrice * p.quantity;
@@ -122,15 +107,52 @@ function renderTable(){
     totalLabel.textContent = `إجمالي سعر المجموعات: ${total}`;
 }
 
-// ============================================
 // أزرار تأكيد وحفظ المخزون
 function confirmPurchase(index){
-    alert("تم تأكيد المنتج: " + purchases[index].name);
+    alert("تم تأكيد المنتج: "+purchases[index].name);
 }
 
 function saveToStock(index){
     addStockToSheet(purchases[index]);
     alert("تم حفظ المنتج في المخزون ✅");
+}
+
+// ============================================
+// البحث في الجدول
+searchInput.addEventListener("input", ()=>{
+    const query = searchInput.value.toLowerCase();
+    const filtered = purchases.filter(p=>
+        p.name.toLowerCase().includes(query) ||
+        p.date.includes(query) ||
+        p.sellPrice.toString().includes(query)
+    );
+    renderFilteredTable(filtered);
+});
+
+function renderFilteredTable(data){
+    tableBody.innerHTML = "";
+    let total = 0;
+    data.forEach((p,index)=>{
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+        <td>${p.date}</td>
+        <td>${p.name}</td>
+        <td>${p.buyPrice}</td>
+        <td>${p.sellPrice}</td>
+        <td>${p.quantity}</td>
+        <td>${p.expiry}</td>
+        <td>${p.group}</td>
+        <td>${p.subGroup}</td>
+        <td>${p.image? `<img src="${p.image}" class="product-img">` : ""}</td>
+        <td>
+            <button style="background:#0f0;color:#000;" onclick="confirmPurchase(${index})">✔️ تأكيد</button>
+            <button style="background:#ff0;color:#000;" onclick="saveToStock(${index})">📦 حفظ في المخزون</button>
+        </td>
+        `;
+        tableBody.appendChild(tr);
+        total += p.sellPrice * p.quantity;
+    });
+    totalLabel.textContent = `إجمالي سعر المجموعات: ${total}`;
 }
 
 // تحميل البيانات عند فتح الصفحة
