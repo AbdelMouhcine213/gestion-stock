@@ -20,9 +20,7 @@ header{
   font-size:22px;
   font-weight:bold;
 }
-.container{
-  padding:15px;
-}
+.container{padding:15px;}
 .card{
   background:#020617;
   border:1px solid #22d3ee;
@@ -32,12 +30,10 @@ header{
   box-shadow:0 0 15px #22d3ee55;
 }
 input,select,button{
-  width:100%;
-  padding:10px;
-  margin-top:8px;
-  border-radius:8px;
+  padding:8px;
+  border-radius:6px;
   border:none;
-  font-size:14px;
+  font-size:13px;
 }
 input,select{
   background:#020617;
@@ -50,23 +46,26 @@ button{
   font-weight:bold;
   cursor:pointer;
 }
-button:hover{
-  background:#38bdf8;
-}
+button:hover{background:#38bdf8;}
 table{
   width:100%;
   border-collapse:collapse;
   margin-top:10px;
+  font-size:12px;
 }
 th,td{
   border:1px solid #334155;
-  padding:6px;
-  font-size:13px;
+  padding:5px;
   text-align:center;
 }
-th{
-  background:#1e293b;
+th{background:#1e293b;}
+.actions button{
+  margin:2px;
+  padding:4px 6px;
+  font-size:12px;
 }
+.delete{background:#ef4444;color:white;}
+.edit{background:#facc15;}
 </style>
 </head>
 
@@ -97,13 +96,11 @@ th{
     <option>Autres</option>
   </select>
 
-  <input type="file" id="image">
-
-  <button onclick="addToTable()">➕ إضافة للجدول</button>
+  <button type="button" onclick="addToTable()">➕ إضافة للجدول</button>
 </div>
 
 <div class="card">
-  <h3>📋 قائمة المشتريات</h3>
+  <h3>📋 المشتريات</h3>
 
   <table id="tableAchats">
     <thead>
@@ -115,12 +112,13 @@ th{
         <th>كمية</th>
         <th>الصلاحية</th>
         <th>المجموعة</th>
+        <th>إجراء</th>
       </tr>
     </thead>
     <tbody></tbody>
   </table>
 
-  <button onclick="saveToStock()">📦 حفظ في المخزون</button>
+  <button type="button" onclick="saveToStock()">📦 حفظ في المخزون</button>
 </div>
 
 </div>
