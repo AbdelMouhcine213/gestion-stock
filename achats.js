@@ -1,18 +1,27 @@
-console.log("achats.js loaded");
+// ----------------------------
+// 🔹 رابط Web App من Google Apps Script
+// ضع الرابط الذي حصلت عليه بعد النشر هنا
+// ----------------------------
 const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbw0Dyq_CCQKIe51g38nhOqnADg65iZ8y-Z7fNfwtXn9j-2sphElaWt9pjjHfux0QnbPmg/exec";
+
+// ----------------------------
+// 🔹 مصفوفة لتخزين المنتجات مؤقتًا
+// ----------------------------
 let achats = [];
 
-/* إضافة */
+// ----------------------------
+// 🔹 إضافة منتج للجدول
+// ----------------------------
 function addToTable(){
 
   const produit = {
-    date: dateAchat.value,
-    nom: nomProduit.value,
-    achat: prixAchat.value,
-    vente: prixVente.value,
-    qte: quantite.value,
-    exp: dateExp.value,
-    cat: categorie.value
+    date: document.getElementById("dateAchat").value,
+    nom: document.getElementById("nomProduit").value,
+    achat: document.getElementById("prixAchat").value,
+    vente: document.getElementById("prixVente").value,
+    qte: document.getElementById("quantite").value,
+    exp: document.getElementById("dateExp").value,
+    cat: document.getElementById("categorie").value
   };
 
   if(!produit.nom || !produit.cat){
@@ -25,7 +34,9 @@ function addToTable(){
   clearForm();
 }
 
-/* رسم الجدول */
+// ----------------------------
+// 🔹 رسم الجدول مع التعديل المباشر والحذف
+// ----------------------------
 function renderTable(){
   const tbody = document.querySelector("#tableAchats tbody");
   tbody.innerHTML = "";
@@ -49,12 +60,16 @@ function renderTable(){
   });
 }
 
-/* تعديل مباشر */
+// ----------------------------
+// 🔹 تحديث أي حقل في الجدول مباشرة
+// ----------------------------
 function update(index,key,value){
   achats[index][key] = value;
 }
 
-/* حذف */
+// ----------------------------
+// 🔹 حذف صف من الجدول
+// ----------------------------
 function removeRow(index){
   if(confirm("هل تريد حذف المنتج؟")){
     achats.splice(index,1);
@@ -62,7 +77,9 @@ function removeRow(index){
   }
 }
 
-/* حفظ في المخزون */
+// ----------------------------
+// 🔹 حفظ جميع المنتجات في Google Sheet
+// ----------------------------
 function saveToStock(){
 
   if(achats.length === 0){
@@ -70,29 +87,37 @@ function saveToStock(){
     return;
   }
 
+  // نرسل البيانات باستخدام FormData لتجاوز CORS
+  const formData = new FormData();
+  formData.append("data", JSON.stringify({
+    action: "addStock",
+    data: achats
+  }));
+
   fetch(WEB_APP_URL,{
     method:"POST",
-    headers:{ "Content-Type":"application/json" },
-    body: JSON.stringify({
-      action:"addStock",
-      data: achats
-    })
+    body: formData
   })
-  .then(r=>r.text())
-  .then(()=>{
+  .then(() => {
     alert("✅ تم حفظ المنتجات في المخزون");
-    achats=[];
+    achats = [];
     renderTable();
   })
-  .catch(()=>{
-    alert("❌ خطأ في الاتصال");
+  .catch(err => {
+    alert("❌ فشل الاتصال بـ Google Sheet");
+    console.error(err);
   });
 }
 
-/* تنظيف الفورم */
+// ----------------------------
+// 🔹 تفريغ الفورم بعد الإضافة
+// ----------------------------
 function clearForm(){
-  nomProduit.value="";
-  prixAchat.value="";
-  prixVente.value="";
-  quantite.value="";
+  document.getElementById("nomProduit").value = "";
+  document.getElementById("prixAchat").value = "";
+  document.getElementById("prixVente").value = "";
+  document.getElementById("quantite").value = "";
+  document.getElementById("dateAchat").value = "";
+  document.getElementById("dateExp").value = "";
+  document.getElementById("categorie").value = "";
 }
