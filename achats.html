@@ -27,12 +27,9 @@ header{
   background:#020617;
   padding:20px;
   border-radius:15px;
-  box-shadow:0 0 25px rgba(34,211,238,.3);
+  box-shadow:0 0 25px rgba(34,211,238,.35);
 }
-h3{
-  margin-top:0;
-  color:#22d3ee;
-}
+h3{color:#22d3ee;margin-top:0}
 .grid{
   display:grid;
   grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
@@ -63,8 +60,13 @@ button{
   font-weight:bold;
   box-shadow:0 0 15px #22d3ee;
 }
-button:hover{
-  transform:scale(1.03);
+button:hover{transform:scale(1.03)}
+.sub-actions{
+  display:flex;
+  gap:10px;
+}
+.sub-actions button{
+  margin-top:0;
 }
 </style>
 </head>
@@ -74,10 +76,10 @@ button:hover{
 <header>🛒 صفحة المشتريات</header>
 
 <div class="container">
-  <h3>إدخال منتج</h3>
+  <h3>إضافة منتج</h3>
 
   <div class="grid">
-    <input type="date" id="achatseDate">
+    <input type="date" id="purchaseDate">
     <input type="text" id="productName" placeholder="اسم المنتج">
     <input type="number" id="buyPrice" placeholder="سعر الشراء">
     <input type="number" id="sellPrice" placeholder="سعر البيع">
@@ -97,21 +99,21 @@ button:hover{
 
     <select id="subGroup">
       <option value="">المجموعة الفرعية</option>
-      <option>Deodorant</option>
-      <option>Parfum</option>
-      <option>stick</option>
-      <option>Shampoing</option>
-      <option>Gel douche</option>
-      <option>Creme</option>
-      <option>Autres</option>
     </select>
 
     <input type="file" id="imageInput" accept="image/*">
   </div>
 
-  <button onclick="saveToStock()">📦 حفظ في المخزون</button>
+  <input type="text" id="newSub" placeholder="➕ إضافة مجموعة فرعية">
+  <div class="sub-actions">
+    <button type="button" onclick="addSubGroup()">إضافة</button>
+    <button type="button" onclick="removeSubGroup()">حذف</button>
+  </div>
+
+  <button type="button" onclick="saveToStock()">📦 حفظ في المخزون</button>
 </div>
 
+<!-- الربط مع JavaScript -->
 <script src="achats.js"></script>
 </body>
 </html>
