@@ -1,17 +1,17 @@
-const webAppUrl = "https://script.google.com/macros/s/AKfycbw0Dyq_CCQKIe51g38nhOqnADg65iZ8y-Z7fNfwtXn9j-2sphElaWt9pjjHfux0QnbPmg/exec";
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbw0Dyq_CCQKIe51g38nhOqnADg65iZ8y-Z7fNfwtXn9j-2sphElaWt9pjjHfux0QnbPmg/exec";
 let achats = [];
 
-/* إضافة منتج للجدول */
+/* إضافة */
 function addToTable(){
 
   const produit = {
-    date: document.getElementById("dateAchat").value,
-    nom: document.getElementById("nomProduit").value,
-    achat: document.getElementById("prixAchat").value,
-    vente: document.getElementById("prixVente").value,
-    qte: document.getElementById("quantite").value,
-    exp: document.getElementById("dateExp").value,
-    cat: document.getElementById("categorie").value
+    date: dateAchat.value,
+    nom: nomProduit.value,
+    achat: prixAchat.value,
+    vente: prixVente.value,
+    qte: quantite.value,
+    exp: dateExp.value,
+    cat: categorie.value
   };
 
   if(!produit.nom || !produit.cat){
@@ -20,34 +20,52 @@ function addToTable(){
   }
 
   achats.push(produit);
+  renderTable();
+  clearForm();
+}
 
+/* رسم الجدول */
+function renderTable(){
   const tbody = document.querySelector("#tableAchats tbody");
-  const tr = document.createElement("tr");
+  tbody.innerHTML = "";
 
-  tr.innerHTML = `
-    <td>${produit.date}</td>
-    <td>${produit.nom}</td>
-    <td>${produit.achat}</td>
-    <td>${produit.vente}</td>
-    <td>${produit.qte}</td>
-    <td>${produit.exp}</td>
-    <td>${produit.cat}</td>
-  `;
+  achats.forEach((p,i)=>{
+    const tr = document.createElement("tr");
 
-  tbody.appendChild(tr);
+    tr.innerHTML = `
+      <td><input value="${p.date}" onchange="update(${i},'date',this.value)"></td>
+      <td><input value="${p.nom}" onchange="update(${i},'nom',this.value)"></td>
+      <td><input value="${p.achat}" onchange="update(${i},'achat',this.value)"></td>
+      <td><input value="${p.vente}" onchange="update(${i},'vente',this.value)"></td>
+      <td><input value="${p.qte}" onchange="update(${i},'qte',this.value)"></td>
+      <td><input value="${p.exp}" onchange="update(${i},'exp',this.value)"></td>
+      <td><input value="${p.cat}" onchange="update(${i},'cat',this.value)"></td>
+      <td class="actions">
+        <button class="delete" onclick="removeRow(${i})">🗑</button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
 
-  // تفريغ الحقول
-  document.getElementById("nomProduit").value = "";
-  document.getElementById("prixAchat").value = "";
-  document.getElementById("prixVente").value = "";
-  document.getElementById("quantite").value = "";
+/* تعديل مباشر */
+function update(index,key,value){
+  achats[index][key] = value;
+}
+
+/* حذف */
+function removeRow(index){
+  if(confirm("هل تريد حذف المنتج؟")){
+    achats.splice(index,1);
+    renderTable();
+  }
 }
 
 /* حفظ في المخزون */
 function saveToStock(){
 
   if(achats.length === 0){
-    alert("⚠️ لا توجد منتجات للحفظ");
+    alert("⚠️ لا توجد منتجات");
     return;
   }
 
@@ -59,14 +77,21 @@ function saveToStock(){
       data: achats
     })
   })
-  .then(res => res.text())
+  .then(r=>r.text())
   .then(()=>{
     alert("✅ تم حفظ المنتجات في المخزون");
-    achats = [];
-    document.querySelector("#tableAchats tbody").innerHTML = "";
+    achats=[];
+    renderTable();
   })
-  .catch(err=>{
-    alert("❌ فشل الاتصال بـ Google Sheet");
-    console.error(err);
+  .catch(()=>{
+    alert("❌ خطأ في الاتصال");
   });
+}
+
+/* تنظيف الفورم */
+function clearForm(){
+  nomProduit.value="";
+  prixAchat.value="";
+  prixVente.value="";
+  quantite.value="";
 }
