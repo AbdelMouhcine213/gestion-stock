@@ -85,7 +85,7 @@ purchaseForm.addEventListener("submit", e => {
     const file = document.getElementById("productImage").files[0];
     reader.onload = function(){
         const newPurchase = {
-            date: document.getElementById("purchaseDate").value,
+            date: document.getElementById("achatsDate").value,
             name: document.getElementById("productName").value,
             buyPrice: parseFloat(document.getElementById("buyPrice").value),
             sellPrice: parseFloat(document.getElementById("sellPrice").value),
@@ -108,7 +108,7 @@ purchaseForm.addEventListener("submit", e => {
 // ============================================
 // دوال الربط مع Google Sheet
 function addPurchaseToSheet(purchase){
-    fetch(webAppUrl + "?action=addPurchase", {
+    fetch(webAppUrl + "?action=addachats", {
         method: "POST",
         body: JSON.stringify(purchase)
     }).then(res => res.json()).then(console.log).catch(console.error);
@@ -151,11 +151,11 @@ function renderTable(){
 
 // أزرار تأكيد وحفظ المخزون
 function confirmPurchase(index){
-    alert("تم تأكيد المنتج: "+purchases[index].name);
+    alert("تم تأكيد المنتج: "+achats[index].name);
 }
 
 function saveToStock(index){
-    addStockToSheet(purchases[index]);
+    addStockToSheet(achats[index]);
     alert("تم حفظ المنتج في المخزون ✅");
 }
 
