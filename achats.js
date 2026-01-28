@@ -1,97 +1,54 @@
 const webAppUrl = "https://script.google.com/macros/s/AKfycbw0Dyq_CCQKIe51g38nhOqnADg65iZ8y-Z7fNfwtXn9j-2sphElaWt9pjjHfux0QnbPmg/exec";
+let achats = [];
 
-/* =======================
-   المجموعات الفرعية
-======================= */
-let subGroups = {
-  Femme: ["Deodorant","Parfum","Stick","Shampoing","Gel Douche","Autres"],
-  Homme: ["Deodorant","Parfum","Stick","Shampoing","Gel Douche","Autres"]
-};
-
-if(localStorage.getItem("subGroups")){
-  subGroups = JSON.parse(localStorage.getItem("subGroups"));
-}
-
-function loadSubGroups(){
-  const g = document.getElementById("group").value;
-  const s = document.getElementById("subGroup");
-  s.innerHTML = "<option value=''>المجموعة الفرعية</option>";
-
-  if(subGroups[g]){
-    subGroups[g].forEach(v=>{
-      const o = document.createElement("option");
-      o.value = v;
-      o.textContent = v;
-      s.appendChild(o);
-    });
-  }
-}
-
-function addSubGroup(){
-  const g = group.value;
-  const v = newSub.value.trim();
-  if(!g || !v) return alert("اختر مجموعة وأدخل اسم");
-
-  if(!subGroups[g]) subGroups[g] = [];
-
-  if(!subGroups[g].includes(v)){
-    subGroups[g].push(v);
-    localStorage.setItem("subGroups", JSON.stringify(subGroups));
-    loadSubGroups();
-    newSub.value="";
-  }
-}
-
-function removeSubGroup(){
-  const g = group.value;
-  const v = subGroup.value;
-  if(!g || !v) return;
-
-  subGroups[g] = subGroups[g].filter(x=>x!==v);
-  localStorage.setItem("subGroups", JSON.stringify(subGroups));
-  loadSubGroups();
-}
-
-/* =======================
-   حفظ في المخزون
-======================= */
-function saveToStock(){
-  const imgFile = imageInput.files[0];
-
-  if(imgFile){
-    const reader = new FileReader();
-    reader.onload = () => sendData(reader.result);
-    reader.readAsDataURL(imgFile);
-  }else{
-    sendData("");
-  }
-}
-
-function sendData(image){
-  const data = {
-    date: purchaseDate.value,
-    name: productName.value,
-    buyPrice: buyPrice.value,
-    sellPrice: sellPrice.value,
-    qty: quantity.value,
-    expiry: expiryDate.value,
-    group: group.value,
-    subGroup: subGroup.value,
-    image: image
+function addToTable(){
+  const produit = {
+    date: dateAchat.value,
+    nom: nomProduit.value,
+    achat: prixAchat.value,
+    vente: prixVente.value,
+    qte: quantite.value,
+    exp: dateExp.value,
+    cat: categorie.value
   };
 
-  fetch(webAppUrl,{
+  if(!produit.nom || !produit.cat){
+    alert("❌ أدخل اسم المنتج والمجموعة");
+    return;
+  }
+
+  achats.push(produit);
+
+  const tr = document.createElement("tr");
+  tr.innerHTML = `
+    <td>${produit.date}</td>
+    <td>${produit.nom}</td>
+    <td>${produit.achat}</td>
+    <td>${produit.vente}</td>
+    <td>${produit.qte}</td>
+    <td>${produit.exp}</td>
+    <td>${produit.cat}</td>
+  `;
+  document.querySelector("#tableAchats tbody").appendChild(tr);
+}
+
+function saveToStock(){
+  if(achats.length === 0){
+    alert("⚠️ لا توجد منتجات");
+    return;
+  }
+
+  fetch(WEB_APP_URL,{
     method:"POST",
-    headers:{ "Content-Type":"application/json" },
-    body: JSON.stringify(data)
+    body:JSON.stringify({action:"addStock",data:achats})
   })
-  .then(r=>r.json())
+  .then(r=>r.text())
   .then(()=>{
-    alert("✅ تم حفظ المنتج في المشتريات والمخزون");
-    document.querySelectorAll("input,select").forEach(e=>e.value="");
+    alert("✅ تم الحفظ في المخزون");
+    achats=[];
+    document.querySelector("#tableAchats tbody").innerHTML="";
   })
-  .catch(err=>{
-    console.error(err);
-    alert("❌ خطأ في الحفظ");
+  .catch(()=>{
+    alert("❌ خطأ في الاتصال");
   });
 }
