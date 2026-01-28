@@ -208,3 +208,9 @@ function saveToStock(product) {
   .then(res => res.json())
   .then(() => alert("✅ تم الحفظ في المخزون بنجاح"));
 }
+
+const webAppUrl = "https://script.google.com/macros/s/AKfycbw0Dyq_CCQKIe51g38nhOqnADg65iZ8y-Z7fNfwtXn9j-2sphElaWt9pjjHfux0QnbPmg/exec";
+
+function saveToStock(){
+  alert("✅ الدالة تعمل");
+}
