@@ -7,66 +7,65 @@
 
 <style>
 body{
-  margin:0;
-  font-family:Tahoma, Arial;
-  background:#0f172a;
-  color:#e5e7eb;
+  font-family:Arial;
   direction:rtl;
+  background:#0f172a;
+  color:white;
+  margin:0;
 }
 header{
-  background:linear-gradient(135deg,#22d3ee,#6366f1);
   padding:15px;
+  background:linear-gradient(135deg,#22d3ee,#6366f1);
   text-align:center;
   font-size:22px;
   font-weight:bold;
-  box-shadow:0 0 20px #22d3ee;
 }
 .container{
-  max-width:900px;
-  margin:20px auto;
+  padding:15px;
+}
+.card{
   background:#020617;
-  padding:20px;
-  border-radius:15px;
-  box-shadow:0 0 25px rgba(34,211,238,.35);
+  border:1px solid #22d3ee;
+  border-radius:12px;
+  padding:15px;
+  margin-bottom:15px;
+  box-shadow:0 0 15px #22d3ee55;
 }
-h3{color:#22d3ee;margin-top:0}
-.grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
-  gap:15px;
-}
-input,select{
+input,select,button{
   width:100%;
   padding:10px;
-  border-radius:10px;
-  border:1px solid #334155;
+  margin-top:8px;
+  border-radius:8px;
+  border:none;
+  font-size:14px;
+}
+input,select{
   background:#020617;
   color:white;
-}
-input:focus,select:focus{
-  outline:none;
-  box-shadow:0 0 10px #22d3ee;
+  border:1px solid #334155;
 }
 button{
-  margin-top:15px;
-  width:100%;
-  padding:12px;
-  font-size:16px;
-  border:none;
-  border-radius:12px;
-  cursor:pointer;
-  background:linear-gradient(135deg,#22d3ee,#6366f1);
+  background:#22d3ee;
   color:black;
   font-weight:bold;
-  box-shadow:0 0 15px #22d3ee;
+  cursor:pointer;
 }
-button:hover{transform:scale(1.03)}
-.sub-actions{
-  display:flex;
-  gap:10px;
+button:hover{
+  background:#38bdf8;
 }
-.sub-actions button{
-  margin-top:0;
+table{
+  width:100%;
+  border-collapse:collapse;
+  margin-top:10px;
+}
+th,td{
+  border:1px solid #334155;
+  padding:6px;
+  font-size:13px;
+  text-align:center;
+}
+th{
+  background:#1e293b;
 }
 </style>
 </head>
@@ -76,44 +75,56 @@ button:hover{transform:scale(1.03)}
 <header>🛒 صفحة المشتريات</header>
 
 <div class="container">
-  <h3>إضافة منتج</h3>
 
-  <div class="grid">
-    <input type="date" id="purchaseDate">
-    <input type="text" id="productName" placeholder="اسم المنتج">
-    <input type="number" id="buyPrice" placeholder="سعر الشراء">
-    <input type="number" id="sellPrice" placeholder="سعر البيع">
-    <input type="number" id="quantity" placeholder="الكمية">
-    <input type="date" id="expiryDate">
+<div class="card">
+  <h3>➕ إضافة منتج</h3>
 
-    <select id="group" onchange="loadSubGroups()">
-      <option value="">المجموعة</option>
-      <option>Chocolat</option>
-      <option>Boisson</option>
-      <option>Gateaux</option>
-      <option>Les Glaces</option>
-      <option>Femme</option>
-      <option>Homme</option>
-      <option>Autres</option>
-    </select>
+  <input type="date" id="dateAchat">
+  <input type="text" id="nomProduit" placeholder="اسم المنتج">
+  <input type="number" id="prixAchat" placeholder="سعر الشراء">
+  <input type="number" id="prixVente" placeholder="سعر البيع">
+  <input type="number" id="quantite" placeholder="الكمية">
+  <input type="date" id="dateExp">
 
-    <select id="subGroup">
-      <option value="">المجموعة الفرعية</option>
-    </select>
+  <select id="categorie">
+    <option value="">-- اختر المجموعة --</option>
+    <option>Chocolat</option>
+    <option>Boisson</option>
+    <option>Gateaux</option>
+    <option>Les Glaces</option>
+    <option>Femme</option>
+    <option>Homme</option>
+    <option>Autres</option>
+  </select>
 
-    <input type="file" id="imageInput" accept="image/*">
-  </div>
+  <input type="file" id="image">
 
-  <input type="text" id="newSub" placeholder="➕ إضافة مجموعة فرعية">
-  <div class="sub-actions">
-    <button type="button" onclick="addSubGroup()">إضافة</button>
-    <button type="button" onclick="removeSubGroup()">حذف</button>
-  </div>
-
-  <button type="button" onclick="saveToStock()">📦 حفظ في المخزون</button>
+  <button onclick="addToTable()">➕ إضافة للجدول</button>
 </div>
 
-<!-- الربط مع JavaScript -->
+<div class="card">
+  <h3>📋 قائمة المشتريات</h3>
+
+  <table id="tableAchats">
+    <thead>
+      <tr>
+        <th>التاريخ</th>
+        <th>المنتج</th>
+        <th>شراء</th>
+        <th>بيع</th>
+        <th>كمية</th>
+        <th>الصلاحية</th>
+        <th>المجموعة</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <button onclick="saveToStock()">📦 حفظ في المخزون</button>
+</div>
+
+</div>
+
 <script src="achats.js"></script>
 </body>
 </html>
