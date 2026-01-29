@@ -5,7 +5,7 @@ const subGroups = ["Parfum","Deodorant","Shampoing","Gel Douche","Stick","Creme"
 function showSubGroup(){
   const g = document.getElementById("inputGroup").value;
   const sub = document.getElementById("inputSub");
-  if(g=="Femme" || g=="Homme") sub.style.display = "";
+  if(g=="Femme" || g=="Homme") sub.style.display = ""; 
   else { sub.style.display = "none"; sub.value = ""; }
 }
 
@@ -25,7 +25,6 @@ function addRowFromInput(){
     return;
   }
 
-  // تحويل الصورة إلى base64
   if(imgFile){
     const reader = new FileReader();
     reader.onload = function(e){
@@ -68,7 +67,6 @@ function addRow(data){
     <td><button onclick="this.parentElement.parentElement.remove()">🗑</button></td>
   `;
   tbody.appendChild(tr);
-
   tr.children[4].firstChild.value = data.group;
   if(data.group=="Femme"||data.group=="Homme"){
     tr.children[5].firstChild.style.display = "";
@@ -84,7 +82,7 @@ function updateSubGroup(select){
   else { sub.style.display = "none"; sub.value=""; }
 }
 
-// حفظ كل البيانات في المخزون
+// حفظ البيانات في المخزون مع تجاوز CORS
 function saveToStock(){
   const rows = [...document.querySelectorAll("#productTable tbody tr")];
   if(!rows.length){ alert("لا توجد منتجات"); return; }
@@ -101,11 +99,14 @@ function saveToStock(){
     img: r.children[8].querySelector("img") ? r.children[8].querySelector("img").src : null
   }));
 
-  console.log("إرسال البيانات:", items); // 🔹 راقب البيانات في Console
+  console.log("إرسال البيانات:", items);
 
- fetch(WEB_APP_URL, {
-  method: "POST",
-  mode: "no-cors", // ⚡ هذا يتجاوز CORS
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({ action: "SAVE_PURCHASES", data: items })
-});
+  fetch(WEB_APP_URL,{
+    method:"POST",
+    mode:"no-cors", // ⚡ لتجاوز مشكلة CORS
+    headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({action:"SAVE_PURCHASES", data:items})
+  });
+
+  alert("✅ تم إرسال المنتجات للمخزون (لا يمكن تأكيد الاستجابة بسبب CORS)");
+}
