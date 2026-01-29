@@ -1,4 +1,4 @@
-const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbw0Dyq_CCQKIe51g38nhOqnADg65iZ8y-Z7fNfwtXn9j-2sphElaWt9pjjHfux0QnbPmg/exec";
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbw0Dyq_CCQKIe51g38nhOqnADg65iZ8y-Z7fNfwtXn9j-2sphElaWt9pjjHfux0QnbPmg/exec"; 
 const subGroups = ["Parfum","Deodorant","Shampoing","Gel Douche","Stick","Creme","Autres"];
 
 // إظهار/إخفاء المجموعة الفرعية
@@ -18,13 +18,23 @@ function addRowFromInput(){
   const group = document.getElementById("inputGroup").value;
   const sub = document.getElementById("inputSub").value;
   const qte = document.getElementById("inputQte").value;
+  const imgFile = document.getElementById("inputImg").files[0];
 
   if(!nom || !achat || !vente || !group || !qte){
     alert("يرجى ملء جميع الحقول المطلوبة");
     return;
   }
 
-  addRow({date,nom,achat,vente,group,sub,qte});
+  // تحويل الصورة إلى base64
+  if(imgFile){
+    const reader = new FileReader();
+    reader.onload = function(e){
+      addRow({date,nom,achat,vente,group,sub,qte,img:e.target.result});
+    };
+    reader.readAsDataURL(imgFile);
+  } else {
+    addRow({date,nom,achat,vente,group,sub,qte,img:null});
+  }
 }
 
 // إضافة صف في الجدول
@@ -54,11 +64,11 @@ function addRow(data){
     </td>
     <td contenteditable="true">${data.qte}</td>
     <td contenteditable="false">${data.qte}</td>
+    <td>${data.img ? `<img class="product-img" src="${data.img}">` : ''}</td>
     <td><button onclick="this.parentElement.parentElement.remove()">🗑</button></td>
   `;
   tbody.appendChild(tr);
 
-  // تعيين المجموعة والفرعية
   tr.children[4].firstChild.value = data.group;
   if(data.group=="Femme"||data.group=="Homme"){
     tr.children[5].firstChild.style.display = "";
@@ -87,11 +97,13 @@ function saveToStock(){
     group: r.children[4].firstChild.value,
     sub: r.children[5].firstChild.value,
     qteOriginal: r.children[6].innerText,
-    qteRest: r.children[7].innerText
+    qteRest: r.children[7].innerText,
+    img: r.children[8].querySelector("img") ? r.children[8].querySelector("img").src : null
   }));
 
   fetch(WEB_APP_URL,{
     method:"POST",
+    headers:{"Content-Type":"application/json"},
     body: JSON.stringify({action:"SAVE_PURCHASES", data:items})
   })
   .then(r=>r.json())
