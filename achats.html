@@ -25,7 +25,38 @@ th{background:#1e293b;}
 <div class="container">
 
 <div class="card">
-<button onclick="addRow()">➕ إضافة صف جديد</button>
+<h3>📝 إضافة منتج</h3>
+<div class="grid">
+  <input type="date" id="inputDate" placeholder="تاريخ الشراء">
+  <input type="text" id="inputNom" placeholder="اسم المنتج">
+  <input type="number" step="0.01" id="inputAchat" placeholder="سعر الشراء">
+  <input type="number" step="0.01" id="inputVente" placeholder="سعر البيع">
+  <select id="inputGroup" onchange="showSubGroup()">
+    <option value="">--اختر المجموعة--</option>
+    <option value="Chocolat">Chocolat</option>
+    <option value="Boisson">Boisson</option>
+    <option value="Gateaux">Gateaux</option>
+    <option value="Autres">Autres</option>
+    <option value="Femme">Femme</option>
+    <option value="Homme">Homme</option>
+  </select>
+  <select id="inputSub" style="display:none;">
+    <option value="">--اختر فرعية--</option>
+    <option>Parfum</option>
+    <option>Deodorant</option>
+    <option>Shampoing</option>
+    <option>Gel Douche</option>
+    <option>Stick</option>
+    <option>Creme</option>
+    <option>Autres</option>
+  </select>
+  <input type="number" id="inputQte" placeholder="الكمية">
+</div>
+<button onclick="addRowFromInput()">➕ إضافة للجدول</button>
+</div>
+
+<div class="card">
+<h3>📄 المنتجات المضافة</h3>
 <table id="productTable">
 <thead>
 <tr>
@@ -35,6 +66,7 @@ th{background:#1e293b;}
 <th>سعر البيع</th>
 <th>المجموعة</th>
 <th>المجموعة الفرعية</th>
+<th>الكمية الأصلية</th>
 <th>الكمية المتبقية</th>
 <th>حذف</th>
 </tr>
