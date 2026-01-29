@@ -101,15 +101,23 @@ function saveToStock(){
     img: r.children[8].querySelector("img") ? r.children[8].querySelector("img").src : null
   }));
 
+  console.log("إرسال البيانات:", items); // 🔹 راقب البيانات في Console
+
   fetch(WEB_APP_URL,{
     method:"POST",
     headers:{"Content-Type":"application/json"},
     body: JSON.stringify({action:"SAVE_PURCHASES", data:items})
   })
-  .then(r=>r.json())
-  .then(res=>{
+  .then(r => r.text()) // 🔹 بدل json() لأن Apps Script أحيانًا يرجع نص
+  .then(text=>{
+    console.log("استجابة السيرفر:", text);
+    let res;
+    try { res = JSON.parse(text); } catch(e){ res={success:false,error:text}; }
     if(res.success) alert("✅ تم حفظ المنتجات في المخزون بنجاح");
-    else alert("❌ فشل الحفظ");
+    else alert("❌ فشل الحفظ: " + (res.error||"غير معروف"));
   })
-  .catch(()=>alert("❌ خطأ أثناء الحفظ"));
+  .catch(err=>{
+    console.error(err);
+    alert("❌ خطأ أثناء الحفظ: "+err.message);
+  });
 }
