@@ -1,4 +1,4 @@
-const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbw0Dyq_CCQKIe51g38nhOqnADg65iZ8y-Z7fNfwtXn9j-2sphElaWt9pjjHfux0QnbPmg/exec"; 
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyRwtWs0nvXZrpQvdEgESCQDE7xT836fY9B3GXv5bJVMOp1mnoWDIVou6rNEzYI6sKdKw/exec"; 
 const subGroups = ["Parfum","Deodorant","Shampoing","Gel Douche","Stick","Creme","Autres"];
 
 // إظهار/إخفاء المجموعة الفرعية
