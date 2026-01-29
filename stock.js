@@ -1,44 +1,28 @@
-const webAppUrl = "https://script.google.com/macros/s/AKfycbw0Dyq_CCQKIe51g38nhOqnADg65iZ8y-Z7fNfwtXn9j-2sphElaWt9pjjHfux0QnbPmg/exec";
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyRwtWs0nvXZrpQvdEgESCQDE7xT836fY9B3GXv5bJVMOp1mnoWDIVou6rNEzYI6sKdKw/exec"; 
+
+async function loadStock(){
+  try{
+    const res = await fetch(WEB_APP_URL);
+    const data = await res.json(); // البيانات من Google Sheet
+    const tbody = document.querySelector("#stockTable tbody");
+    tbody.innerHTML = "";
+
+    data.forEach(row=>{
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${row[0]}</td>
+        <td>${row[1]}</td>
+        <td>${row[2]}</td>
+        <td>${row[3]}</td>
+        <td>${row[4]}</td>
+        <td>${row[5]}</td>
+        <td>${row[6]}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  } catch(err){
+    console.error("Failed to load stock:", err);
+  }
+}
 
 window.onload = loadStock;
-
-function loadStock(){
-  fetch(webAppUrl + "?action=stock")
-    .then(r=>r.json())
-    .then(showStock);
-}
-
-function showStock(data){
-  const tbody = document.querySelector("#stockTable tbody");
-  tbody.innerHTML = "";
-
-  data.forEach(p=>{
-    const tr = document.createElement("tr");
-
-    if(p.qty <= 5) tr.classList.add("low");
-
-    if(p.expiry){
-      const days = (new Date(p.expiry)-new Date())/86400000;
-      if(days <= 7) tr.classList.add("expire");
-    }
-
-    tr.innerHTML = `
-      <td>${p.image ? `<img src="${p.image}">` : ""}</td>
-      <td>${p.name}</td>
-      <td>${p.buyPrice}</td>
-      <td>${p.sellPrice}</td>
-      <td>${p.qty}</td>
-      <td>${p.expiry||""}</td>
-      <td>${p.group}</td>
-      <td>${p.subGroup}</td>
-    `;
-    tbody.appendChild(tr);
-  });
-}
-
-function filterTable(){
-  const v = search.value.toLowerCase();
-  document.querySelectorAll("#stockTable tbody tr").forEach(r=>{
-    r.style.display = r.innerText.toLowerCase().includes(v) ? "" : "none";
-  });
-}
