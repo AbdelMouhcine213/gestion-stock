@@ -1,14 +1,41 @@
 const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbw0Dyq_CCQKIe51g38nhOqnADg65iZ8y-Z7fNfwtXn9j-2sphElaWt9pjjHfux0QnbPmg/exec";
 const subGroups = ["Parfum","Deodorant","Shampoing","Gel Douche","Stick","Creme","Autres"];
 
-function addRow(data = {}){
+// إظهار/إخفاء المجموعة الفرعية
+function showSubGroup(){
+  const g = document.getElementById("inputGroup").value;
+  const sub = document.getElementById("inputSub");
+  if(g=="Femme" || g=="Homme") sub.style.display = "";
+  else { sub.style.display = "none"; sub.value = ""; }
+}
+
+// إضافة صف من الإدخال اليدوي
+function addRowFromInput(){
+  const date = document.getElementById("inputDate").value;
+  const nom = document.getElementById("inputNom").value;
+  const achat = document.getElementById("inputAchat").value;
+  const vente = document.getElementById("inputVente").value;
+  const group = document.getElementById("inputGroup").value;
+  const sub = document.getElementById("inputSub").value;
+  const qte = document.getElementById("inputQte").value;
+
+  if(!nom || !achat || !vente || !group || !qte){
+    alert("يرجى ملء جميع الحقول المطلوبة");
+    return;
+  }
+
+  addRow({date,nom,achat,vente,group,sub,qte});
+}
+
+// إضافة صف في الجدول
+function addRow(data){
   const tbody = document.querySelector("#productTable tbody");
   const tr = document.createElement("tr");
   tr.innerHTML = `
-    <td><input type="date" value="${data.date || ''}"></td>
-    <td><input type="text" value="${data.nom || ''}"></td>
-    <td><input type="number" step="0.01" value="${data.achat || ''}"></td>
-    <td><input type="number" step="0.01" value="${data.vente || ''}"></td>
+    <td contenteditable="true">${data.date}</td>
+    <td contenteditable="true">${data.nom}</td>
+    <td contenteditable="true">${data.achat}</td>
+    <td contenteditable="true">${data.vente}</td>
     <td>
       <select onchange="updateSubGroup(this)">
         <option value="">--اختر--</option>
@@ -25,28 +52,26 @@ function addRow(data = {}){
         ${subGroups.map(s=>`<option value="${s}">${s}</option>`).join('')}
       </select>
     </td>
-    <td><input type="number" value="${data.qte || ''}"></td>
+    <td contenteditable="true">${data.qte}</td>
+    <td contenteditable="false">${data.qte}</td>
     <td><button onclick="this.parentElement.parentElement.remove()">🗑</button></td>
   `;
   tbody.appendChild(tr);
-  // تعيين القيمة إذا موجودة
-  if(data.group) tr.children[4].firstChild.value = data.group;
-  if(data.sub) { 
-    tr.children[5].firstChild.style.display = (data.group=="Femme" || data.group=="Homme") ? "" : "none";
-    tr.children[5].firstChild.value = data.sub || '';
+
+  // تعيين المجموعة والفرعية
+  tr.children[4].firstChild.value = data.group;
+  if(data.group=="Femme"||data.group=="Homme"){
+    tr.children[5].firstChild.style.display = "";
+    tr.children[5].firstChild.value = data.sub;
   }
 }
 
-// إظهار/إخفاء المجموعة الفرعية
+// تحديث المجموعة الفرعية داخل الجدول
 function updateSubGroup(select){
   const tr = select.parentElement.parentElement;
   const sub = tr.querySelector(".subGroup");
-  if(select.value=="Femme" || select.value=="Homme"){
-    sub.style.display = "";
-  }else{
-    sub.style.display = "none";
-    sub.value = "";
-  }
+  if(select.value=="Femme"||select.value=="Homme") sub.style.display = "";
+  else { sub.style.display = "none"; sub.value=""; }
 }
 
 // حفظ كل البيانات في المخزون
@@ -55,13 +80,14 @@ function saveToStock(){
   if(!rows.length){ alert("لا توجد منتجات"); return; }
 
   const items = rows.map(r=>({
-    date: r.children[0].firstChild.value,
-    nom: r.children[1].firstChild.value,
-    achat: r.children[2].firstChild.value,
-    vente: r.children[3].firstChild.value,
+    date: r.children[0].innerText,
+    nom: r.children[1].innerText,
+    achat: r.children[2].innerText,
+    vente: r.children[3].innerText,
     group: r.children[4].firstChild.value,
     sub: r.children[5].firstChild.value,
-    qte: r.children[6].firstChild.value
+    qteOriginal: r.children[6].innerText,
+    qteRest: r.children[7].innerText
   }));
 
   fetch(WEB_APP_URL,{
