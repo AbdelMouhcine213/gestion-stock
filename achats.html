@@ -2,125 +2,95 @@
 <html lang="ar">
 <head>
 <meta charset="UTF-8">
-<title>🛒 المشتريات</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🧾 المشتريات الذكية</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 
 <style>
 body{
+  background:#020617;
+  color:white;
   font-family:Arial;
   direction:rtl;
-  background:#0f172a;
-  color:white;
-  margin:0;
 }
 header{
-  padding:15px;
   background:linear-gradient(135deg,#22d3ee,#6366f1);
+  padding:15px;
   text-align:center;
   font-size:22px;
-  font-weight:bold;
+  box-shadow:0 0 20px #22d3ee;
 }
-.container{padding:15px;}
 .card{
-  background:#020617;
-  border:1px solid #22d3ee;
-  border-radius:12px;
+  margin:15px;
   padding:15px;
-  margin-bottom:15px;
+  border-radius:12px;
+  border:1px solid #22d3ee;
   box-shadow:0 0 15px #22d3ee55;
 }
-input,select,button{
-  padding:8px;
-  border-radius:6px;
+input,button{
+  width:100%;
+  margin-top:8px;
+  padding:10px;
+  border-radius:8px;
   border:none;
-  font-size:13px;
 }
-input,select{
+input{
   background:#020617;
-  color:white;
   border:1px solid #334155;
+  color:white;
 }
 button{
   background:#22d3ee;
-  color:black;
   font-weight:bold;
-  cursor:pointer;
 }
-button:hover{background:#38bdf8;}
 table{
   width:100%;
   border-collapse:collapse;
   margin-top:10px;
-  font-size:12px;
 }
 th,td{
   border:1px solid #334155;
-  padding:5px;
+  padding:6px;
   text-align:center;
 }
 th{background:#1e293b;}
-.actions button{
-  margin:2px;
-  padding:4px 6px;
-  font-size:12px;
-}
-.delete{background:#ef4444;color:white;}
-.edit{background:#facc15;}
 </style>
 </head>
 
 <body>
 
-<header>🛒 صفحة المشتريات</header>
-
-<div class="container">
+<header>🧾 صفحة المشتريات الذكية</header>
 
 <div class="card">
-  <h3>➕ إضافة منتج</h3>
-
-  <input type="date" id="dateAchat">
-  <input type="text" id="nomProduit" placeholder="اسم المنتج">
-  <input type="number" id="prixAchat" placeholder="سعر الشراء">
-  <input type="number" id="prixVente" placeholder="سعر البيع">
-  <input type="number" id="quantite" placeholder="الكمية">
-  <input type="date" id="dateExp">
-
-  <select id="categorie">
-    <option value="">-- اختر المجموعة --</option>
-    <option>Chocolat</option>
-    <option>Boisson</option>
-    <option>Gateaux</option>
-    <option>Les Glaces</option>
-    <option>Femme</option>
-    <option>Homme</option>
-    <option>Autres</option>
-  </select>
-
-  <button type="button" onclick="addToTable()">➕ إضافة للجدول</button>
+  <h3>📁 اختيار فواتير</h3>
+  <input type="file" id="invoiceFiles" accept="image/*" multiple>
+  <button onclick="scanInvoices()">🤖 تحليل الفواتير</button>
 </div>
 
 <div class="card">
-  <h3>📋 المشتريات</h3>
-
-  <table id="tableAchats">
+  <h3>📋 البيانات المستخرجة (قابلة للتعديل)</h3>
+  <table id="resultTable">
     <thead>
       <tr>
-        <th>التاريخ</th>
-        <th>المنتج</th>
-        <th>شراء</th>
-        <th>بيع</th>
-        <th>كمية</th>
-        <th>الصلاحية</th>
-        <th>المجموعة</th>
-        <th>إجراء</th>
+        <th>اسم المنتج</th>
+        <th>سعر الشراء</th>
+        <th>الكمية</th>
+        <th>المجموع</th>
+        <th>تاريخ الشراء</th>
+        <th>📷</th>
+        <th>🗑</th>
       </tr>
     </thead>
     <tbody></tbody>
   </table>
 
-  <button type="button" onclick="saveToStock()">📦 حفظ في المخزون</button>
+  <button onclick="saveToStock()">📦 تأكيد وحفظ في المخزون</button>
 </div>
 
+<div class="card">
+  <h3>🔍 بحث</h3>
+  <input id="search" placeholder="بحث بسعر البيع أو بتاريخ الفاتورة">
 </div>
 
 <script src="achats.js"></script>
