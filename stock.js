@@ -1,9 +1,8 @@
-const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyRwtWs0nvXZrpQvdEgESCQDE7xT836fY9B3GXv5bJVMOp1mnoWDIVou6rNEzYI6sKdKw/exec"; 
-
 async function loadStock(){
+  const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyRwtWs0nvXZrpQvdEgESCQDE7xT836fY9B3GXv5bJVMOp1mnoWDIVou6rNEzYI6sKdKw/exec";
   try{
-    const res = await fetch(WEB_APP_URL);
-    const data = await res.json(); // البيانات من Google Sheet
+    const res = await fetch(WEB_APP_URL); // GET request
+    const data = await res.json(); 
     const tbody = document.querySelector("#stockTable tbody");
     tbody.innerHTML = "";
 
