@@ -88,25 +88,21 @@ function saveToStock(){
   if(!rows.length){ alert("لا توجد منتجات"); return; }
 
   const items = rows.map(r=>({
-    date: r.children[0].innerText,
     nom: r.children[1].innerText,
     achat: r.children[2].innerText,
     vente: r.children[3].innerText,
     group: r.children[4].firstChild.value,
     sub: r.children[5].firstChild.value,
     qteOriginal: r.children[6].innerText,
-    qteRest: r.children[7].innerText,
-    img: r.children[8].querySelector("img") ? r.children[8].querySelector("img").src : null
+    qteRest: r.children[7].innerText
   }));
 
-  console.log("إرسال البيانات:", items);
-
-  fetch(WEB_APP_URL,{
-    method:"POST",
-    mode:"no-cors", // ⚡ لتجاوز مشكلة CORS
-    headers:{"Content-Type":"application/json"},
-    body: JSON.stringify({action:"SAVE_PURCHASES", data:items})
+  fetch(WEB_APP_URL, {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({action:"SAVE_PURCHASES", data:items}),
+    mode: "no-cors" // مهم لتجنب مشاكل CORS
   });
 
-  alert("✅ تم إرسال المنتجات للمخزون (لا يمكن تأكيد الاستجابة بسبب CORS)");
+  alert("✅ تم إرسال المنتجات إلى المخزون");
 }
