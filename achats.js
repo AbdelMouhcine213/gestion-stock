@@ -103,21 +103,9 @@ function saveToStock(){
 
   console.log("إرسال البيانات:", items); // 🔹 راقب البيانات في Console
 
-  fetch(WEB_APP_URL,{
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body: JSON.stringify({action:"SAVE_PURCHASES", data:items})
-  })
-  .then(r => r.text()) // 🔹 بدل json() لأن Apps Script أحيانًا يرجع نص
-  .then(text=>{
-    console.log("استجابة السيرفر:", text);
-    let res;
-    try { res = JSON.parse(text); } catch(e){ res={success:false,error:text}; }
-    if(res.success) alert("✅ تم حفظ المنتجات في المخزون بنجاح");
-    else alert("❌ فشل الحفظ: " + (res.error||"غير معروف"));
-  })
-  .catch(err=>{
-    console.error(err);
-    alert("❌ خطأ أثناء الحفظ: "+err.message);
-  });
-}
+ fetch(WEB_APP_URL, {
+  method: "POST",
+  mode: "no-cors", // ⚡ هذا يتجاوز CORS
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ action: "SAVE_PURCHASES", data: items })
+});
