@@ -1,80 +1,83 @@
-let invoices = [];
 const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbw0Dyq_CCQKIe51g38nhOqnADg65iZ8y-Z7fNfwtXn9j-2sphElaWt9pjjHfux0QnbPmg/exec";
 
-/* تحليل عدة صور */
-function scanInvoices(){
-  const files = document.getElementById("invoiceFiles").files;
-  if(!files.length){ alert("اختر فواتير"); return; }
+let imageBase64 = "";
+let imageUrl = "";
 
-  [...files].forEach(file=>{
-    Tesseract.recognize(file,'ara+fra+eng')
-    .then(({data:{text}})=>{
-      parseInvoice(text,file);
-    });
+/* ===============================
+   تحميل الصورة + تحليل تلقائي
+================================ */
+document.getElementById("imageInput").addEventListener("change", e => {
+  const file = e.target.files[0];
+  if(!file) return;
+
+  const reader = new FileReader();
+  reader.onload = () => {
+    const base64 = reader.result.split(",")[1];
+    imageBase64 = base64;
+    document.getElementById("preview").src = reader.result;
+    analyzeFacture();
+  };
+  reader.readAsDataURL(file);
+});
+
+/* ===============================
+   OCR تلقائي
+================================ */
+function analyzeFacture(){
+  document.getElementById("status").innerText = "⏳ تحليل الفاتورة...";
+
+  fetch(WEB_APP_URL, {
+    method:"POST",
+    body: JSON.stringify({
+      action:"OCR_FACTURE",
+      imageBase64:imageBase64
+    })
+  })
+  .then(r=>r.json())
+  .then(res=>{
+    imageUrl = res.imageUrl || "";
+    const d = res.extracted || {};
+
+    document.getElementById("nom").value   = d.nom || "";
+    document.getElementById("achat").value = d.achat || "";
+    document.getElementById("qte").value   = d.qte || "";
+    document.getElementById("total").value = d.total || "";
+    document.getElementById("date").value  = d.date || "";
+
+    document.getElementById("status").innerText = "✅ تم التحليل";
+  })
+  .catch(()=>{
+    document.getElementById("status").innerText = "❌ خطأ في التحليل";
   });
 }
 
-/* تحليل ذكي للفواتير */
-function parseInvoice(text,file){
+/* ===============================
+   تأكيد و حفظ
+================================ */
+function confirmFacture(){
 
-  // استخراج تاريخ (dd/mm/yyyy أو yyyy-mm-dd)
-  const date =
-    (text.match(/\d{2}\/\d{2}\/\d{4}/) ||
-     text.match(/\d{4}-\d{2}-\d{2}/) ||
-     [""])[0];
+  const item = {
+    nom: document.getElementById("nom").value,
+    achat: document.getElementById("achat").value,
+    qte: document.getElementById("qte").value,
+    total: document.getElementById("total").value
+  };
 
-  // تقسيم الأسطر (عدة منتجات)
-  const lines = text.split("\n").filter(l=>l.match(/\d/));
-
-  lines.forEach(l=>{
-    const nums = l.match(/\d+(\.\d+)?/g);
-    if(!nums || nums.length < 2) return;
-
-    const item = {
-      name: l.replace(/[0-9\.\-]/g,"").trim(),
-      price: nums[0],
-      qty: nums[1] || 1,
-      total: nums[nums.length-1],
-      date: date,
-      image: file
-    };
-    invoices.push(item);
-    renderRow(item);
+  fetch(WEB_APP_URL,{
+    method:"POST",
+    body: JSON.stringify({
+      action:"CONFIRM_FACTURE",
+      date: document.getElementById("date").value,
+      imageUrl:imageUrl,
+      items:[item]
+    })
+  })
+  .then(r=>r.json())
+  .then(()=>{
+    alert("✅ تم حفظ الفاتورة و الإضافة للمخزون");
+    location.reload();
+  })
+  .catch(()=>{
+    alert("❌ فشل الحفظ");
   });
-}
-
-/* رسم الجدول */
-function renderRow(p){
-  const tr = document.createElement("tr");
-  tr.innerHTML = `
-    <td><input value="${p.name}"></td>
-    <td><input value="${p.price}"></td>
-    <td><input value="${p.qty}"></td>
-    <td><input value="${p.total}"></td>
-    <td><input value="${p.date}"></td>
-    <td>📷</td>
-    <td><button onclick="this.parentElement.parentElement.remove()">🗑</button></td>
-  `;
-  document.querySelector("#resultTable tbody").appendChild(tr);
-}
-
-/* حفظ في المخزون + حفظ الصورة */
-function saveToStock(){
-
-  const rows = [...document.querySelectorAll("#resultTable tbody tr")];
-  if(!rows.length){ alert("لا توجد بيانات"); return; }
-
-  const data = rows.map(r=>({
-    name:r.children[0].firstChild.value,
-    achat:r.children[1].firstChild.value,
-    qty:r.children[2].firstChild.value,
-    total:r.children[3].firstChild.value,
-    date:r.children[4].firstChild.value
-  }));
-
-  const form = new FormData();
-  form.append("data",JSON.stringify(data));
-
-  fetch(WEB_APP_URL,{method:"POST",body:form})
-  .then(()=>alert("✅ تم الحفظ في المخزون"));
 }
