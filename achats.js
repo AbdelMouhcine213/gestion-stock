@@ -1,5 +1,5 @@
 let invoices = [];
-const WEB_APP_URL = "PUT_YOUR_WEB_APP_URL_HERE";
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbw0Dyq_CCQKIe51g38nhOqnADg65iZ8y-Z7fNfwtXn9j-2sphElaWt9pjjHfux0QnbPmg/exec";
 
 /* تحليل عدة صور */
 function scanInvoices(){
