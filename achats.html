@@ -2,85 +2,284 @@
 <html lang="ar">
 <head>
 <meta charset="UTF-8">
-<title>🛒 المشتريات</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>المشتريات</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#28a745">
 <style>
-body{margin:0;font-family:Segoe UI,Tahoma;background:#0a0f1f;color:white;}
-header{padding:15px;text-align:center;background:linear-gradient(135deg,#00f2ff,#0066ff);box-shadow:0 0 20px #00f2ff;}
-.container{padding:15px;max-width:1200px;margin:auto;}
-.card{background:#0f172a;border:1px solid #00f2ff55;border-radius:12px;padding:15px;margin-bottom:15px;box-shadow:0 0 15px #00f2ff22;}
-input,select,button{padding:8px;margin-top:5px;border-radius:6px;border:none;font-size:14px;}
-input,select{background:#020617;color:white;border:1px solid #00f2ff55;width:100%;}
-button{background:linear-gradient(135deg,#00f2ff,#0066ff);color:black;font-weight:bold;cursor:pointer;}
-button:hover{opacity:0.9;}
-table{width:100%;border-collapse:collapse;margin-top:10px;}
-th,td{border:1px solid #334155;padding:6px;text-align:center;}
-th{background:#1e293b;}
-.neon{text-shadow:0 0 8px #00f2ff;}
-img.product-img{width:50px;height:50px;object-fit:cover;border-radius:4px;}
+body{
+    font-family:Arial;
+    direction:rtl;
+    background:#f4f6f8;
+    margin:0;
+}
+header{
+    background:#17a2b8;
+    color:white;
+    padding:15px;
+    text-align:center;
+    font-size:26px;
+    font-weight:bold;
+}
+.container{ padding:20px; }
+.inputs{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    margin-bottom:15px;
+}
+.inputs input, .inputs select{
+    padding:10px;
+    font-size:15px;
+}
+.btn{
+    padding:10px 15px;
+    border:none;
+    border-radius:5px;
+    cursor:pointer;
+    color:white;
+}
+.add{ background:#28a745; }
+.save{ background:#007bff; }
+table{
+    width:100%;
+    background:white;
+    border-collapse:collapse;
+}
+th,td{
+    border:1px solid #ddd;
+    padding:8px;
+    text-align:center;
+}
+th{
+    background:#17a2b8;
+    color:white;
+}
+.action{ background:#dc3545; }
+.edit{ background:#ffc107; color:black; }
+.product-img{ width:50px; height:50px; object-fit:cover; border-radius:5px; }
 </style>
 </head>
+
 <body>
 
-<header><h2 class="neon">🛒 المشتريات</h2></header>
+<header>المشتريات</header>
+
 <div class="container">
 
-<div class="card">
-<h3>📝 إضافة منتج</h3>
-<div class="grid">
-  <input type="date" id="inputDate" placeholder="تاريخ الشراء">
-  <input type="text" id="inputNom" placeholder="اسم المنتج">
-  <input type="number" step="0.01" id="inputAchat" placeholder="سعر الشراء">
-  <input type="number" step="0.01" id="inputVente" placeholder="سعر البيع">
-  <select id="inputGroup" onchange="showSubGroup()">
-    <option value="">--اختر المجموعة--</option>
-    <option value="Chocolat">Chocolat</option>
-    <option value="Boisson">Boisson</option>
-    <option value="Gateaux">Gateaux</option>
-    <option value="Autres">Autres</option>
-    <option value="Femme">Femme</option>
-    <option value="Homme">Homme</option>
-  </select>
-  <select id="inputSub" style="display:none;">
-    <option value="">--اختر فرعية--</option>
-    <option>Parfum</option>
-    <option>Deodorant</option>
-    <option>Shampoing</option>
-    <option>Gel Douche</option>
-    <option>Stick</option>
-    <option>Creme</option>
-    <option>Autres</option>
-  </select>
-  <input type="number" id="inputQte" placeholder="الكمية">
-  <input type="file" id="inputImg" accept="image/*">
-</div>
-<button onclick="addRowFromInput()">➕ إضافة للجدول</button>
+<div class="inputs">
+    <input type="date" id="purchaseDate">
+    <input type="text" id="productName" placeholder="اسم المنتج">
+    
+    <!-- رفع صورة المنتج -->
+    <input type="file" id="productImage" accept="image/*">
+
+    <!-- اختيار المجموعة -->
+    <select id="groupSelect" onchange="updateSubgroup()">
+        <option value="">اختر المجموعة</option>
+        <option value="Chocolat">Chocolat</option>
+        <option value="Gaufrette">Gaufrette</option>
+        <option value="Gâteaux">Gâteaux</option>
+        <option value="Boisson">Boisson</option>
+        <option value="Les Glaces">Les Glaces</option>
+        <option value="Autres">Autres</option>
+        <option value="Femme">Femme</option>
+        <option value="Homme">Homme</option>
+    </select>
+
+    <!-- اختيار المجموعة الفرعية -->
+    <select id="subgroupSelect">
+        <option value="">اختر الفئة الفرعية</option>
+    </select>
+
+    <input type="number" id="buyPrice" placeholder="سعر الشراء">
+    <input type="number" id="sellPrice" placeholder="سعر البيع">
+    <input type="number" id="quantity" placeholder="الكمية">
+    <input type="date" id="expiryDate">
+    <button class="btn add" onclick="addPurchase()">إضافة</button>
 </div>
 
-<div class="card">
-<h3>📄 المنتجات المضافة</h3>
-<table id="productTable">
+<table>
 <thead>
 <tr>
 <th>تاريخ الشراء</th>
-<th>اسم المنتج</th>
+<th>المنتج</th>
+<th>الصورة</th>
+<th>المجموعة</th>
+<th>الفئة الفرعية</th>
 <th>سعر الشراء</th>
 <th>سعر البيع</th>
-<th>المجموعة</th>
-<th>المجموعة الفرعية</th>
-<th>الكمية الأصلية</th>
-<th>الكمية المتبقية</th>
-<th>صورة</th>
+<th>الكمية</th>
+<th>المجموع</th>
+<th>نهاية الصلاحية</th>
+<th>تعديل</th>
 <th>حذف</th>
 </tr>
 </thead>
-<tbody></tbody>
+<tbody id="tbody"></tbody>
 </table>
-<button onclick="saveToStock()">💾 حفظ في المخزون</button>
-</div>
+
+<br>
+<button class="btn save" onclick="savePurchases()">حفظ المشتريات في المخزون</button>
 
 </div>
 
-<script src="achats.js"></script>
+<script>
+let purchaseList = [];
+const tbody = document.getElementById("tbody");
+
+// تعريف الفئات الفرعية
+const subgroups = {
+    Femme: ["Parfum","Déodorant","Stick","Shampoing","Crème","Autres"],
+    Homme: ["Parfum","Déodorant","Stick","Shampoing","Crème","Autres"]
+};
+
+// تحديث قائمة الفئة الفرعية
+function updateSubgroup(){
+    const group = document.getElementById("groupSelect").value;
+    const subgroupSelect = document.getElementById("subgroupSelect");
+    subgroupSelect.innerHTML = '<option value="">اختر الفئة الفرعية</option>';
+    if(subgroups[group]){
+        subgroups[group].forEach(sg=>{
+            let opt = document.createElement("option");
+            opt.value = sg;
+            opt.textContent = sg;
+            subgroupSelect.appendChild(opt);
+        });
+    }
+}
+
+// إضافة شراء جديد
+function addPurchase(){
+    let purchaseDate = document.getElementById("purchaseDate").value;
+    let productName  = document.getElementById("productName").value;
+    let buyPrice     = Number(document.getElementById("buyPrice").value);
+    let sellPrice    = Number(document.getElementById("sellPrice").value);
+    let quantity     = Number(document.getElementById("quantity").value);
+    let expiryDate   = document.getElementById("expiryDate").value;
+    let group        = document.getElementById("groupSelect").value;
+    let subgroup     = document.getElementById("subgroupSelect").value;
+    let imgInput     = document.getElementById("productImage");
+
+    if(!purchaseDate || !productName || !buyPrice || !sellPrice || !quantity || !expiryDate || !group){
+        alert("يرجى ملء جميع الحقول واختيار المجموعة");
+        return;
+    }
+
+    let imgData = "";
+    if(imgInput.files.length > 0){
+        const reader = new FileReader();
+        reader.onload = function(e){
+            imgData = e.target.result;
+            addPurchaseToList(imgData);
+        }
+        reader.readAsDataURL(imgInput.files[0]);
+    } else {
+        addPurchaseToList(imgData);
+    }
+
+    function addPurchaseToList(img){
+        purchaseList.push({
+            purchaseDate, productName, buyPrice, sellPrice, quantity, expiryDate,
+            group, subgroup, img
+        });
+        render();
+        clearInputs();
+    }
+}
+
+// عرض البيانات في الجدول
+function render(){
+    tbody.innerHTML="";
+    purchaseList.forEach((p,i)=>{
+        let tr=document.createElement("tr");
+        tr.innerHTML=`
+<td>${p.purchaseDate}</td>
+<td>${p.productName}</td>
+<td>${p.img ? `<img src="${p.img}" class="product-img">` : ""}</td>
+<td>${p.group}</td>
+<td>${p.subgroup || ""}</td>
+<td>${p.buyPrice}</td>
+<td>${p.sellPrice}</td>
+<td>${p.quantity}</td>
+<td>${p.buyPrice * p.quantity}</td>
+<td>${p.expiryDate}</td>
+<td><button class="btn edit" onclick="editPurchase(${i})">✏️</button></td>
+<td><button class="btn action" onclick="deletePurchase(${i})">🗑️</button></td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+// تعديل عنصر
+function editPurchase(i){
+    let p = purchaseList[i];
+    document.getElementById("purchaseDate").value = p.purchaseDate;
+    document.getElementById("productName").value  = p.productName;
+    document.getElementById("buyPrice").value     = p.buyPrice;
+    document.getElementById("sellPrice").value    = p.sellPrice;
+    document.getElementById("quantity").value     = p.quantity;
+    document.getElementById("expiryDate").value   = p.expiryDate;
+    document.getElementById("groupSelect").value  = p.group;
+    updateSubgroup();
+    document.getElementById("subgroupSelect").value = p.subgroup || "";
+    purchaseList.splice(i,1);
+    render();
+}
+
+// حذف عنصر
+function deletePurchase(i){
+    purchaseList.splice(i,1);
+    render();
+}
+
+// مسح الإدخالات
+function clearInputs(){
+    document.querySelectorAll(".inputs input").forEach(i=>i.value="");
+    document.getElementById("groupSelect").value = "";
+    document.getElementById("subgroupSelect").innerHTML = '<option value="">اختر الفئة الفرعية</option>';
+    document.getElementById("productImage").value = "";
+}
+
+// حفظ المخزون (مع الصورة والمجموعات)
+function savePurchases(){
+    if(!purchaseList.length){
+        alert("لا توجد مشتريات");
+        return;
+    }
+    let stock = JSON.parse(localStorage.getItem("stock")) || [];
+    purchaseList.forEach(p=>{
+        let existing = stock.find(s => s.name === p.productName);
+        if(existing){
+            existing.qtyOriginal += p.quantity;
+            existing.qtyLeft     += p.quantity;
+            existing.buy          = p.buyPrice;
+            existing.sell         = p.sellPrice;
+            existing.expiry       = p.expiryDate;
+            existing.date         = p.purchaseDate;
+            existing.group        = p.group;
+            existing.subgroup     = p.subgroup;
+            existing.img          = p.img;
+        }else{
+            stock.push({
+                date: p.purchaseDate,
+                name: p.productName,
+                buy: p.buyPrice,
+                sell: p.sellPrice,
+                qtyOriginal: p.quantity,
+                qtyLeft: p.quantity,
+                expiry: p.expiryDate,
+                group: p.group,
+                subgroup: p.subgroup,
+                img: p.img
+            });
+        }
+    });
+    localStorage.setItem("stock", JSON.stringify(stock));
+    alert("تم حفظ المشتريات في المخزون بنجاح ✅");
+    purchaseList=[];
+    render();
+}
+</script>
+
 </body>
 </html>
