@@ -1,119 +1,174 @@
 <!DOCTYPE html>
 <html lang="ar">
 <head>
-  <meta charset="UTF-8">
-  <title>لوحة التحكم | Gestion Commerciale</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gestion Commercial Professional</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#28a745">
+<style>
+/* ===== الخطوط الأساسية ===== */
+body, html {
+    margin: 0;
+    padding: 0;
+    font-family: 'Arial', sans-serif;
+    direction: rtl;
+    height: 100%;
+    overflow-x: hidden;
+}
 
-  <!-- خط -->
-  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+/* ===== الخلفية الاحترافية ===== */
+body {
+    background: linear-gradient(-45deg, #ff9a9e, #fad0c4, #a18cd1, #fbc2eb);
+    background-size: 400% 400%;
+    animation: gradientBG 15s ease infinite;
+    position: relative;
+}
 
-  <style>
-    body{
-      margin:0;
-      font-family:'Tajawal', sans-serif;
-      background: radial-gradient(circle at top, #0f2027, #000);
-      color:white;
-      min-height:100vh;
-    }
+/* نص كبير في الخلفية مع توهج وثلاثي الأبعاد */
+body::before {
+    content: "Cosmétique SinChi";
+    position: fixed; /* يظل في مكانه أثناء التمرير */
+    top: 15%; /* موقع أعلى الصفحة للقراءة */
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 100px;
+    font-weight: 900;
+    background: linear-gradient(-45deg, #ff9a9e, #fad0c4, #a18cd1, #fbc2eb, #84fab0, #8fd3f4);
+    background-size: 400% 400%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: gradientBG 15s ease infinite;
+    white-space: nowrap;
+    pointer-events: none;
+    z-index: 0;
+    text-shadow: 2px 2px 15px rgba(0,0,0,0.3); /* توهج ثلاثي الأبعاد */
+}
 
-    header{
-      text-align:center;
-      padding:30px 10px;
-      font-size:26px;
-      font-weight:700;
-      color:#00fff7;
-      text-shadow:0 0 15px #00fff7;
-    }
+/* أنيميشن تغيير الألوان */
+@keyframes gradientBG {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
 
-    .container{
-      display:grid;
-      grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
-      gap:25px;
-      padding:30px;
-      max-width:900px;
-      margin:auto;
-    }
+/* تدرج الخلفية */
+@keyframes gradientBG {
+    0% {background-position: 0% 50%;}
+    50% {background-position: 100% 50%;}
+    100% {background-position: 0% 50%;}
+}
 
-    .card{
-      background:rgba(255,255,255,0.05);
-      border:1px solid rgba(0,255,247,0.3);
-      border-radius:18px;
-      padding:30px 15px;
-      text-align:center;
-      cursor:pointer;
-      transition:0.3s;
-      box-shadow:0 0 15px rgba(0,255,247,0.15);
-    }
+/* ===== العنوان ===== */
+header {
+    position: relative;
+    z-index: 1;
+    background-color: rgba(0,0,0,0.6);
+    color: white;
+    padding: 20px;
+    text-align: center;
+    font-size: 36px;
+    font-weight: bold;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+}
 
-    .card:hover{
-      transform:translateY(-8px) scale(1.03);
-      box-shadow:0 0 25px rgba(0,255,247,0.6);
-    }
+/* ===== المحتوى الرئيسي ===== */
+.content {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: calc(100vh - 120px);
+    gap: 40px;
+    padding: 20px;
+}
 
-    .icon{
-      font-size:36px;
-      margin-bottom:10px;
-      color:#00fff7;
-      text-shadow:0 0 12px #00fff7;
-    }
+/* الصفوف */
+.row {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    flex-wrap: wrap;
+}
 
-    .title{
-      font-size:18px;
-      font-weight:700;
-    }
+/* المربعات */
+.box {
+    width: 200px;
+    height: 150px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    font-size: 20px;
+    font-weight: bold;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: transform 0.3s, box-shadow 0.3s;
+    text-align: center;
+    text-decoration: none;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+    background: linear-gradient(135deg, #6a11cb, #2575fc); /* لون افتراضي */
+}
 
-    footer{
-      text-align:center;
-      font-size:13px;
-      opacity:0.6;
-      padding:15px;
-    }
-  </style>
+/* تأثير التحويم */
+.box:hover {
+    transform: scale(1.15) rotate(-2deg);
+    box-shadow: 0 12px 30px rgba(0,0,0,0.4);
+}
+
+/* ألوان كل مربع */
+.achats { background: linear-gradient(135deg, #17a2b8, #6dd5ed); }
+.sales { background: linear-gradient(135deg, #ffc107, #ff6f61); }
+.stock { background: linear-gradient(135deg, #28a745, #7bed9f); }
+.clients { background: linear-gradient(135deg, #6f42c1, #a29bfe); }
+.settings { background: linear-gradient(135deg, #dc3545, #ff758c); }
+.stats { background: linear-gradient(135deg, #fd7e14, #fbc531); }
+
+/* التذييل */
+footer {
+    background-color: #343a40;
+    color: white;
+    padding: 15px;
+    text-align: center;
+    position: fixed;   /* يجعل الفوتر ثابتًا */
+    bottom: 0;         /* في أسفل الشاشة */
+    left: 0;
+    width: 100%;       /* يغطي كامل عرض الشاشة */
+    z-index: 1000;     /* ليبقى فوق أي محتوى */
+}
+</style>
 </head>
-
 <body>
 
 <header>
-  📊 نظام التسيير التجاري
+    Gestion Commercial Professional
 </header>
 
-<div class="container">
+<div class="content">
+    <!-- الصف الأول -->
+    <div class="row">
+        <a href="sales.html" class="box sales">المبيعات</a>
+        <a href="achats.html" class="box achats">الشراء</a>
+        <a href="stock.html" class="box stock">المخزون</a>
+    </div>
 
-  <div class="card" onclick="go('vente.html')">
-    <div class="icon">💰</div>
-    <div class="title">البيع</div>
-  </div>
-
-  <div class="card" onclick="go('achats.html')">
-    <div class="icon">🛒</div>
-    <div class="title">المشتريات</div>
-  </div>
-
-  <div class="card" onclick="go('stock.html')">
-    <div class="icon">📦</div>
-    <div class="title">المخزون</div>
-  </div>
-
-  <div class="card" onclick="go('stats.html')">
-    <div class="icon">📈</div>
-    <div class="title">الإحصائيات</div>
-  </div>
-
-  <div class="card" onclick="go('settings.html')">
-    <div class="icon">⚙️</div>
-    <div class="title">الإعدادات</div>
-  </div>
-
+    <!-- الصف الثاني -->
+    <div class="row">
+        <a href="clients.html" class="box clients">العملاء</a>
+        <a href="settings.html" class="box settings">الإعدادات</a>
+        <a href="stats.html" class="box stats">الإحصائيات</a>
+    </div>
 </div>
 
 <footer>
-  © Gestion Commerciale
+    جميع الحقوق محفوظة &copy; 2026
 </footer>
 
 <script>
-function go(page){
-  window.location.href = page;
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("sw.js");
 }
 </script>
 
