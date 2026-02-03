@@ -163,7 +163,7 @@ th{ background:#0d6efd; color:white; }
         <input type="text" id="productSearch" placeholder="اسم المنتج" autocomplete="off">
         <div id="suggestions" class="suggestions"></div>
     </div>
-    <input type="number" id="price" placeholder="سعر البيع" readonly>
+    <input type="number" id="price" placeholder="سعر البيع">
     <input type="number" id="qty" placeholder="الكمية">
     <button class="btn add" onclick="addSale()">إضافة</button>
 </div>
@@ -216,21 +216,37 @@ productInput.addEventListener("input", function(){
 
 /* إضافة للبيع */
 function addSale(){
-    let name = productInput.value;
+    let name = productInput.value.trim();
     let q = Number(document.getElementById("qty").value);
-    let product = stock.find(p=>p.name===name);
+    let price = Number(priceInput.value);
 
-    if(!product || q<=0){ alert("بيانات غير صحيحة"); return; }
-    if(q > product.qtyLeft){ alert("الكمية غير متوفرة"); return; }
+    if(!name || q <= 0 || price <= 0){
+        alert("بيانات غير صحيحة");
+        return;
+    }
 
-    let existing = sales.find(s=>s.name===name);
-    if(existing){ existing.qty += q; }
-    else{ sales.push({name, price:product.sell, qty:q}); }
+    // تحقق إذا المنتج موجود في المخزون
+    let product = stock.find(p => p.name === name);
+
+    // إذا المنتج موجود مسبقاً في المبيعات نجمع الكمية
+    let existing = sales.find(s => s.name === name);
+    if(existing){
+        existing.qty += q;
+    } else {
+        sales.push({
+            name,
+            price,
+            qty: q,
+            buy: product ? product.buy : 0 // سعر الشراء فقط إذا موجود في المخزون
+        });
+    }
 
     render();
-    productInput.value="";
-    priceInput.value="";
-    document.getElementById("qty").value="";
+
+    // إعادة تعيين الحقول
+    productInput.value = "";
+    priceInput.value = "";
+    document.getElementById("qty").value = "";
 }
 
 function render(){
@@ -258,7 +274,8 @@ function updatePrice(i,v){ sales[i].price = Number(v); render(); }
 function updateQty(i,v){
     let product = stock.find(p=>p.name===sales[i].name);
     v = Number(v);
-    if(v<=0 || v>product.qtyLeft){ alert("كمية غير صحيحة"); render(); return; }
+    if(product && (v<=0 || v>product.qtyLeft)){ alert("كمية غير صحيحة"); render(); return; }
+    if(v<=0){ alert("كمية غير صحيحة"); render(); return; }
     sales[i].qty = v; render();
 }
 function del(i){ sales.splice(i,1); render(); }
@@ -275,12 +292,11 @@ function saveSale(){
 
     let history = JSON.parse(localStorage.getItem("salesHistory")) || [];
     sales.forEach(s=>{
-        let product = stock.find(p => p.name === s.name);
         history.push({
             name: s.name,
             price: s.price,
-            qty: s.qty,         // الكمية المباعة
-            buy: product.buy,   // سعر الشراء للحساب فقط
+            qty: s.qty,
+            buy: s.buy,   // سعر الشراء للحساب فقط (0 إذا غير موجود في المخزون)
             date: new Date().toISOString().split("T")[0]
         });
     });
@@ -309,17 +325,17 @@ function loadGroups(){
 
 function loadProducts(group){
     productsDiv.innerHTML="";
-    stock.filter(p=>p.group===group && p.qtyLeft>0).forEach(p=>{
-        let card=document.createElement("div");
-        card.className="product-card";
-        card.innerHTML=`
+    stock.filter(p => p.group === group && p.qtyLeft > 0).forEach(p => {
+        let card = document.createElement("div");
+        card.className = "product-card";
+        card.innerHTML = `
             ${p.img ? `<img src="${p.img}">` : ""}
             <div class="name">${p.name}</div>
             <div class="price">${p.sell}</div>
             <div class="stock">المتبقي: ${p.qtyLeft}</div>`;
-        card.onclick=()=>{
+        card.onclick = () => {
             productInput.value = p.name;
-            priceInput.value = p.qtyLeft; // وضع الكمية المتبقية بدل سعر البيع
+            priceInput.value = p.sell; // تصحيح: استخدم سعر البيع
             document.getElementById("qty").value = 1;
             addSale();
         };
