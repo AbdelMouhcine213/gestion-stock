@@ -1,25 +1,259 @@
-<script type="module">
-import { db } from "./firebase.js";
-import { ref, set }
-from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<title>الإعدادات المتقدمة POS</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+body{
+    margin:0;
+    font-family:"Comic Sans MS", Arial;
+    direction:rtl;
+    background:linear-gradient(135deg,#232526,#414345);
+    color:white;
+}
+header{
+    padding:20px;
+    text-align:center;
+    font-size:32px;
+    font-weight:bold;
+    box-shadow:0 0 20px #ff944d;
+}
+.section{
+    margin:20px;
+    padding:25px;
+    background:rgba(0,0,0,.4);
+    border-radius:20px;
+    box-shadow:0 0 15px #ff944d;
+}
+h3{
+    margin-top:0;
+}
+input, select, button{
+    padding:8px;
+    font-size:16px;
+    border-radius:8px;
+    border:none;
+    margin:5px 0;
+}
+button{
+    cursor:pointer;
+    background:#ff944d;
+    color:white;
+}
+table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:10px;
+    background:rgba(255,255,255,0.9);
+    color:#000;
+}
+th, td{
+    border:1px solid #ddd;
+    padding:8px;
+    text-align:center;
+}
+th{
+    background:#ff944d;
+    color:white;
+}
+td input{
+    width:90px;
+    text-align:center;
+}
+</style>
+</head>
 
-window.saveCompany=()=>{
- set(ref(db,"settings/company"),{
-  name:companyName.value,
-  phone:companyPhone.value,
-  email:companyEmail.value,
-  address:companyAddress.value,
-  vat:companyVAT.value
- });
- alert("تم الحفظ");
-};
+<body>
 
-window.saveSales=()=>{
- set(ref(db,"settings/sales"),{
-  auto:autoDeduct.checked,
-  currency:currency.value,
-  min:minQty.value,
-  max:maxQty.value
- });
-};
+<header>⚙️ إعدادات POS المتقدمة</header>
+
+<!-- ===== إدارة المستخدمين ===== -->
+<div class="section">
+    <h3>👤 المستخدمون</h3>
+    <div>
+        <input type="text" id="username" placeholder="اسم المستخدم">
+        <input type="password" id="password" placeholder="كلمة المرور">
+        <select id="role">
+            <option value="admin">مدير</option>
+            <option value="staff">موظف</option>
+        </select>
+        <button onclick="addUser()">إضافة/تعديل مستخدم</button>
+    </div>
+    <table id="usersTable">
+        <thead>
+            <tr>
+                <th>المستخدم</th>
+                <th>الصلاحية</th>
+                <th>تعديل/حذف</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+</div>
+
+<!-- ===== الثيم والألوان ===== -->
+<div class="section">
+    <h3>🎨 الثيم والألوان</h3>
+    <div>
+        <label>اللون الأساسي: </label>
+        <input type="color" id="primaryColor" onchange="updateTheme()">
+        <label>اللون الثانوي: </label>
+        <input type="color" id="secondaryColor" onchange="updateTheme()">
+        <label>الوضع: </label>
+        <select id="themeMode" onchange="updateTheme()">
+            <option value="light">فاتح</option>
+            <option value="dark">داكن</option>
+        </select>
+    </div>
+</div>
+
+<!-- ===== الصلاحيات ===== -->
+<div class="section">
+    <h3>🔐 الصلاحيات</h3>
+    <div>
+        <label><input type="checkbox" id="allowSales"> السماح بالمبيعات</label><br>
+        <label><input type="checkbox" id="allowEdit"> السماح بتعديل المبيعات</label><br>
+        <label><input type="checkbox" id="allowDelete"> السماح بالحذف</label><br>
+        <label><input type="checkbox" id="allowStats"> عرض الإحصائيات</label><br>
+        <button onclick="savePermissions()">حفظ الصلاحيات</button>
+    </div>
+</div>
+
+<!-- ===== الإشعارات والتفضيلات ===== -->
+<div class="section">
+    <h3>🔔 الإشعارات والتفضيلات</h3>
+    <label><input type="checkbox" id="lowStockAlert"> تنبيه عند انخفاض المخزون</label><br>
+    <label><input type="checkbox" id="highSaleAlert"> تنبيه عند مبيعات كبيرة</label><br>
+    <button onclick="savePreferences()">حفظ التفضيلات</button>
+</div>
+
+<!-- ===== النسخ الاحتياطي والاستيراد ===== -->
+<div class="section">
+    <h3>💾 النسخ الاحتياطي واستيراد البيانات</h3>
+    <button onclick="exportData()">تصدير البيانات</button>
+    <input type="file" id="importFile" onchange="importData(event)">
+</div>
+
+<script>
+// ===== المستخدمون =====
+let users = JSON.parse(localStorage.getItem("users")) || [];
+function renderUsers(){
+    const tbody = document.querySelector("#usersTable tbody");
+    tbody.innerHTML="";
+    users.forEach((u,i)=>{
+        let tr=document.createElement("tr");
+        tr.innerHTML=`
+            <td>${u.username}</td>
+            <td>${u.role}</td>
+            <td>
+                <button onclick="editUser(${i})">✏️ تعديل</button>
+                <button onclick="deleteUser(${i})">❌ حذف</button>
+            </td>`;
+        tbody.appendChild(tr);
+    });
+}
+function addUser(){
+    const username = document.getElementById("username").value.trim();
+    const password = document.getElementById("password").value.trim();
+    const role = document.getElementById("role").value;
+
+    if(!username || !password){ alert("أدخل اسم المستخدم وكلمة المرور"); return; }
+
+    let existing = users.find(u=>u.username===username);
+    if(existing){
+        existing.password = password;
+        existing.role = role;
+    } else {
+        users.push({username,password,role});
+    }
+    localStorage.setItem("users", JSON.stringify(users));
+    renderUsers();
+}
+function editUser(i){
+    let u=users[i];
+    document.getElementById("username").value=u.username;
+    document.getElementById("password").value=u.password;
+    document.getElementById("role").value=u.role;
+}
+function deleteUser(i){
+    if(!confirm("هل تريد حذف هذا المستخدم؟")) return;
+    users.splice(i,1);
+    localStorage.setItem("users", JSON.stringify(users));
+    renderUsers();
+}
+
+// ===== الثيم =====
+function updateTheme(){
+    const primary = document.getElementById("primaryColor").value;
+    const secondary = document.getElementById("secondaryColor").value;
+    const mode = document.getElementById("themeMode").value;
+
+    document.body.style.background = mode==="dark" ? `linear-gradient(135deg, ${primary}, ${secondary})` : "#f0f0f0";
+    document.body.style.color = mode==="dark" ? "white":"black";
+}
+
+// ===== الصلاحيات =====
+function savePermissions(){
+    const permissions = {
+        allowSales: document.getElementById("allowSales").checked,
+        allowEdit: document.getElementById("allowEdit").checked,
+        allowDelete: document.getElementById("allowDelete").checked,
+        allowStats: document.getElementById("allowStats").checked
+    };
+    localStorage.setItem("permissions", JSON.stringify(permissions));
+    alert("تم حفظ الصلاحيات ✅");
+}
+
+// ===== التفضيلات =====
+function savePreferences(){
+    const prefs = {
+        lowStockAlert: document.getElementById("lowStockAlert").checked,
+        highSaleAlert: document.getElementById("highSaleAlert").checked
+    };
+    localStorage.setItem("preferences", JSON.stringify(prefs));
+    alert("تم حفظ التفضيلات ✅");
+}
+
+// ===== النسخ الاحتياطي والاستيراد =====
+function exportData(){
+    const data = {
+        users: users,
+        permissions: JSON.parse(localStorage.getItem("permissions"))||{},
+        preferences: JSON.parse(localStorage.getItem("preferences"))||{},
+        stock: JSON.parse(localStorage.getItem("stock"))||[],
+        salesHistory: JSON.parse(localStorage.getItem("salesHistory"))||[]
+    };
+    const blob = new Blob([JSON.stringify(data,null,2)], {type:"application/json"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href=url;
+    a.download="pos_backup.json";
+    a.click();
+}
+function importData(event){
+    const file = event.target.files[0];
+    const reader = new FileReader();
+    reader.onload = function(e){
+        try{
+            const data = JSON.parse(e.target.result);
+            if(data.users) localStorage.setItem("users", JSON.stringify(data.users));
+            if(data.permissions) localStorage.setItem("permissions", JSON.stringify(data.permissions));
+            if(data.preferences) localStorage.setItem("preferences", JSON.stringify(data.preferences));
+            if(data.stock) localStorage.setItem("stock", JSON.stringify(data.stock));
+            if(data.salesHistory) localStorage.setItem("salesHistory", JSON.stringify(data.salesHistory));
+            alert("تم استيراد البيانات بنجاح ✅");
+            location.reload();
+        }catch(err){
+            alert("خطأ في الملف");
+        }
+    }
+    reader.readAsText(file);
+}
+
+// تحميل المستخدمين عند البداية
+renderUsers();
 </script>
+
+</body>
+</html>
