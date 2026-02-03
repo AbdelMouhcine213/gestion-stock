@@ -3,91 +3,258 @@
 <head>
 <meta charset="UTF-8">
 <title>📦 المخزون</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#00f7ff">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
+*{
+    box-sizing:border-box;
+    font-family:"Comic Sans MS", Arial;
+}
+
 body{
-  margin:0;
-  font-family:Tahoma;
-  background:#020617;
-  color:#e5e7eb;
-  direction:rtl;
+    direction:rtl;
+    margin:0;
+    background:#0b0f1a;
+    color:white;
 }
+
+/* ===== العنوان ===== */
 header{
-  background:linear-gradient(135deg,#22d3ee,#6366f1);
-  padding:15px;
-  text-align:center;
-  font-size:22px;
-  font-weight:bold;
-  box-shadow:0 0 20px #22d3ee;
+    background:#111827;
+    padding:22px;
+    text-align:center;
+    font-size:34px;
+    font-weight:bold;
+    box-shadow:0 0 20px #00f7ff;
 }
-.container{
-  max-width:1100px;
-  margin:20px auto;
-  background:#020617;
-  padding:20px;
-  border-radius:15px;
-  box-shadow:0 0 25px rgba(34,211,238,.3);
+
+/* ===== شريط الإحصائيات ===== */
+.top{
+    display:flex;
+    gap:20px;
+    padding:25px;
+    flex-wrap:wrap;
+    justify-content:center;
 }
-input{
-  width:100%;
-  padding:10px;
-  margin-bottom:15px;
-  border-radius:10px;
-  border:1px solid #334155;
-  background:#020617;
-  color:white;
+
+.alert{
+    width:260px;
+    padding:20px;
+    border-radius:18px;
+    text-align:center;
+    font-size:20px;
+    box-shadow:
+        0 0 10px #00f7ff,
+        0 0 30px rgba(0,247,255,.6);
 }
+
+.orange{
+    background:#ff7a18;
+}
+
+.yellow{
+    background:#ffd43b;
+    color:black;
+}
+
+/* ===== البحث ===== */
+#searchStock{
+    width:95%;
+    margin:10px auto 25px auto;
+    display:block;
+    padding:15px;
+    font-size:20px;
+    border-radius:12px;
+    border:none;
+    outline:none;
+    box-shadow:0 0 12px rgba(0,247,255,.6);
+}
+
+/* ===== الجدول ===== */
 table{
-  width:100%;
-  border-collapse:collapse;
+    width:95%;
+    margin:auto;
+    border-collapse:collapse;
+    background:#111827;
+    font-size:18px;
+    border-radius:15px;
+    overflow:hidden;
+    box-shadow:0 0 20px rgba(0,247,255,.5);
 }
+
 th,td{
-  padding:10px;
-  text-align:center;
-  border-bottom:1px solid #1e293b;
+    border:1px solid #1f2933;
+    padding:12px;
+    text-align:center;
+    vertical-align:middle;
 }
+
 th{
-  background:#0f172a;
-  color:#22d3ee;
+    background:#00f7ff;
+    color:black;
+    font-size:18px;
 }
-.low{
-  background:#7f1d1d;
+
+td{
+    background:#0b1220;
 }
-.expire{
-  background:#78350f;
+
+td[contenteditable="true"]{
+    background:#111827;
+    outline:1px dashed #00f7ff;
 }
-img{
-  width:50px;
-  height:50px;
-  object-fit:cover;
-  border-radius:8px;
+
+td img{
+    width:50px;
+    height:50px;
+    object-fit:cover;
+    border-radius:8px;
+}
+
+.warning{
+    color:red;
+    font-weight:bold;
+}
+
+/* ===== زر الحذف ===== */
+.btn{
+    padding:6px 12px;
+    border:none;
+    border-radius:8px;
+    cursor:pointer;
+    font-size:18px;
+}
+
+.delete{
+    background:#dc3545;
+    color:white;
+    box-shadow:0 0 10px rgba(220,53,69,.7);
 }
 </style>
 </head>
 
 <body>
 
-<header>📦 صفحة المخزون</header>
+<header>📦 إدارة المخزون</header>
 
-<div class="container">
-  <input type="text" id="search" placeholder="🔍 البحث بالاسم أو المجموعة" onkeyup="filterTable()">
+<div class="top">
+    <div class="alert orange">
+        ⚠️ نفاد الكمية<br>
+        <span id="out" style="font-size:34px;font-weight:bold;">0</span>
+    </div>
 
-<table id="stockTable">
+    <div class="alert yellow">
+        ⏰ قرب انتهاء الصلاحية<br>
+        <span id="exp" style="font-size:34px;font-weight:bold;">0</span>
+    </div>
+</div>
+
+<input type="text" id="searchStock"
+placeholder="🔍 ابحث باسم المنتج أو تاريخ الشراء أو سعر البيع">
+
+<table>
 <thead>
 <tr>
-<th>اسم المنتج</th>
-<th>سعر الشراء</th>
-<th>سعر البيع</th>
-<th>المجموعة</th>
-<th>المجموعة الفرعية</th>
-<th>الكمية الأصلية</th>
-<th>الكمية المتبقية</th>
+<th>📷 صورة</th>
+<th>📅 تاريخ الشراء</th>
+<th>📦 المنتج</th>
+<th>💰 سعر الشراء</th>
+<th>💵 سعر البيع</th>
+<th>📊 الكمية الأصلية</th>
+<th>📉 الكمية المتبقية</th>
+<th>💰 مجموع الشراء</th>
+<th>💵 مجموع البيع</th>
+<th>⏰ تاريخ الانتهاء</th>
+<th>🗑️ حذف</th>
 </tr>
 </thead>
-<tbody></tbody>
+<tbody id="tbody"></tbody>
 </table>
-<script src="stock.js"></script>
+
+<script>
+// ===== بيانات المخزون =====
+let stock = JSON.parse(localStorage.getItem("stock")) || [];
+const tbody = document.getElementById("tbody");
+
+// ===== العرض =====
+function render(filter=""){
+    tbody.innerHTML="";
+    let out=0, exp=0;
+    const today = new Date();
+
+    stock.forEach((p,i)=>{
+        const daysLeft = (new Date(p.expiry) - today)/(1000*60*60*24);
+        const isExpiredSoon = daysLeft <= 30;
+        const isOutOfStock = p.qtyLeft <= 0;
+
+        if(isOutOfStock) out++;
+        if(isExpiredSoon) exp++;
+
+        const text = filter.toLowerCase();
+        if(
+            p.name.toLowerCase().includes(text) ||
+            p.date.includes(text) ||
+            p.sell.toString().includes(text)
+        ){
+            let tr=document.createElement("tr");
+
+            tr.innerHTML=`
+<td>${p.img ? `<img src="${p.img}" alt="صورة المنتج">` : ""}</td>
+<td contenteditable="true" onblur="update(${i},'date',this.innerText)">${p.date}</td>
+<td contenteditable="true" onblur="update(${i},'name',this.innerText)">
+    ${p.name} ${isOutOfStock ? '<span class="warning">🛑 نفدت</span>' : ''}
+</td>
+<td contenteditable="true" onblur="update(${i},'buy',this.innerText)">${p.buy}</td>
+<td contenteditable="true" onblur="update(${i},'sell',this.innerText)">${p.sell}</td>
+<td>${p.qtyOriginal}</td>
+<td contenteditable="true" onblur="update(${i},'qtyLeft',this.innerText)">
+    ${p.qtyLeft} ${isOutOfStock ? '<span class="warning">🛑</span>' : ''}
+</td>
+<td>${p.qtyOriginal * p.buy}</td>
+<td>${p.qtyLeft * p.sell}</td>
+<td contenteditable="true" onblur="update(${i},'expiry',this.innerText)">
+    ${p.expiry} ${isExpiredSoon && !isOutOfStock ? '<span class="warning">⚠️ قرب الانتهاء</span>' : ''}
+</td>
+<td><button class="btn delete" onclick="del(${i})">❌</button></td>
+            `;
+            tbody.appendChild(tr);
+        }
+    });
+
+    document.getElementById("out").textContent=out;
+    document.getElementById("exp").textContent=exp;
+}
+
+// ===== تحديث =====
+function update(i,key,val){
+    if(key==="name" || key==="date" || key==="expiry"){
+        stock[i][key]=val;
+    }else{
+        stock[i][key]=Number(val);
+    }
+    localStorage.setItem("stock",JSON.stringify(stock));
+    render(document.getElementById("searchStock").value);
+}
+
+// ===== حذف =====
+function del(i){
+    if(confirm("حذف المنتج نهائيًا؟")){
+        stock.splice(i,1);
+        localStorage.setItem("stock",JSON.stringify(stock));
+        render(document.getElementById("searchStock").value);
+    }
+}
+
+// ===== البحث =====
+document.getElementById("searchStock").addEventListener("input",function(){
+    render(this.value);
+});
+
+// أول تحميل
+render();
+</script>
 
 </body>
 </html>
