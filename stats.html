@@ -3,43 +3,243 @@
 <head>
 <meta charset="UTF-8">
 <title>الإحصائيات</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
-body{font-family:Arial;direction:rtl;background:#0b1a33;color:white;padding:20px}
-table{width:100%;border-collapse:collapse}
-th,td{padding:8px;border-bottom:1px solid #444;text-align:center}
-th{background:#28a745;color:black}
+body{
+    margin:0;
+    font-family:"Comic Sans MS";
+    direction:rtl;
+    background:linear-gradient(135deg,#1f1c2c,#928dab);
+    color:white;
+}
+header{
+    padding:20px;
+    text-align:center;
+    font-size:32px;
+    box-shadow:0 0 20px #ff6bff;
+}
+.card{
+    background:rgba(0,0,0,.4);
+    margin:20px;
+    padding:25px;
+    border-radius:20px;
+    box-shadow:0 0 15px #ff6bff;
+}
+input, select{
+    padding:10px;
+    font-size:18px;
+    border-radius:10px;
+    border:none;
+    margin-right:10px;
+}
+button{
+    padding:10px 15px;
+    font-size:18px;
+    border:none;
+    border-radius:10px;
+    background:#0d6efd;
+    color:white;
+    cursor:pointer;
+    margin-right:5px;
+}
+table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:15px;
+    background:rgba(255,255,255,0.9);
+    color:#000;
+}
+th, td{
+    border:1px solid #ddd;
+    padding:10px;
+    text-align:center;
+}
+th{
+    background:#0d6efd;
+    color:white;
+}
+td input{
+    width:80px;
+    text-align:center;
+}
 </style>
 </head>
+
 <body>
 
-<h2>📊 الإحصائيات</h2>
+<header>📈 الإحصائيات التفاعلية</header>
 
-<table>
-<thead>
-<tr><th>التاريخ</th><th>الربح الخام</th><th>الربح الصافي</th></tr>
-</thead>
-<tbody id="t"></tbody>
-</table>
+<div class="card">
+    <h2>📅 الربح حسب التاريخ</h2>
+    <div style="margin-bottom:15px;">
+        <input type="date" id="dateFilter">
+        <select id="periodFilter">
+            <option value="day">اليومي</option>
+            <option value="week">الأسبوعي</option>
+            <option value="month">الشهري</option>
+            <option value="year">السنوي</option>
+        </select>
+        <button onclick="calculate()">بحث</button>
+        <button onclick="exportTable()">تصدير Excel</button>
+    </div>
+    <div id="summary">
+        <p>الربح الخام: <span id="gross">0</span></p>
+        <p>الربح الصافي: <span id="net">0</span></p>
+    </div>
 
-<script type="module">
-import { db } from "./firebase.js";
-import { ref, onValue }
-from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    <table id="detailsTable">
+        <thead>
+            <tr>
+                <th>المنتج</th>
+                <th>الكمية المباعة</th>
+                <th>سعر البيع</th>
+                <th>الربح الخام</th>
+                <th>الربح الصافي</th>
+                <th>تعديل/حذف</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+</div>
 
-onValue(ref(db,"sales"),snap=>{
- let t=document.getElementById("t");
- t.innerHTML="";
- let d={};
- Object.values(snap.val()||{}).forEach(s=>{
-  if(!d[s.date]) d[s.date]={g:0,n:0};
-  d[s.date].g+=s.sell*s.qty;
-  d[s.date].n+=(s.sell-s.buy)*s.qty;
- });
- for(let k in d){
-  t.innerHTML+=`<tr><td>${k}</td><td>${d[k].g}</td><td>${d[k].n}</td></tr>`;
- }
-});
+<script>
+// تحميل بيانات المبيعات
+function loadSalesHistory(){
+    return JSON.parse(localStorage.getItem("salesHistory")) || [];
+}
+function saveSalesHistory(history){
+    localStorage.setItem("salesHistory", JSON.stringify(history));
+}
+
+// تجميع المبيعات حسب المنتج
+function groupSales(sales){
+    const grouped = {};
+    sales.forEach(s => {
+        if(grouped[s.name]){
+            grouped[s.name].qty += s.qty;
+            grouped[s.name].totalGross += s.price * s.qty;
+            grouped[s.name].totalNet += (s.price - s.buy) * s.qty;
+        } else {
+            grouped[s.name] = {
+                name: s.name,
+                qty: s.qty,
+                price: s.price,
+                totalGross: s.price * s.qty,
+                totalNet: (s.price - s.buy) * s.qty,
+                indices: [s._index]
+            };
+        }
+    });
+    return Object.values(grouped);
+}
+
+// الحساب الرئيسي
+function calculate(){
+    let history = loadSalesHistory();
+    const filterDate = document.getElementById("dateFilter").value;
+    const period = document.getElementById("periodFilter").value;
+    if(!filterDate){ alert("اختر تاريخ"); return; }
+    const selectedDate = new Date(filterDate);
+
+    let filtered = [];
+
+    history.forEach((s,index)=>{
+        let saleDate = new Date(s.date);
+        let match=false;
+
+        if(period==="day"){
+            match = saleDate.toDateString() === selectedDate.toDateString();
+        } else if(period==="week"){
+            let start = new Date(selectedDate);
+            start.setDate(start.getDate() - start.getDay());
+            let end = new Date(start);
+            end.setDate(end.getDate() + 6);
+            match = saleDate >= start && saleDate <= end;
+        } else if(period==="month"){
+            match = saleDate.getFullYear() === selectedDate.getFullYear() &&
+                    saleDate.getMonth() === selectedDate.getMonth();
+        } else if(period==="year"){
+            match = saleDate.getFullYear() === selectedDate.getFullYear();
+        }
+
+        if(match){
+            let sCopy = {...s, _index:index}; // حفظ المؤشر لتعديلات/حذف
+            filtered.push(sCopy);
+        }
+    });
+
+    // تجميع حسب المنتج
+    const grouped = groupSales(filtered);
+
+    // عرض الجدول
+    const tbody = document.querySelector("#detailsTable tbody");
+    tbody.innerHTML="";
+    let totalGross=0, totalNet=0;
+
+    grouped.forEach(item=>{
+        totalGross += item.totalGross;
+        totalNet += item.totalNet;
+
+        let tr = document.createElement("tr");
+        tr.innerHTML = `
+            <td>${item.name}</td>
+            <td><input type="number" value="${item.qty}" onchange="updateQtyGrouped(${item.indices.join(',')}, this.value)"></td>
+            <td><input type="number" value="${item.price}" onchange="updatePriceGrouped(${item.indices.join(',')}, this.value)"></td>
+            <td>${item.totalGross}</td>
+            <td>${item.totalNet}</td>
+            <td><button onclick="deleteGrouped(${item.indices.join(',')})">❌ حذف</button></td>
+        `;
+        tbody.appendChild(tr);
+    });
+
+    document.getElementById("gross").textContent = totalGross;
+    document.getElementById("net").textContent = totalNet;
+}
+
+// تحديث الكمية لجميع المبيعات المجمعة
+function updateQtyGrouped(...args){
+    const newQty = Number(args.pop());
+    if(newQty<=0){ alert("كمية غير صحيحة"); return; }
+    const indices = args;
+
+    let history = loadSalesHistory();
+    indices.forEach(i=>{ history[i].qty = newQty; });
+    saveSalesHistory(history);
+    calculate();
+}
+
+// تحديث السعر لجميع المبيعات المجمعة
+function updatePriceGrouped(...args){
+    const newPrice = Number(args.pop());
+    if(newPrice<=0){ alert("سعر غير صحيح"); return; }
+    const indices = args;
+
+    let history = loadSalesHistory();
+    indices.forEach(i=>{ history[i].price = newPrice; });
+    saveSalesHistory(history);
+    calculate();
+}
+
+// حذف كل المبيعات المجمعة
+function deleteGrouped(...indices){
+    if(!confirm("هل تريد حذف كل هذه العمليات؟")) return;
+    let history = loadSalesHistory();
+    // حذف من آخر لبدء index لتجنب انزلاق المؤشرات
+    indices.sort((a,b)=>b-a).forEach(i=>{ history.splice(i,1); });
+    saveSalesHistory(history);
+    calculate();
+}
+
+// تصدير الجدول Excel
+function exportTable(){
+    let table = document.getElementById("detailsTable");
+    let html = table.outerHTML.replace(/ /g,'%20');
+    let url = 'data:application/vnd.ms-excel,' + html;
+    let a = document.createElement('a');
+    a.href = url;
+    a.download = 'sales_statistics.xls';
+    a.click();
+}
 </script>
-
 </body>
 </html>
